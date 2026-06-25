@@ -1,0 +1,41 @@
+.hukam-page {
+  padding-top: var(--sp-4, 16px);
+}
+
+.hukam-page-head {
+  max-width: 720px;
+  margin: 0 auto var(--sp-3, 12px);
+  text-align: center;
+}
+
+.hukam-page-date {
+  margin: 4px 0 0;
+  font-size: clamp(1.3rem, 1.1rem + 1.4vw, 1.9rem);
+  font-weight: 800;
+  color: var(--color-text);
+}
+
+.hukam-page-controls {
+  margin-top: var(--sp-3, 12px);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.hukam-page-live-link {
+  text-decoration: none;
+}
+
+.hukam-page-state {
+  display: grid;
+  place-items: center;
+  padding: 3rem 0;
+}
+
+.hukam-page-error {
+  color: var(--color-danger, #c0392b);
+  font-weight: 600;
+  text-align: center;
+}

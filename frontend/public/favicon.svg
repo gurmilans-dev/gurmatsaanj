@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Kesari background, rounded corners -->
+  <rect width="64" height="64" rx="14" fill="#E89B2C"/>
+
+  <!-- Ik Onkar (ੴ) glyph at the top -->
+  <text x="32" y="26" text-anchor="middle" dominant-baseline="middle"
+        font-size="20" font-weight="500"
+        font-family="Noto Serif Gurmukhi, Mukta Mahee, serif"
+        fill="#FFFCF5">ੴ</text>
+
+  <!-- Open Gutka (scripture) silhouette -->
+  <g fill="#FFFCF5">
+    <!-- Spine -->
+    <rect x="31" y="34" width="2" height="16" rx="1"/>
+    <!-- Left page -->
+    <path d="M 31 35 Q 20 34 16 38 L 16 50 Q 20 46 31 47 Z"/>
+    <!-- Right page -->
+    <path d="M 33 35 Q 44 34 48 38 L 48 50 Q 44 46 33 47 Z"/>
+  </g>
+
+  <!-- Page lines -->
+  <g fill="none" stroke="#FFFCF5" stroke-width="0.9" stroke-linecap="round" opacity="0.6">
+    <line x1="20" y1="40" x2="29" y2="39.5"/>
+    <line x1="20" y1="43" x2="29" y2="42.5"/>
+    <line x1="20" y1="46" x2="29" y2="45.5"/>
+    <line x1="35" y1="39.5" x2="44" y2="40"/>
+    <line x1="35" y1="42.5" x2="44" y2="43"/>
+    <line x1="35" y1="45.5" x2="44" y2="46"/>
+  </g>
+</svg>

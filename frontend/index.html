@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+    <meta name="theme-color" content="#E89B2C" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Gurmat Saanj" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="description" content="Gurmat Saanj - Every Line. Live. A live Kirtan and Katha companion for the Gurudwara." />
+    <link rel="apple-touch-startup-image" href="/splash/splash-1170x2532.png" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)" />
+    <link rel="apple-touch-startup-image" href="/splash/splash-1179x2556.png" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3)" />
+    <link rel="apple-touch-startup-image" href="/splash/splash-1290x2796.png" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)" />
+    <link rel="apple-touch-startup-image" href="/splash/splash-1125x2436.png" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)" />
+    <link rel="apple-touch-startup-image" href="/splash/splash-828x1792.png" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2)" />
+    <link rel="apple-touch-startup-image" href="/splash/splash-2048x2732.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2)" />
+    <title>Gurmat Saanj - Every Line. Live.</title>
+
+    <!-- Strong-but-pragmatic CSP. Adjust if you proxy through a CDN.
+         script-src / connect-src / worker-src allowances for cdn.jsdelivr.net
+         and huggingface.co are required by @huggingface/transformers (used by
+         the in-browser semantic search): it loads ort-wasm-*.mjs from jsDelivr,
+         executes the model in WebAssembly (wasm-unsafe-eval), spawns workers
+         from blob: URLs, and fetches the model files from huggingface.co /
+         Hugging Face's hf.co CDN and Xet-backed storage hosts. -->
+    <meta http-equiv="Content-Security-Policy"
+          content="default-src 'self';
+                   img-src 'self' data: https:;
+                   font-src 'self' https://fonts.gstatic.com;
+                   style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+                   script-src 'self' 'wasm-unsafe-eval' https://cdn.jsdelivr.net;
+                   worker-src 'self' blob:;
+                   connect-src 'self' blob: data: http://localhost:5000 https://api.banidb.com https://cdn.jsdelivr.net https://huggingface.co https://*.huggingface.co https://hf.co https://*.hf.co https://cdn-lfs.huggingface.co https://*.xethub.hf.co;
+                   base-uri 'self';
+                   form-action 'self';">
+
+    <!-- Devotional / editorial typography:
+         Fraunces (variable serif) for display, Mukta Mahee for Gurmukhi-rich body. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..900,0..100,0..1&family=Mukta+Mahee:wght@300;400;500;600;700&family=Noto+Serif+Gurmukhi:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>You need JavaScript enabled to run Gurmat Saanj.</noscript>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

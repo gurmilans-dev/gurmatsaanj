@@ -1,0 +1,30 @@
+{
+  "name": "saanj-kirtan-frontend",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Gurmat Saanj frontend - Every Line. Live.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "build:semantic": "node ../tools/build-semantic-index.js",
+    "eval:semantic": "node ../tools/semantic-eval.js",
+    "replay:session": "node ../tools/replay-session.mjs"
+  },
+  "dependencies": {
+    "@huggingface/transformers": "^3.1.2",
+    "axios": "^1.7.7",
+    "fuzzball": "^2.2.6",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.26.2"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.5",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-basic-ssl": "^1.2.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "vite": "^5.4.6"
+  }
+}

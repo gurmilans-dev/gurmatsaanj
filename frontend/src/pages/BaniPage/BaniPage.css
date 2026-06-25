@@ -1,0 +1,1209 @@
+.bani-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+}
+
+.bani-home-page {
+  max-width: 1120px;
+}
+
+.bani-hero {
+  padding: clamp(var(--sp-4), 5vw, var(--sp-6));
+  border: 1px solid var(--color-border);
+  border-radius: var(--r-lg);
+  background:
+    linear-gradient(135deg,
+      color-mix(in srgb, var(--kesari-500) 9%, var(--color-surface)),
+      var(--color-surface));
+  box-shadow: var(--shadow-sm);
+}
+
+.bani-home-hero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-4);
+}
+.bani-home-hero-text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.bani-home-hero h1 {
+  margin: 0;
+  color: var(--color-text);
+  font-family: var(--font-display);
+  font-size: clamp(2.1rem, 8vw, 4.2rem);
+  font-weight: 650;
+  letter-spacing: 0;
+  line-height: 1;
+}
+
+/* EN / ਪੰ language pill — used in hero (top-right) and in the Aa popover. */
+.bani-lang-toggle {
+  display: inline-flex;
+  flex: 0 0 auto;
+  padding: 3px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--r-pill);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  gap: 2px;
+}
+.bani-lang-toggle-btn {
+  min-width: 38px;
+  min-height: 32px;
+  padding: 4px 10px;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--color-text-soft);
+  font-size: var(--fs-sm);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+}
+.bani-lang-toggle-btn:hover {
+  color: var(--color-text);
+}
+.bani-lang-toggle-btn-on {
+  background: color-mix(in srgb, var(--kesari-500) 22%, var(--color-surface));
+  color: var(--color-text);
+}
+.bani-lang-toggle-btn:focus-visible {
+  outline: 2px solid var(--kesari-500);
+  outline-offset: 2px;
+}
+.bani-lang-toggle-popover {
+  align-self: flex-start;
+  box-shadow: none;
+}
+
+.bani-home-hero p:last-child {
+  max-width: 760px;
+  margin-top: var(--sp-3);
+  color: var(--color-text-soft);
+  font-size: clamp(1rem, 2.2vw, 1.2rem);
+  line-height: 1.6;
+}
+
+.bani-search-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--r-md);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  transition: border-color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
+}
+.bani-search-row:focus-within {
+  border-color: color-mix(in srgb, var(--kesari-500) 55%, var(--color-border));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--kesari-500) 18%, transparent);
+}
+
+.bani-search-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  color: var(--color-text-soft);
+  flex: 0 0 auto;
+}
+
+.bani-search-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 38px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-text);
+  font-size: var(--fs-md);
+  font-weight: 650;
+  letter-spacing: 0.01em;
+}
+.bani-search-input:focus {
+  outline: none;
+}
+.bani-search-input::placeholder {
+  color: var(--color-text-soft);
+  font-weight: 600;
+}
+
+.bani-search-clear {
+  display: inline-grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  flex: 0 0 auto;
+  border: 0;
+  border-radius: 9999px;
+  background: transparent;
+  color: var(--color-text-soft);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+.bani-search-clear:hover {
+  background: var(--cream-100, var(--color-surface));
+  color: var(--color-text);
+}
+
+.bani-search-empty {
+  margin: 0;
+  padding: var(--sp-4);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--r-md);
+  color: var(--color-text-soft);
+  font-size: var(--fs-sm);
+  text-align: center;
+}
+
+.bani-category-nav {
+  display: flex;
+  gap: var(--sp-2);
+  overflow-x: auto;
+  padding-bottom: 2px;
+  scroll-snap-type: x proximity;
+}
+
+.bani-category-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--r-pill);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: var(--fs-sm);
+  font-weight: 800;
+  white-space: nowrap;
+  scroll-snap-align: start;
+  box-shadow: var(--shadow-sm);
+}
+
+.bani-category-chip:hover {
+  border-color: var(--kesari-300);
+  background: color-mix(in srgb, var(--kesari-500) 7%, var(--color-surface));
+}
+
+.bani-category-chip small {
+  display: inline-grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--kesari-500) 12%, var(--color-surface));
+  color: var(--color-primary-deep);
+  font-size: 0.72rem;
+}
+
+.bani-category-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  scroll-margin-top: 96px;
+}
+
+.bani-category-head {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(220px, 1fr);
+  gap: var(--sp-3);
+  align-items: end;
+}
+
+.bani-category-head h2 {
+  margin: 0;
+  color: var(--color-text);
+  font-size: clamp(1.35rem, 3vw, 2rem);
+  font-weight: 850;
+  line-height: 1.15;
+}
+
+.bani-category-head p:last-child {
+  margin: 0;
+  color: var(--color-text-soft);
+  font-size: var(--fs-sm);
+  line-height: 1.5;
+}
+
+.bani-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-3);
+}
+
+.bani-card {
+  display: flex;
+  min-height: 190px;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--r-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: var(--shadow-sm);
+  transition:
+    transform var(--t-fast) var(--ease),
+    border-color var(--t-fast) var(--ease),
+    box-shadow var(--t-fast) var(--ease),
+    background var(--t-fast) var(--ease);
+}
+
+.bani-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--kesari-300);
+  background: color-mix(in srgb, var(--kesari-500) 4%, var(--color-surface));
+  box-shadow: var(--shadow-md);
+}
+
+.bani-card-highlighted {
+  border-color: color-mix(in srgb, var(--kesari-500) 72%, var(--color-border));
+  background:
+    linear-gradient(135deg,
+      color-mix(in srgb, var(--kesari-500) 11%, var(--color-surface)),
+      var(--color-surface));
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--kesari-500) 16%, transparent),
+    var(--shadow-sm);
+}
+
+.bani-card-chip {
+  width: max-content;
+  max-width: 100%;
+  padding: 5px 9px;
+  border-radius: var(--r-pill);
+  background: color-mix(in srgb, var(--kesari-500) 10%, var(--color-surface));
+  color: var(--color-primary-deep);
+  font-size: var(--fs-xs);
+  font-weight: 850;
+}
+
+.bani-card-chip-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.bani-card-variant-count {
+  padding: 4px 8px;
+  border: 1px solid color-mix(in srgb, var(--kesari-500) 28%, var(--color-border));
+  border-radius: var(--r-pill);
+  color: var(--color-text-soft);
+  font-size: 0.72rem;
+  font-weight: 850;
+}
+
+.bani-card-title-pa {
+  margin: 0;
+  color: var(--color-text);
+  font-family: var(--font-gurmukhi, var(--font-display));
+  font-size: clamp(1.25rem, 3.2vw, 1.6rem);
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: 0.01em;
+}
+
+.bani-card h3 {
+  margin: 0;
+  color: var(--color-text-soft);
+  font-size: var(--fs-md);
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+}
+
+.bani-card p {
+  margin: 0;
+  color: var(--color-text-soft);
+  font-size: var(--fs-sm);
+  line-height: 1.5;
+}
+
+.bani-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: auto;
+}
+
+.bani-card-tags small {
+  padding: 4px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--r-pill);
+  color: var(--color-text-soft);
+  font-size: 0.72rem;
+  font-weight: 750;
+}
+
+.bani-card-meta {
+  color: var(--color-text-muted);
+  font-size: var(--fs-xs);
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.bani-home-page .calendar-today-banner {
+  margin-bottom: 0;
+}
+
+/* Reader ---------------------------------------------------------------- */
+
+.bani-reader-page {
+  --bani-reader-scale: 1;
+  gap: var(--sp-4);
+}
+
+.bani-reader-page .shabad-page-sticky {
+  border-radius: var(--r-lg);
+  background:
+    linear-gradient(135deg,
+      color-mix(in srgb, var(--leaf-600) 6%, var(--color-surface)),
+      var(--color-surface));
+}
+
+.bani-reader-page .shabad-page-title {
+  font-family: var(--font-display);
+  font-size: clamp(1rem, 2.4vw, 1.25rem);
+  font-weight: 750;
+  color: var(--color-text-soft);
+  letter-spacing: 0.01em;
+}
+
+.bani-reader-page .bani-reader-title-pa {
+  margin: 0 0 2px;
+  font-family: var(--font-gurmukhi, var(--font-display));
+  font-size: clamp(1.5rem, 4.4vw, 2.2rem);
+  font-weight: 850;
+  line-height: 1.15;
+  color: var(--color-text);
+  letter-spacing: 0.01em;
+}
+
+.bani-reader-page .shabad-control-groups {
+  grid-template-columns: minmax(240px, 1fr) minmax(280px, 1.2fr);
+}
+
+.bani-reader-font-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.bani-reader-font-controls span {
+  min-width: 46px;
+  color: var(--color-text-soft);
+  font-size: var(--fs-xs);
+  font-weight: 850;
+  text-align: center;
+}
+
+.bani-variant-strip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: var(--sp-3);
+  padding: 8px;
+  border: 1px solid color-mix(in srgb, var(--kesari-500) 25%, var(--color-border));
+  border-radius: var(--r-md);
+  background: color-mix(in srgb, var(--kesari-500) 5%, var(--color-surface));
+}
+
+.bani-variant-label {
+  color: var(--color-text-soft);
+  font-size: var(--fs-xs);
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.bani-variant-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 6px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--r-pill);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: var(--fs-xs);
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.bani-variant-chip:hover {
+  border-color: color-mix(in srgb, var(--kesari-500) 55%, var(--color-border));
+  background: color-mix(in srgb, var(--kesari-500) 10%, var(--color-surface));
+}
+
+.bani-variant-chip-on {
+  border-color: color-mix(in srgb, var(--kesari-500) 70%, var(--color-border));
+  background: color-mix(in srgb, var(--kesari-500) 20%, var(--color-surface));
+  color: var(--color-primary-deep);
+}
+
+.bani-resume-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--sp-3);
+  align-items: center;
+  width: min(100%, 900px);
+  margin-inline: auto;
+  padding: var(--sp-4);
+  border: 1px solid color-mix(in srgb, var(--leaf-600) 25%, var(--color-border));
+  border-radius: var(--r-md);
+  background: color-mix(in srgb, var(--leaf-600) 6%, var(--color-surface));
+  box-shadow: var(--shadow-sm);
+}
+
+.bani-resume-card h2 {
+  margin: 0;
+  color: var(--color-text);
+  font-size: var(--fs-lg);
+  font-weight: 850;
+}
+
+.bani-resume-card p:last-child {
+  margin: 4px 0 0;
+  color: var(--color-text-soft);
+  font-size: var(--fs-sm);
+  line-height: 1.45;
+}
+
+.bani-resume-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.bani-reader-progress {
+  height: 4px;
+  margin-top: var(--sp-3);
+  overflow: hidden;
+  border-radius: var(--r-pill);
+  background: color-mix(in srgb, var(--color-border) 70%, transparent);
+}
+
+.bani-reader-progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--kesari-400), var(--leaf-600));
+  transition: width 180ms ease;
+}
+
+.bani-reader-page .shabad-view {
+  width: min(100%, 900px);
+  margin-inline: auto;
+}
+
+.bani-reader-page .shabad-lines {
+  gap: var(--sp-2);
+}
+
+.bani-reader-page .shabad-section-heading {
+  margin: var(--sp-6) 0 var(--sp-2);
+  padding: 10px clamp(10px, 3vw, 18px);
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-border) 55%, transparent);
+  color: var(--color-text-soft);
+}
+
+.bani-reader-page .shabad-section-heading-simple {
+  justify-content: center;
+  margin: var(--sp-6) 0 var(--sp-1);
+  padding: 8px clamp(12px, 3vw, 20px);
+  border-top: 1px solid color-mix(in srgb, var(--color-border) 65%, transparent);
+  border-bottom: 0;
+  color: var(--color-text-soft);
+  font-size: var(--fs-sm);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-align: center;
+  text-transform: none;
+}
+
+.bani-reader-page .shabad-section-heading-simple span {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  padding-inline: 10px;
+  background: var(--color-bg);
+  transform: translateY(-50%);
+}
+
+.bani-reader-page .shabad-line {
+  gap: clamp(10px, 3vw, var(--sp-4));
+  padding: clamp(14px, 4vw, 24px) clamp(10px, 4vw, 28px);
+  border-radius: var(--r-md);
+  scroll-margin: 190px;
+}
+
+.bani-reader-page .shabad-line-num {
+  width: 32px;
+  height: 32px;
+  margin-top: 8px;
+  background: color-mix(in srgb, var(--color-surface) 82%, var(--cream-100));
+}
+
+.bani-reader-page .shabad-line-body {
+  gap: 10px;
+}
+
+.bani-reader-page .shabad-line-gurmukhi {
+  font-size: calc(clamp(1.35rem, 5.4vw, 1.95rem) * var(--bani-reader-scale));
+  line-height: 1.92;
+}
+
+.bani-reader-page .shabad-line-translit {
+  font-size: calc(clamp(0.98rem, 3.6vw, 1.12rem) * var(--bani-reader-scale));
+  line-height: 1.55;
+}
+
+.bani-reader-page .shabad-line-en,
+.bani-reader-page .shabad-line-pa {
+  font-size: calc(clamp(1rem, 3.6vw, 1.14rem) * var(--bani-reader-scale));
+  line-height: 1.65;
+}
+
+.bani-reader-page .shabad-line-active {
+  background:
+    linear-gradient(135deg,
+      color-mix(in srgb, var(--kesari-500) 13%, var(--color-surface)),
+      color-mix(in srgb, var(--leaf-600) 5%, var(--color-surface)));
+}
+
+.bani-reader-page .shabad-advanced-projector,
+.bani-reader-page .projector-mini-preview {
+  width: min(100%, 900px);
+  margin-inline: auto;
+}
+
+/* ─── Find-in-bani panel ─────────────────────────────────────────────── */
+
+/* The bani reader uses a real third element in the title row instead of the
+   ::after spacer that the shabad reader uses for symmetry. */
+.bani-reader-page .shabad-page-primary::after {
+  display: none;
+}
+
+.bani-reader-page .bani-jump-toggle {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 1px solid color-mix(in srgb, var(--kesari-500) 35%, var(--color-border));
+  background: color-mix(in srgb, var(--kesari-500) 8%, var(--color-surface));
+  color: var(--color-text);
+  font-weight: 800;
+  box-shadow: var(--shadow-sm);
+}
+.bani-reader-page .bani-jump-toggle:hover {
+  background: color-mix(in srgb, var(--kesari-500) 16%, var(--color-surface));
+  border-color: color-mix(in srgb, var(--kesari-500) 55%, var(--color-border));
+}
+.bani-jump-toggle-on,
+.bani-reader-page .bani-jump-toggle.bani-jump-toggle-on {
+  background: color-mix(in srgb, var(--kesari-500) 22%, var(--color-surface));
+  border-color: color-mix(in srgb, var(--kesari-500) 70%, var(--color-border));
+  color: var(--color-text);
+}
+
+.bani-jump-toggle-label {
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+.bani-jump-toggle-kbd {
+  display: inline-grid;
+  place-items: center;
+  min-width: 28px;
+  height: 20px;
+  padding: 0 6px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: var(--color-surface);
+  color: var(--color-text-soft);
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.bani-jump-panel {
+  margin-top: var(--sp-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4) var(--sp-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--r-md);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-md, var(--shadow-sm));
+  animation: bani-jump-pop-in 140ms ease-out;
+}
+@keyframes bani-jump-pop-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.bani-jump-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+.bani-jump-panel-head .section-eyebrow {
+  margin: 0;
+}
+.bani-jump-close {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 auto;
+  border: 0;
+  border-radius: 9999px;
+  background: transparent;
+  color: var(--color-text-soft);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+.bani-jump-close:hover {
+  background: var(--cream-100, var(--color-surface));
+  color: var(--color-text);
+}
+.bani-jump-close:focus-visible {
+  outline: 2px solid var(--kesari-500);
+  outline-offset: 2px;
+}
+
+.bani-jump-form {
+  margin: 0;
+}
+.bani-jump-input {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--r-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: var(--fs-md);
+  font-weight: 600;
+}
+.bani-jump-input:focus {
+  outline: 2px solid var(--kesari-500);
+  outline-offset: 1px;
+  border-color: color-mix(in srgb, var(--kesari-500) 55%, var(--color-border));
+}
+
+.bani-jump-hint {
+  margin: 0;
+  color: var(--color-text-soft);
+  font-size: var(--fs-xs);
+  font-weight: 650;
+}
+.bani-jump-hint span {
+  display: inline-block;
+  margin: 0 2px;
+  padding: 2px 7px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--r-pill);
+  color: var(--color-text);
+  font-weight: 800;
+}
+
+.bani-jump-empty {
+  margin: 0;
+  padding: var(--sp-3);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--r-md);
+  color: var(--color-text-soft);
+  font-size: var(--fs-sm);
+  text-align: center;
+}
+
+.bani-jump-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.bani-jump-suggestion {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--r-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
+}
+.bani-jump-suggestion:hover,
+.bani-jump-suggestion:focus-visible {
+  background: color-mix(in srgb, var(--kesari-500) 7%, var(--color-surface));
+  border-color: color-mix(in srgb, var(--kesari-500) 40%, var(--color-border));
+  outline: none;
+}
+
+.bani-jump-chip {
+  display: inline-grid;
+  place-items: center;
+  min-width: 88px;
+  padding: 4px 10px;
+  border-radius: var(--r-pill);
+  font-size: var(--fs-xs);
+  font-weight: 850;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+.bani-jump-chip-line {
+  background: color-mix(in srgb, var(--color-border) 50%, var(--color-surface));
+  color: var(--color-text);
+}
+.bani-jump-chip-paudi {
+  background: color-mix(in srgb, var(--kesari-500) 18%, var(--color-surface));
+  color: var(--color-primary-deep);
+}
+.bani-jump-chip-mahalla {
+  background: color-mix(in srgb, var(--leaf-600, #2f9e44) 18%, var(--color-surface));
+  color: var(--color-primary-deep);
+}
+.bani-jump-chip-astpadi {
+  background: color-mix(in srgb, var(--kesari-500) 22%, var(--color-surface));
+  color: var(--color-primary-deep);
+}
+.bani-jump-chip-pankti {
+  background: color-mix(in srgb, var(--kesari-500) 10%, var(--color-surface));
+  color: var(--color-text);
+}
+
+.bani-jump-gurmukhi {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--fs-md);
+  font-weight: 650;
+  line-height: 1.4;
+}
+.bani-jump-match {
+  color: var(--color-primary-deep);
+  background: color-mix(in srgb, var(--kesari-500) 22%, transparent);
+  padding: 0 2px;
+  border-radius: 3px;
+  font-weight: 850;
+}
+
+/* ─── Mobile-only Aa display toggle + display popover ─────────────── */
+
+/* Aa button + bani-mic-dot + progress label + resume icon are hidden on
+   desktop. They are revealed by mobile @media rules below. */
+.bani-display-toggle {
+  display: none;
+}
+.bani-display-toggle-on {
+  background: color-mix(in srgb, var(--kesari-500) 22%, var(--color-surface));
+  border-color: color-mix(in srgb, var(--kesari-500) 70%, var(--color-border));
+}
+
+.bani-display-popover {
+  display: none; /* shown via mobile @media below */
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4) var(--sp-4);
+  margin-top: var(--sp-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--r-md);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-md, var(--shadow-sm));
+  animation: bani-jump-pop-in 140ms ease-out;
+}
+.bani-display-popover-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+.bani-display-popover-head .section-eyebrow {
+  margin: 0;
+}
+.bani-display-popover-close {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 auto;
+  border: 0;
+  border-radius: 9999px;
+  background: transparent;
+  color: var(--color-text-soft);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+.bani-display-popover-close:hover {
+  background: var(--cream-100, var(--color-surface));
+  color: var(--color-text);
+}
+.bani-display-popover-toggles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.bani-display-popover-toggles .display-toggle {
+  width: 100%;
+  justify-content: center;
+  min-height: 40px;
+}
+
+.bani-display-popover-steek {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: var(--sp-2);
+  border-top: 1px solid color-mix(in srgb, var(--color-border) 55%, transparent);
+}
+.bani-display-popover-steek-label {
+  margin: 0;
+  color: var(--color-text-soft);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.bani-display-popover-steek-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.bani-display-popover-steek-row .display-toggle {
+  flex: 1 1 auto;
+  min-width: 0;
+  justify-content: center;
+  min-height: 36px;
+}
+@media (max-width: 360px) {
+  .bani-display-popover-steek-row .display-toggle {
+    flex: 1 1 100%;
+  }
+}
+
+.bani-display-popover-font {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.bani-display-popover-font span {
+  min-width: 46px;
+  color: var(--color-text-soft);
+  font-size: var(--fs-xs);
+  font-weight: 850;
+  text-align: center;
+  flex: 1 1 auto;
+}
+
+/* Live mic-tracking dot — visible only when the mic is listening. */
+.bani-mic-btn {
+  position: relative;
+}
+.bani-mic-dot {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--kesari-500);
+  box-shadow: 0 0 0 2px var(--color-surface);
+  animation: bani-mic-dot-pulse 1.2s ease-in-out infinite;
+}
+.bani-mic-btn.bani-mic-tracked .bani-mic-dot {
+  background: var(--leaf-500, #2f9e44);
+  animation: none;
+}
+@keyframes bani-mic-dot-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.55; transform: scale(0.8); }
+}
+
+/* Resume-live mobile icon (hidden on desktop). */
+.bani-resume-icon {
+  display: none;
+  font-size: 16px;
+  line-height: 1;
+}
+
+/* % read label on the progress bar — visible only on mobile. */
+.bani-progress-label {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .bani-jump-panel {
+    padding: var(--sp-3);
+  }
+  .bani-jump-suggestion {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+  .bani-jump-gurmukhi {
+    white-space: normal;
+  }
+  .bani-jump-toggle-kbd {
+    display: none;
+  }
+}
+
+@media (max-width: 960px) {
+  .bani-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .bani-category-head {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .bani-reader-page .shabad-control-groups {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .bani-page {
+    gap: var(--sp-4);
+  }
+
+  .bani-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .bani-card {
+    min-height: 0;
+  }
+
+  .bani-category-nav {
+    margin-inline: calc(var(--sp-3) * -1);
+    padding-inline: var(--sp-3);
+  }
+
+  /* On narrow phones, drop the lang toggle below the hero text so the title
+     can use full width without wrapping awkwardly under a chip. */
+  .bani-home-hero {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .bani-home-hero .bani-lang-toggle {
+    align-self: flex-start;
+  }
+
+  .bani-reader-page .shabad-page-sticky {
+    border-radius: var(--r-md);
+  }
+
+  .bani-resume-card {
+    grid-template-columns: 1fr;
+    padding: var(--sp-3);
+  }
+
+  .bani-resume-actions {
+    justify-content: stretch;
+  }
+
+  .bani-resume-actions .btn {
+    flex: 1 1 150px;
+    justify-content: center;
+  }
+
+  .bani-reader-page .shabad-line {
+    padding-inline: 8px;
+  }
+
+  .bani-reader-page .shabad-line-num {
+    width: 28px;
+    height: 28px;
+    margin-top: 6px;
+  }
+
+  .bani-reader-page .shabad-line-active::before {
+    margin-left: -6px;
+  }
+
+  .bani-reader-font-controls,
+  .bani-reader-font-controls .btn,
+  .bani-reader-page .shabad-display-group > .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .bani-reader-font-controls span {
+    flex: 1 1 auto;
+  }
+
+  /* ─── Bani reader: aggressive mobile chrome trim ──────────────── */
+
+  /* Show the Aa toggle + display popover. Hide stuff that's tucked away. */
+  .bani-reader-page .bani-display-toggle {
+    display: inline-grid;
+    place-items: center;
+    width: 44px;
+    height: 38px;
+    flex: 0 0 auto;
+    padding: 0;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font-family: var(--font-display, inherit);
+    font-size: var(--fs-md);
+    font-weight: 800;
+    letter-spacing: 0.02em;
+  }
+  .bani-reader-page .bani-display-popover {
+    display: flex;
+  }
+
+  /* Title row — compact: only Gurmukhi title, no English, no meta pills. */
+  .bani-reader-page .bani-reader-title-pa {
+    font-size: clamp(1.15rem, 4.6vw, 1.4rem);
+    line-height: 1.18;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .bani-reader-page .shabad-page-title,
+  .bani-reader-page .shabad-meta-pills,
+  .bani-reader-page .shabad-page-title-meta {
+    display: none;
+  }
+  .bani-reader-page .bani-back-label {
+    display: none;
+  }
+  .bani-reader-page .shabad-page-back {
+    padding: 8px 10px;
+    min-width: 36px;
+  }
+
+  /* Sticky chrome — tighter paddings. */
+  .bani-reader-page .shabad-page-sticky {
+    padding: var(--sp-2);
+    gap: var(--sp-2);
+  }
+  .bani-reader-page .shabad-page-primary {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--sp-2);
+    padding: 6px 8px;
+  }
+
+  .bani-reader-page .bani-variant-strip {
+    margin-top: 0;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding: 6px;
+  }
+
+  .bani-reader-page .bani-variant-label {
+    flex: 0 0 auto;
+  }
+
+  /* Find button — tighten label so the row stays on one line. */
+  .bani-reader-page .bani-jump-toggle {
+    padding: 8px 10px;
+  }
+
+  /* Live-controls group — one tight inline row, no eyebrow. */
+  .bani-reader-page .shabad-control-groups {
+    gap: var(--sp-2);
+  }
+  .bani-reader-page .shabad-live-group {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+  }
+  .bani-reader-page .shabad-control-label {
+    display: none;
+  }
+  .bani-reader-page .bani-mic-label {
+    display: none;
+  }
+  .bani-reader-page .bani-mic-btn {
+    padding: 8px 10px;
+    flex: 0 0 auto;
+  }
+  .bani-reader-page .shabad-nav-line {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+  .bani-reader-page .shabad-nav-resume {
+    padding: 6px 8px;
+    flex: 0 0 auto;
+  }
+  .bani-reader-page .bani-resume-label {
+    display: none;
+  }
+  .bani-reader-page .bani-resume-icon {
+    display: inline-block;
+  }
+
+  /* Hide the entire reader-controls group + projector button + advanced
+     projector + floating mini-preview on phones. The display toggles +
+     font controls are reachable via the Aa popover instead. */
+  .bani-reader-page .shabad-display-group,
+  .bani-reader-page .bani-projector-open,
+  .bani-reader-page .shabad-advanced-projector,
+  .bani-reader-page .projector-mini-preview {
+    display: none;
+  }
+
+  /* % read label sitting on top of the progress bar. */
+  .bani-reader-page .bani-reader-progress {
+    position: relative;
+    height: 16px;
+    border-radius: 9999px;
+    overflow: hidden;
+  }
+  .bani-reader-page .bani-reader-progress > span:first-child {
+    height: 16px;
+  }
+  .bani-reader-page .bani-progress-label {
+    display: inline-block;
+    position: absolute;
+    inset: 0;
+    text-align: center;
+    color: var(--color-text);
+    font-size: 10px;
+    font-weight: 850;
+    line-height: 16px;
+    mix-blend-mode: difference;
+    color: #fff;
+    pointer-events: none;
+  }
+}

@@ -1,0 +1,26 @@
+.setup-page {
+  padding-top: var(--sp-4, 16px);
+  max-width: 760px;
+}
+
+.setup-page-top {
+  margin-bottom: var(--sp-3, 12px);
+}
+
+.setup-page-head {
+  margin-bottom: var(--sp-4, 16px);
+}
+
+.setup-page-title {
+  margin: 4px 0 0;
+  font-size: clamp(1.6rem, 1.2rem + 1.8vw, 2.4rem);
+  font-weight: 800;
+  color: var(--color-text);
+}
+
+.setup-page-sub {
+  margin: var(--sp-2, 8px) 0 0;
+  color: var(--color-text-soft);
+  line-height: 1.6;
+  max-width: 620px;
+}

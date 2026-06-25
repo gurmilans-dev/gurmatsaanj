@@ -1,0 +1,555 @@
+.projector-controls {
+  padding: var(--sp-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.projector-controls-embedded {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.projector-controls-compact {
+  padding: var(--sp-3) var(--sp-4);
+  gap: var(--sp-2);
+}
+
+.projector-controls-embedded.projector-controls-compact {
+  padding: 0;
+}
+
+.projector-controls-compact .projector-controls-head {
+  align-items: center;
+}
+
+.projector-controls-compact .projector-controls-title {
+  font-size: var(--fs-md);
+}
+
+.projector-controls-compact .projector-actions {
+  margin-top: 0;
+}
+
+.projector-controls-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+
+.projector-controls-title {
+  font-family: var(--font-display);
+  font-size: var(--fs-md);
+  font-weight: 500;
+  color: var(--color-text);
+  letter-spacing: -0.01em;
+}
+
+.projector-open-btn,
+.projector-share-btn {
+  flex-shrink: 0;
+}
+
+/* Row 2: now-showing on the left, view toggle on the right.
+   Wraps to two visual rows on narrow screens; on desktop they share one. */
+.projector-status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+}
+.projector-status-now {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+  min-width: 0;
+}
+.projector-view-toggle {
+  display: inline-flex;
+  background: var(--cream-50);
+  border: 1px solid var(--color-border);
+  border-radius: var(--r-pill);
+  padding: 3px;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.projector-bg-size-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;            /* push to the right of the actions row */
+  background: var(--cream-50);
+  border: 1px solid var(--color-border);
+  border-radius: var(--r-pill);
+  padding: 3px;
+  flex-shrink: 0;
+}
+
+.projector-mode-label {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--color-text-soft);
+}
+
+.projector-mode-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: var(--r-pill);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  background: var(--cream-100);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+}
+
+.projector-mode-idle  { color: var(--color-primary-deep); }
+.projector-mode-image { background: rgba(212, 160, 54, 0.12); color: var(--gold-500); border-color: var(--gold-500); }
+.projector-mode-shabad { background: rgba(232, 155, 44, 0.18); color: var(--color-primary-deep); border-color: var(--kesari-300); }
+.projector-mode-blank { background: #171411; color: #fff; border-color: #171411; }
+.projector-mode-emergency { background: color-mix(in srgb, var(--maroon-600) 12%, var(--color-surface)); color: var(--maroon-600); border-color: color-mix(in srgb, var(--maroon-600) 35%, var(--color-border)); }
+.projector-bg-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: var(--r-pill);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  background: rgba(47, 107, 71, 0.10);
+  border: 1px solid rgba(47, 107, 71, 0.25);
+  color: var(--color-success);
+}
+
+.projector-emergency {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 6px 8px;
+  border: 1px solid color-mix(in srgb, var(--maroon-600) 22%, var(--color-border));
+  border-radius: var(--r-md);
+  background: color-mix(in srgb, var(--maroon-600) 5%, var(--cream-50));
+}
+
+.projector-emergency > span {
+  color: var(--color-text-soft);
+  font-size: var(--fs-xs);
+  font-weight: 900;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.projector-emergency-buttons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.projector-emergency-btn {
+  min-height: 28px;
+  padding: 5px 9px;
+  border: 1px solid transparent;
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--color-text-soft);
+  font-size: var(--fs-xs);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.projector-emergency-btn:hover {
+  color: var(--color-text);
+  background: var(--color-surface);
+  border-color: var(--color-border);
+}
+
+.projector-emergency-btn:disabled {
+  cursor: progress;
+  opacity: 0.72;
+}
+
+.projector-emergency-btn-on {
+  color: #fff;
+  background: var(--maroon-600);
+  border-color: var(--maroon-600);
+}
+
+.projector-emergency-btn-on:hover {
+  color: #fff;
+  background: var(--maroon-600);
+}
+
+.projector-presets {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--r-md);
+  background: var(--cream-50);
+}
+
+.projector-preset-btn {
+  min-height: 30px;
+  padding: 5px 8px;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--color-text-soft);
+  font-size: var(--fs-xs);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.projector-preset-btn:hover {
+  color: var(--color-text);
+  background: var(--cream-100);
+}
+
+.projector-preset-btn-on {
+  color: #fff;
+  background: var(--color-primary);
+}
+
+.projector-preset-btn-on:hover {
+  color: #fff;
+  background: var(--color-primary);
+}
+
+.projector-size-btn {
+  padding: 5px 10px;
+  border-radius: var(--r-pill);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--color-text-soft);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  transition:
+    background-color var(--t-fast) var(--ease),
+    color var(--t-fast) var(--ease);
+}
+.projector-size-btn:hover {
+  color: var(--color-text);
+  background: var(--cream-100);
+}
+.projector-size-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+.projector-size-btn:disabled:hover {
+  color: var(--color-text-soft);
+  border-color: var(--color-border);
+}
+.projector-size-btn-active {
+  background: var(--color-primary);
+  color: #fff;
+  border-color: transparent;
+}
+.projector-size-btn-active:hover {
+  color: #fff;
+}
+
+.projector-actions {
+  display: flex;
+  gap: var(--sp-2);
+  align-items: center;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.projector-upload-btn { cursor: pointer; }
+
+.projector-clear {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: var(--fs-xs);
+}
+
+.projector-tuning {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--r-md);
+  background: var(--cream-50);
+  width: 100%;
+  clear: both;
+}
+
+.projector-range {
+  display: grid;
+  grid-template-columns: 52px minmax(120px, 1fr) 46px;
+  align-items: center;
+  gap: var(--sp-2);
+  color: var(--color-text-soft);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  min-width: 0;
+}
+.projector-range input {
+  accent-color: var(--kesari-500);
+  width: 100%;
+  min-width: 0;
+}
+.projector-range output {
+  color: var(--color-primary-deep);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.projector-controls-compact .projector-tuning {
+  grid-template-columns: 1fr;
+  padding: var(--sp-2);
+}
+
+.projector-preview {
+  border: 1px solid var(--color-border);
+  border-radius: var(--r-md);
+  background: #14110d;
+  color: #fff;
+  padding: var(--sp-4);
+  min-height: 150px;
+  max-height: 220px;
+  overflow: hidden;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  text-align: center;
+  gap: 6px;
+}
+
+.projector-preview img {
+  max-width: 100%;
+  max-height: 180px;
+  object-fit: contain;
+  border-radius: calc(var(--r-md) - 4px);
+}
+
+.projector-preview-image {
+  padding: 4px;
+  background: var(--cream-50);
+}
+
+.projector-preview-label {
+  color: rgba(255, 255, 255, 0.58);
+  font-size: var(--fs-xs);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.projector-preview-line {
+  max-width: 100%;
+  color: #fff;
+  font-size: clamp(1.35rem, 4vw, 2.2rem);
+  line-height: 1.24;
+  word-break: break-word;
+}
+
+.projector-preview-sub {
+  max-width: 100%;
+  color: rgba(255, 255, 255, 0.76);
+  font-size: var(--fs-xs);
+  line-height: 1.35;
+}
+
+.projector-hint {
+  font-size: var(--fs-xs);
+  color: var(--color-text-soft);
+  line-height: 1.6;
+}
+.projector-hint strong { color: var(--color-text); font-weight: 700; }
+
+@media (max-width: 640px) {
+  .projector-tuning {
+    grid-template-columns: 1fr;
+  }
+}
+
+.projector-share-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.projector-share-modal {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: var(--sp-3);
+  background: color-mix(in srgb, #000 60%, transparent);
+  backdrop-filter: blur(2px);
+  z-index: 100;
+  animation: projector-share-fade-in 140ms ease-out;
+}
+
+@keyframes projector-share-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.projector-share-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  width: min(420px, 100%);
+  max-height: calc(100vh - var(--sp-5));
+  overflow-y: auto;
+  padding: var(--sp-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--r-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-lg, var(--shadow-md));
+}
+
+.projector-share-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+
+.projector-share-head .section-eyebrow {
+  margin: 0;
+}
+
+.projector-share-head h3 {
+  margin: 2px 0 0;
+  color: var(--color-text);
+  font-size: var(--fs-lg);
+  font-weight: 850;
+  line-height: 1.2;
+}
+
+.projector-share-close {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+  border: 0;
+  border-radius: 9999px;
+  background: transparent;
+  color: var(--color-text-soft);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+}
+
+.projector-share-close:hover {
+  background: color-mix(in srgb, var(--color-text) 8%, transparent);
+  color: var(--color-text);
+}
+
+.projector-share-close:focus-visible {
+  outline: 2px solid var(--kesari-500);
+  outline-offset: 2px;
+}
+
+.projector-share-qr {
+  display: block;
+  width: 100%;
+  max-width: 280px;
+  height: auto;
+  margin: 0 auto;
+  border-radius: var(--r-md);
+  background: #fff;
+  padding: 6px;
+  box-shadow: var(--shadow-sm);
+}
+
+.projector-share-qr-fallback {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  max-width: 280px;
+  aspect-ratio: 1;
+  margin: 0 auto;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--r-md);
+  color: var(--color-text-soft);
+  font-size: var(--fs-sm);
+}
+
+.projector-share-copy {
+  margin: 0;
+  color: var(--color-text-soft);
+  font-size: var(--fs-sm);
+  line-height: 1.5;
+}
+
+.projector-share-url {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 8px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--r-md);
+  background: var(--cream-50, var(--color-surface));
+}
+
+.projector-share-url > span {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--color-text);
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
+  font-size: var(--fs-xs);
+}
+
+.projector-share-warning {
+  margin: 0;
+  padding: 8px 10px;
+  border: 1px solid color-mix(in srgb, var(--kesari-500) 35%, var(--color-border));
+  border-radius: var(--r-md);
+  background: color-mix(in srgb, var(--kesari-500) 8%, var(--color-surface));
+  color: var(--color-text);
+  font-size: var(--fs-xs);
+  line-height: 1.45;
+}
+
+.projector-share-projector-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  padding: 8px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--r-md);
+  background: var(--color-surface);
+}
+
+.projector-share-projector-toggle > span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.projector-share-projector-toggle > span > strong {
+  color: var(--color-text);
+  font-size: var(--fs-sm);
+  font-weight: 800;
+}
+
+.projector-share-projector-toggle > span > small {
+  color: var(--color-text-soft);
+  font-size: var(--fs-xs);
+  line-height: 1.4;
+}

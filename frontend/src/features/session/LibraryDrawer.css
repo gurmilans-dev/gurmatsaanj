@@ -1,0 +1,146 @@
+/* Library drawer — slides in from the right. Backdrop fades; drawer slides.
+   Both layers stack above page content via z-index. */
+
+.library-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 16, 12, 0.42);
+  backdrop-filter: blur(2px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 220ms ease;
+  z-index: 90;
+}
+.library-backdrop-on {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.library-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100dvh;
+  width: min(440px, 92vw);
+  background: var(--color-surface);
+  border-left: 1px solid var(--color-border);
+  box-shadow: -16px 0 40px -16px rgba(20,16,12,0.30);
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  z-index: 91;
+}
+.library-drawer-on {
+  transform: translateX(0);
+}
+
+.library-drawer-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--color-border);
+  background: linear-gradient(180deg,
+    color-mix(in srgb, var(--kesari-500) 8%, var(--color-surface)),
+    var(--color-surface));
+}
+.library-drawer-head > div:first-child { flex: 1 1 auto; min-width: 0; }
+.library-drawer-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-lg);
+  font-weight: 500;
+  color: var(--color-text);
+  line-height: 1.2;
+}
+
+.library-drawer-close {
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--color-text-soft);
+  cursor: pointer;
+  flex: 0 0 auto;
+  transition: background 160ms ease, color 160ms ease, border-color 160ms ease;
+}
+.library-drawer-close:hover {
+  background: var(--cream-100);
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+.library-drawer-close:focus-visible {
+  outline: 2px solid var(--kesari-500);
+  outline-offset: 2px;
+}
+
+.library-drawer-body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 16px 20px 24px;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Tighten SessionTools panels inside the drawer — narrower column needs
+   less padding than when it lived in a 340px desktop rail. */
+.library-drawer-body .session-panel {
+  padding: 14px;
+}
+.library-drawer-body .session-panel + .session-panel {
+  margin-top: 14px;
+}
+
+/* Header trigger button --------------------------------------------------- */
+.header-library-btn {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--color-text-soft);
+  cursor: pointer;
+  transition: background 160ms ease, color 160ms ease, border-color 160ms ease;
+}
+.header-library-btn:hover {
+  background: var(--cream-100);
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+.header-library-btn:focus-visible {
+  outline: 2px solid var(--kesari-500);
+  outline-offset: 2px;
+}
+.header-library-btn-active {
+  background: var(--cream-100);
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+
+.header-library-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: var(--kesari-500);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 18px;
+  text-align: center;
+  box-shadow: 0 0 0 2px var(--color-surface);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .library-drawer { transition: none; }
+  .library-backdrop { transition: none; }
+}

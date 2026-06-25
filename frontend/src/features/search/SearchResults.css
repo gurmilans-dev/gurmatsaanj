@@ -1,0 +1,257 @@
+.search-results {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.search-results-summary {
+  font-size: var(--fs-sm);
+  color: var(--color-text-soft);
+  margin-bottom: var(--sp-1);
+  padding-left: var(--sp-2);
+}
+.search-results-type {
+  color: var(--color-primary-deep);
+  font-weight: 600;
+}
+
+.search-results-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-8);
+}
+.search-results-error {
+  background: rgba(122, 45, 30, 0.08);
+  color: var(--maroon-600);
+  border: 1px solid rgba(122, 45, 30, 0.20);
+  border-radius: var(--r-md);
+  padding: var(--sp-4);
+}
+
+.search-result-item {
+  position: relative;
+  transition: transform var(--t-fast) var(--ease),
+              border-color var(--t-fast) var(--ease),
+              box-shadow var(--t-fast) var(--ease);
+}
+.search-result-item:hover {
+  transform: translateY(-2px);
+  border-color: var(--kesari-300);
+  box-shadow: var(--shadow-md);
+}
+
+.search-result-link {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: var(--sp-4) calc(var(--sp-4) + 74px) calc(var(--sp-4) + 22px) var(--sp-4);
+}
+
+.search-result-favourite {
+  position: absolute;
+  top: var(--sp-3);
+  right: var(--sp-3);
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  color: var(--color-text-muted);
+  background: transparent;
+  border: 1px solid transparent;
+  font-size: var(--fs-md);
+  cursor: pointer;
+  transition:
+    color var(--t-fast) var(--ease),
+    background-color var(--t-fast) var(--ease),
+    border-color var(--t-fast) var(--ease),
+    transform var(--t-fast) var(--ease);
+}
+.search-result-queue {
+  position: absolute;
+  right: var(--sp-3);
+  bottom: var(--sp-3);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 28px;
+  padding: 4px 10px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-soft);
+  font-size: var(--fs-xs);
+  font-weight: 800;
+  cursor: pointer;
+}
+.search-result-queue:hover {
+  color: var(--color-primary-deep);
+  border-color: var(--kesari-300);
+  background: color-mix(in srgb, var(--kesari-500) 8%, var(--color-surface));
+}
+.search-result-favourite:hover {
+  color: var(--color-accent);
+  background: var(--cream-100);
+  transform: scale(1.08);
+}
+.search-result-favourite-active {
+  color: var(--color-accent);
+}
+.search-result-favourite-active:hover {
+  background: rgba(122, 45, 30, 0.08);
+}
+.search-result-gurmukhi {
+  font-size: var(--fs-md);
+  color: var(--ink-900);
+  word-break: break-word;
+}
+.search-result-translit {
+  font-size: var(--fs-sm);
+  color: var(--color-text-soft);
+}
+.search-result-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+.meta-pill-action {
+  color: #fff;
+  background: var(--color-primary);
+  border-color: transparent;
+}
+
+/* Search-match — bold the words that matched the user's query so it's
+   obvious why this row was suggested. Plain bold, no background, inherits
+   the surrounding colour. */
+.search-match {
+  font-weight: 800;
+  color: inherit;
+  background: transparent;
+}
+
+.katha-ang-results {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.katha-ang-open-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  padding: var(--sp-4);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 26%, var(--color-border));
+  border-radius: var(--r-md);
+  background: color-mix(in srgb, var(--kesari-100) 45%, var(--color-surface));
+}
+
+.katha-ang-open-card h2 {
+  color: var(--color-text);
+  font-size: var(--fs-xl);
+  line-height: 1.2;
+}
+
+.katha-ang-open-card p:not(.section-eyebrow) {
+  margin-top: 6px;
+  color: var(--color-text-soft);
+  font-size: var(--fs-sm);
+  line-height: 1.45;
+}
+
+@media (max-width: 680px) {
+  .katha-ang-open-card {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
+
+/* Manual Ang viewer ----------------------------------------------------- */
+.ang-viewer {
+  border: 1px solid var(--color-border);
+  border-radius: var(--r-md);
+  background: var(--color-surface);
+  overflow: hidden;
+}
+
+.ang-viewer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-4);
+  border-bottom: 1px solid var(--color-border);
+}
+.ang-viewer-head h2 {
+  color: var(--color-text);
+  font-size: var(--fs-xl);
+  font-family: var(--font-display);
+  font-weight: 500;
+}
+.ang-viewer-head > span {
+  color: var(--color-text-soft);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.ang-viewer-lines {
+  display: flex;
+  flex-direction: column;
+}
+
+.ang-viewer-line + .ang-viewer-line {
+  border-top: 1px solid var(--color-border);
+}
+
+.ang-viewer-link {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  transition:
+    background var(--t-fast) var(--ease),
+    color var(--t-fast) var(--ease);
+}
+.ang-viewer-link:hover {
+  background: var(--cream-100);
+}
+.ang-viewer-link:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--kesari-400);
+}
+
+.ang-viewer-num {
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--cream-100);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-soft);
+  font-size: var(--fs-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.ang-viewer-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.ang-viewer-gurmukhi {
+  color: var(--color-text);
+  font-size: var(--fs-md);
+  line-height: 1.55;
+}
+.ang-viewer-translit,
+.ang-viewer-translation {
+  color: var(--color-text-soft);
+  font-size: var(--fs-sm);
+  line-height: 1.45;
+}

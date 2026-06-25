@@ -1,0 +1,138 @@
+/* =========================================================================
+   Design tokens
+   Kesari (saffron) + cream + deep charcoal palette.
+   Devotional-editorial vibe: warm, restrained, generous whitespace.
+   ========================================================================= */
+:root {
+  /* Brand palette */
+  --kesari-50:  #FFF6E6;
+  --kesari-100: #FCE7BD;
+  --kesari-200: #F5C97A;
+  --kesari-300: #EFB14E;
+  --kesari-400: #E89B2C;   /* primary kesari */
+  --kesari-500: #C9801C;
+  --kesari-600: #A8650F;
+  --kesari-700: #7C4708;
+
+  --cream-50:   #FFFCF5;   /* page background */
+  --cream-100:  #FBF4E4;
+  --cream-200:  #F2E7CB;
+  --cream-300:  #E6D5A8;
+
+  --ink-900: #1A1410;      /* primary text */
+  --ink-700: #3B2E22;
+  --ink-500: #6B5A48;
+  --ink-300: #A99780;
+
+  --maroon-600: #7A2D1E;   /* accent for active line + errors */
+  --gold-500:   #D4A036;   /* highlights */
+  --leaf-600:   #2F6B47;   /* success / "tracked" indicator */
+
+  /* Functional aliases */
+  --color-bg:           var(--cream-50);
+  --color-bg-soft:      var(--cream-100);
+  --color-surface:      #ffffff;
+  --color-surface-alt:  var(--cream-100);
+  --color-border:       var(--cream-200);
+  --color-text:         var(--ink-900);
+  --color-text-soft:    var(--ink-500);
+  --color-text-muted:   var(--ink-300);
+  --color-primary:      var(--kesari-400);
+  --color-primary-deep: var(--kesari-600);
+  --color-accent:       var(--maroon-600);
+  --color-success:      var(--leaf-600);
+  --color-danger:       var(--maroon-600);
+
+  /* Typography */
+  --font-display: 'Fraunces', 'Cormorant Garamond', 'Georgia', serif;
+  --font-body:    'Mukta Mahee', 'Inter', system-ui, -apple-system, sans-serif;
+  --font-gurmukhi:'Noto Serif Gurmukhi', 'Mukta Mahee', serif;
+
+  /* Type scale */
+  --fs-xs:   0.75rem;
+  --fs-sm:   0.875rem;
+  --fs-base: 1rem;
+  --fs-md:   1.125rem;
+  --fs-lg:   1.375rem;
+  --fs-xl:   1.75rem;
+  --fs-2xl:  2.25rem;
+  --fs-3xl:  3rem;
+  --fs-4xl:  4rem;
+
+  /* Spacing */
+  --sp-1:  0.25rem;
+  --sp-2:  0.5rem;
+  --sp-3:  0.75rem;
+  --sp-4:  1rem;
+  --sp-5:  1.5rem;
+  --sp-6:  2rem;
+  --sp-8:  3rem;
+  --sp-10: 4rem;
+  --sp-12: 5.5rem;
+
+  /* Radii */
+  --r-sm: 6px;
+  --r-md: 12px;
+  --r-lg: 18px;
+  --r-xl: 28px;
+  --r-pill: 999px;
+
+  /* Shadows — soft, warm, never harsh */
+  --shadow-sm:  0 1px 2px rgba(26, 20, 16, 0.04), 0 1px 3px rgba(26, 20, 16, 0.06);
+  --shadow-md:  0 4px 14px rgba(124, 71, 8, 0.08), 0 2px 6px rgba(26, 20, 16, 0.05);
+  --shadow-lg:  0 18px 40px -16px rgba(124, 71, 8, 0.20), 0 6px 14px rgba(26, 20, 16, 0.06);
+  --shadow-glow: 0 0 0 4px rgba(232, 155, 44, 0.18);
+  --page-background:
+    linear-gradient(180deg, var(--color-bg) 0%, var(--color-bg-soft) 100%);
+  --paper-grain: rgba(124, 71, 8, 0.018);
+
+  /* Layout */
+  --container-max: 1180px;
+  --header-h: 72px;
+
+  /* Motion */
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --t-fast: 140ms;
+  --t-med:  280ms;
+  --t-slow: 520ms;
+}
+
+@media (max-width: 720px) {
+  :root {
+    --fs-3xl: 2.25rem;
+    --fs-4xl: 2.75rem;
+    --header-h: 64px;
+  }
+}
+
+/* =========================================================================
+   THEMES
+   data-theme  = light | dark
+   data-accent = kesari (only)
+   ========================================================================= */
+
+/* Dark variant */
+:root[data-theme="dark"] {
+  --color-bg:          #0F0B08;
+  --color-bg-soft:     #17100C;
+  --color-surface:     #1A1410;
+  --color-surface-alt: #221A14;
+  --color-border:      #322419;
+  --color-text:        #FCEAC4;
+  --color-text-soft:   #C9A878;
+  --color-text-muted:  #88714F;
+  --cream-50:          #1A1410;
+  --cream-100:         #221A14;
+  --cream-200:         #322419;
+  --cream-300:         #443120;
+  --ink-900:           #FCEAC4;
+  --ink-700:           #E0CC9F;
+  --ink-500:           #C9A878;
+  --ink-300:           #88714F;
+  --shadow-sm:  0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md:  0 4px 14px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.3);
+  --shadow-lg:  0 18px 40px -16px rgba(0, 0, 0, 0.7), 0 6px 14px rgba(0, 0, 0, 0.4);
+  --page-background:
+    linear-gradient(180deg, #0F0B08 0%, #17100C 100%);
+  --paper-grain: rgba(252, 234, 196, 0.018);
+}

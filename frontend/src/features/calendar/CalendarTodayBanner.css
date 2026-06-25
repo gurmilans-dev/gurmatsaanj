@@ -1,0 +1,131 @@
+.calendar-today-banner {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--sp-3);
+  align-items: center;
+  margin-bottom: var(--sp-5);
+  padding: var(--sp-4);
+  border: 1px solid color-mix(in srgb, var(--kesari-400) 42%, var(--color-border));
+  border-radius: var(--r-md);
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--kesari-100) 82%, var(--color-surface)), var(--color-surface));
+  box-shadow: var(--shadow-sm);
+}
+
+.calendar-today-banner::before,
+.calendar-today-banner::after,
+.calendar-today-spark {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  opacity: 0.36;
+}
+
+.calendar-today-banner::before {
+  inset: -40px auto auto -20px;
+  width: 150px;
+  height: 150px;
+  border: 18px solid color-mix(in srgb, var(--kesari-400) 38%, transparent);
+  border-radius: 50%;
+}
+
+.calendar-today-banner::after {
+  inset: auto 16px -34px auto;
+  width: 120px;
+  height: 120px;
+  background:
+    linear-gradient(45deg, transparent 45%, color-mix(in srgb, var(--kesari-500) 46%, transparent) 46% 54%, transparent 55%),
+    linear-gradient(-45deg, transparent 45%, color-mix(in srgb, var(--kesari-500) 30%, transparent) 46% 54%, transparent 55%);
+}
+
+.calendar-today-spark {
+  inset: 12px 120px auto auto;
+  width: 66px;
+  height: 42px;
+  background:
+    radial-gradient(circle at 10% 30%, var(--kesari-500) 0 3px, transparent 4px),
+    radial-gradient(circle at 52% 8%, var(--color-primary) 0 3px, transparent 4px),
+    radial-gradient(circle at 86% 54%, var(--kesari-400) 0 3px, transparent 4px);
+}
+
+.calendar-today-copy {
+  position: relative;
+  min-width: 0;
+}
+
+.calendar-today-copy h2 {
+  color: var(--color-text);
+  font-size: var(--fs-xl);
+  font-weight: 850;
+  line-height: 1.15;
+}
+
+.calendar-today-copy > p {
+  margin-top: 4px;
+  color: var(--color-text-soft);
+  font-size: var(--fs-sm);
+}
+
+.calendar-today-link {
+  position: relative;
+  white-space: nowrap;
+}
+
+.calendar-today-actions {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.calendar-today-recommendations {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: var(--sp-3);
+}
+
+.calendar-today-recommendations > span {
+  color: var(--color-text-soft);
+  font-size: var(--fs-xs);
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.calendar-today-bani-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 5px 10px;
+  border: 1px solid color-mix(in srgb, var(--kesari-500) 35%, var(--color-border));
+  border-radius: var(--r-pill);
+  background: color-mix(in srgb, var(--kesari-500) 10%, var(--color-surface));
+  color: var(--color-primary-deep);
+  font-size: var(--fs-xs);
+  font-weight: 850;
+}
+
+.calendar-today-bani-link:hover {
+  background: color-mix(in srgb, var(--kesari-500) 18%, var(--color-surface));
+  border-color: color-mix(in srgb, var(--kesari-500) 55%, var(--color-border));
+}
+
+@media (max-width: 680px) {
+  .calendar-today-banner {
+    grid-template-columns: 1fr;
+  }
+
+  .calendar-today-actions {
+    justify-content: flex-start;
+  }
+
+  .calendar-today-link {
+    justify-self: start;
+  }
+}

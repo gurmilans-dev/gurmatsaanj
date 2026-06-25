@@ -1,0 +1,288 @@
+.shabad-view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+}
+
+.shabad-header {
+  padding: var(--sp-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+.shabad-header-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.shabad-tracker {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-pill);
+  background: var(--cream-100);
+  border: 1px solid var(--color-border);
+  width: max-content;
+  max-width: 100%;
+  transition:
+    background-color var(--t-med) var(--ease),
+    border-color var(--t-med) var(--ease);
+}
+.shabad-tracker-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-text-muted);
+  flex-shrink: 0;
+}
+.shabad-tracker-on {
+  background: rgba(47, 107, 71, 0.10);
+  border-color: rgba(47, 107, 71, 0.25);
+}
+.shabad-tracker-on .shabad-tracker-dot {
+  background: var(--leaf-600);
+  animation: pulseRing 1.4s var(--ease) infinite;
+}
+.shabad-tracker-text {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--color-text);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* Verse list ----------------------------------------------------------- */
+.shabad-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  counter-reset: shabad-line;
+}
+
+.shabad-section-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin: var(--sp-4) 0 var(--sp-1);
+  padding: 8px var(--sp-5);
+  border-top: 1px solid var(--color-border);
+  color: var(--color-text-soft);
+  font-size: var(--fs-xs);
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.shabad-section-heading small {
+  color: var(--color-text-muted);
+  font-size: var(--fs-xs);
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.shabad-line {
+  display: flex;
+  gap: var(--sp-4);
+  align-items: flex-start;
+  padding: var(--sp-3) var(--sp-5);
+  border-radius: var(--r-md);
+  border: 1px solid transparent;
+  background: transparent;
+  transition: background-color var(--t-med) var(--ease),
+              border-color var(--t-med) var(--ease),
+              box-shadow var(--t-med) var(--ease),
+              transform var(--t-med) var(--ease),
+              opacity var(--t-med) var(--ease);
+  scroll-margin: 120px;
+}
+
+.shabad-line-clickable {
+  cursor: pointer;
+}
+.shabad-line-clickable:hover {
+  background: color-mix(in srgb, var(--kesari-500) 6%, transparent);
+  border-color: color-mix(in srgb, var(--kesari-300) 55%, transparent);
+}
+.shabad-line-clickable:hover .shabad-line-num {
+  color: var(--color-primary-deep);
+  border-color: var(--kesari-300);
+  background: var(--cream-100);
+}
+.shabad-line-clickable:focus-visible {
+  outline: none;
+  border-color: var(--kesari-400);
+  box-shadow: var(--shadow-glow);
+}
+
+.shabad-line-num {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--cream-100);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-soft);
+  font-size: var(--fs-xs);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+  margin-top: 2px;
+  transition: background-color var(--t-med) var(--ease),
+              border-color var(--t-med) var(--ease),
+              color var(--t-med) var(--ease);
+}
+
+.shabad-line-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Gurmukhi verse — three semantic word classes:
+   - .shabad-word           normal verse word (default)
+   - .shabad-word-pause     the last word before a danda (singer dwells here)
+   - .shabad-word-rahao     the ਰਹਾਉ refrain marker (held & returned to)
+   - .shabad-word-marker    danda markers (॥, ॥੧॥)                            */
+.shabad-line-gurmukhi {
+  font-family: var(--font-gurmukhi);
+  font-size: var(--fs-lg);
+  line-height: 1.7;
+  color: var(--color-text);
+}
+.shabad-word           { color: var(--color-text); }
+.shabad-word-pause {
+  /* Full vishraam — the singer dwells on this word. Kesari orange. */
+  color: var(--kesari-500);
+  font-weight: 600;
+}
+.shabad-word-yamki {
+  /* Yamki (quarter / lighter pause) — clearly distinct hue from kesari so
+     it reads as a different signal at a glance. Muted teal-blue. */
+  color: #2A7A88;
+  font-weight: 600;
+}
+.shabad-word-rahao {
+  color: var(--maroon-600);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  background: rgba(122, 45, 30, 0.08);
+  padding: 0 6px;
+  border-radius: 4px;
+}
+.shabad-word-marker {
+  color: var(--color-text-muted);
+  font-size: 0.92em;
+  font-weight: 400;
+}
+
+/* Translation strata — each gets its own colour family so the eye can find
+   the layer it wants in a glance.
+     transliteration : muted italic ink
+     english         : leaf-green serif italic
+     punjabi (gurmukhi) : warm cream / kesari-deep                            */
+.shabad-line-translit {
+  font-family: var(--font-display);
+  font-size: var(--fs-sm);
+  color: var(--ink-500);
+  font-style: italic;
+  letter-spacing: 0.01em;
+}
+.shabad-line-en {
+  font-family: var(--font-display);
+  color: var(--leaf-600);
+  font-size: var(--fs-base);
+  font-style: italic;
+}
+.shabad-line-pa {
+  font-family: var(--font-gurmukhi);
+  color: var(--color-primary-deep);
+  font-size: var(--fs-base);
+  font-weight: 500;
+}
+
+/* Past lines (already sung) -------------------------------------------- */
+.shabad-line-past {
+  opacity: 0.72;
+}
+
+/* Rahao — the central-theme line of any SGGS shabad. Marked with a thin
+   kesari left-border so the reader can spot the "anchor" at a glance.
+   Combines additively with the active highlight without overriding it. */
+.shabad-line-rahao {
+  position: relative;
+  border-left: 3px solid var(--kesari-500);
+  padding-left: calc(clamp(10px, 4vw, 28px) - 3px);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--kesari-500) 6%, transparent),
+    transparent 18%
+  );
+}
+.shabad-line-rahao .shabad-line-num {
+  background: color-mix(in srgb, var(--kesari-500) 18%, var(--color-surface));
+  color: var(--color-primary-deep);
+}
+.shabad-line-active.shabad-line-rahao {
+  border-left-color: var(--kesari-600);
+}
+
+/* Active (currently sung) ---------------------------------------------- */
+.shabad-line-active {
+  background: linear-gradient(135deg, rgba(232, 155, 44, 0.14), rgba(232, 155, 44, 0.06));
+  border-color: var(--kesari-300);
+  box-shadow: 0 0 0 4px rgba(232, 155, 44, 0.10);
+}
+.shabad-line-active:hover {
+  background: linear-gradient(135deg, rgba(232, 155, 44, 0.18), rgba(232, 155, 44, 0.08));
+  border-color: var(--kesari-400);
+}
+.shabad-line-active .shabad-line-num {
+  background: linear-gradient(135deg, var(--kesari-400), var(--kesari-500));
+  border-color: transparent;
+  color: #fff;
+}
+/* Active line gets a darker base ink so the kesari background still has
+   contrast, but the per-word semantic colours are preserved underneath. */
+.shabad-line-active .shabad-line-gurmukhi { font-weight: 500; }
+.shabad-line-active .shabad-word          { color: var(--kesari-700); }
+.shabad-line-active .shabad-word-pause    { color: var(--kesari-500); }
+.shabad-line-active .shabad-word-yamki    { color: #1F5E6B; }
+.shabad-line-active .shabad-word-rahao    { color: var(--maroon-600); background: rgba(122, 45, 30, 0.14); }
+.shabad-line-active .shabad-word-marker   { color: var(--kesari-600); }
+
+/* Dark-mode adjustments: lift the warm/red tones into a readable range
+   against the near-black surface. */
+:root[data-theme="dark"] .shabad-word-pause    { color: #F2A93C; }
+:root[data-theme="dark"] .shabad-word-yamki    { color: #6BC3D2; }
+:root[data-theme="dark"] .shabad-word-rahao    { color: #F39579; background: rgba(243, 149, 121, 0.12); }
+:root[data-theme="dark"] .shabad-word-marker   { color: var(--ink-300); }
+:root[data-theme="dark"] .shabad-line-en       { color: #88C9A0; }
+:root[data-theme="dark"] .shabad-line-pa       { color: #FCC078; }
+:root[data-theme="dark"] .shabad-line-translit { color: #C9A878; }
+:root[data-theme="dark"] .shabad-line-active .shabad-word { color: #FCEAC4; }
+:root[data-theme="dark"] .shabad-line-active .shabad-word-rahao { color: #F39579; }
+:root[data-theme="dark"] .shabad-line-active .shabad-word-pause { color: #F2A93C; }
+:root[data-theme="dark"] .shabad-line-active .shabad-word-yamki { color: #6BC3D2; }
+
+/* Subtle indicator on the left edge of the active line */
+.shabad-line-active::before {
+  content: '';
+  width: 3px;
+  align-self: stretch;
+  border-radius: 2px;
+  background: linear-gradient(180deg, var(--kesari-400), var(--kesari-500));
+  margin-right: calc(var(--sp-4) * -1);
+  margin-left: calc(var(--sp-3) * -1);
+}
+
+@media (max-width: 640px) {
+  .shabad-line { padding: var(--sp-3); gap: var(--sp-3); }
+  .shabad-line-gurmukhi { font-size: var(--fs-md); }
+  .shabad-header { padding: var(--sp-4); }
+}

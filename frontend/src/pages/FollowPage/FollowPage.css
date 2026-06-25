@@ -1,0 +1,415 @@
+/* Override the global body min-height while a follower page is mounted so
+   the page sizes exactly to the visible viewport (no phantom scroll on
+   mobile when the browser's address bar reduces the visible area). */
+.follow-body {
+  min-height: 0 !important;
+  background-attachment: scroll;
+}
+
+.follow-page {
+  --follow-font-scale: 1;
+  /* Theme tokens — overridden by .follow-theme-light below. The defaults
+     match the original warm-darbar dark look so existing class refs stay
+     visually identical. */
+  --follow-bg:           #120d09;
+  --follow-glow:         rgba(226, 159, 44, 0.16);
+  --follow-text:         #fff8e8;
+  --follow-text-soft:    rgba(255, 248, 232, 0.72);
+  --follow-text-muted:   rgba(255, 248, 232, 0.52);
+  --follow-accent:       #ffd887;
+  --follow-accent-soft:  rgba(255, 216, 135, 0.78);
+  --follow-divider:      rgba(255, 248, 232, 0.18);
+  --follow-card-bg:      rgba(28, 20, 14, 0.85);
+  --follow-toggle-bg:    rgba(255, 248, 232, 0.04);
+  --follow-rahao:        #8ff0ae;
+  --follow-pause:        #ffd887;
+  --follow-yamki:        #f0b24c;
+  --follow-marker:       rgba(255, 248, 232, 0.58);
+  /* Per-language line colors, matching the main app's ShabadView palette.
+     Translit = warm khaki; English = mint leaf; Punjabi = kesari gold. */
+  --follow-translit-color:   #C9A878;
+  --follow-english-color:    #88C9A0;
+  --follow-punjabi-color:    #FCC078;
+
+  min-height: 100dvh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  background: radial-gradient(circle at 50% 0%, var(--follow-glow), transparent 42%), var(--follow-bg);
+  color: var(--follow-text);
+  transition: background 220ms ease, color 220ms ease;
+}
+
+/* Light theme — warm cream for outdoor diwans / daylight reading. */
+.follow-page.follow-theme-light {
+  --follow-bg:           #fffaf0;
+  --follow-glow:         rgba(226, 159, 44, 0.12);
+  --follow-text:         #1f150a;
+  --follow-text-soft:    rgba(31, 21, 10, 0.74);
+  --follow-text-muted:   rgba(31, 21, 10, 0.5);
+  --follow-accent:       #b8651a;
+  --follow-accent-soft:  rgba(184, 101, 26, 0.85);
+  --follow-divider:      rgba(31, 21, 10, 0.16);
+  --follow-card-bg:      rgba(255, 250, 240, 0.96);
+  --follow-toggle-bg:    rgba(31, 21, 10, 0.04);
+  --follow-rahao:        #1f7a3d;
+  --follow-pause:        #b8651a;
+  --follow-yamki:        #c4811c;
+  --follow-marker:       rgba(31, 21, 10, 0.5);
+  /* Darker tones for the light theme so text reads on cream. */
+  --follow-translit-color:   #7a6135;
+  --follow-english-color:    #2f7a4d;
+  --follow-punjabi-color:    #b8651a;
+}
+
+.follow-header,
+.follow-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: clamp(14px, 3vw, 24px);
+}
+
+.follow-header strong {
+  display: block;
+  font-family: var(--font-display, serif);
+  font-size: clamp(1rem, 2.2vw, 1.4rem);
+  font-weight: 600;
+}
+
+.follow-eyebrow {
+  margin: 0 0 3px;
+  color: var(--follow-accent-soft);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.follow-status {
+  flex: 0 0 auto;
+  padding: 6px 11px;
+  border: 1px solid var(--follow-divider);
+  border-radius: 999px;
+  color: var(--follow-text-soft);
+  font-size: 0.78rem;
+  font-weight: 850;
+}
+
+.follow-status-live {
+  border-color: color-mix(in srgb, var(--follow-rahao) 50%, transparent);
+  color: var(--follow-rahao);
+}
+
+.follow-stage {
+  width: min(100%, 980px);
+  margin: 0 auto;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: clamp(12px, 2.2vh, 24px);
+  padding: clamp(20px, 4vw, 56px);
+  text-align: center;
+}
+
+.follow-title {
+  align-self: stretch;
+  width: 100%;
+  margin: 0;
+  color: var(--follow-accent-soft);
+  font-size: calc(clamp(1.6rem, 4.4vw, 3rem) * var(--follow-font-scale));
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: left;
+  letter-spacing: 0.01em;
+}
+
+.follow-meta {
+  align-self: stretch;
+  width: 100%;
+  margin: 0;
+  color: var(--follow-text-muted);
+  font-size: clamp(0.78rem, 1.9vw, 1rem);
+  text-align: left;
+}
+
+.follow-line {
+  margin: 0;
+  max-width: 100%;
+  color: var(--follow-text);
+  font-size: calc(clamp(2.4rem, 11vw, 7.2rem) * var(--follow-font-scale));
+  font-weight: 500;
+  line-height: 1.16;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+
+/* Prev / next surrounding lines — same word coloring but smaller and
+   faded so the eye anchors on the active line, mirroring the projector.
+   `.follow-line-prev` and `.follow-line-next` both inherit from the
+   context class and stay visually symmetric. */
+.follow-line-context,
+.follow-line-prev,
+.follow-line-next {
+  font-size: calc(clamp(1.2rem, 5vw, 3rem) * var(--follow-font-scale));
+  font-weight: 500;
+  opacity: 0.32;
+  transition: opacity 220ms ease;
+}
+
+.follow-line .shabad-word { color: inherit; }
+.follow-line .shabad-word-pause {
+  color: var(--follow-pause);
+}
+.follow-line .shabad-word-yamki {
+  color: var(--follow-yamki);
+}
+.follow-line .shabad-word-rahao {
+  color: var(--follow-rahao);
+}
+.follow-line .shabad-word-marker {
+  color: var(--follow-marker);
+}
+
+.follow-translit,
+.follow-translation,
+.follow-count {
+  margin: 0;
+}
+
+.follow-translit {
+  max-width: 68ch;
+  color: var(--follow-translit-color);
+  font-style: italic;
+  font-size: calc(clamp(1rem, 3.2vw, 1.6rem) * var(--follow-font-scale));
+  letter-spacing: 0.01em;
+  line-height: 1.45;
+}
+
+.follow-translation {
+  max-width: 70ch;
+  color: var(--follow-english-color);
+  font-family: var(--font-display, serif);
+  font-size: calc(clamp(0.95rem, 2.7vw, 1.28rem) * var(--follow-font-scale));
+  line-height: 1.55;
+}
+
+.follow-translation-pa {
+  color: var(--follow-punjabi-color);
+  font-weight: 500;
+}
+
+.follow-count {
+  color: var(--follow-accent-soft);
+  font-size: 0.82rem;
+  font-weight: 850;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.follow-idle {
+  gap: 8px;
+}
+
+.follow-onkar {
+  margin: 0;
+  color: var(--follow-accent);
+  font-size: clamp(5rem, 22vw, 14rem);
+  font-weight: 500;
+  line-height: 1;
+}
+
+.follow-waheguru {
+  margin: 0;
+  color: var(--follow-text);
+  font-size: clamp(2.2rem, 11vw, 7rem);
+  line-height: 1.12;
+}
+
+.follow-blank {
+  min-height: 100%;
+  background: #000;
+}
+
+.follow-footer {
+  color: var(--follow-text-muted);
+  font-size: 0.82rem;
+}
+
+.follow-footer a {
+  color: var(--follow-accent);
+  text-decoration: none;
+  font-weight: 800;
+}
+
+@media (max-width: 640px) {
+  .follow-header,
+  .follow-footer {
+    padding-inline: 16px;
+  }
+}
+
+/* ── Header-right cluster: status pill + Aa settings button ───────────── */
+
+.follow-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.follow-settings-btn {
+  min-width: 44px;
+  min-height: 40px;
+  padding: 6px 12px;
+  border: 1px solid color-mix(in srgb, var(--follow-accent) 35%, transparent);
+  border-radius: 10px;
+  background: var(--follow-toggle-bg);
+  color: var(--follow-text);
+  font-family: var(--font-display, serif);
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+.follow-settings-btn:hover {
+  background: color-mix(in srgb, var(--follow-accent) 12%, transparent);
+  border-color: color-mix(in srgb, var(--follow-accent) 55%, transparent);
+}
+.follow-settings-btn-on {
+  background: color-mix(in srgb, var(--follow-accent) 22%, transparent);
+  border-color: color-mix(in srgb, var(--follow-accent) 75%, transparent);
+  color: var(--follow-accent);
+}
+.follow-settings-btn:focus-visible {
+  outline: 2px solid var(--follow-accent);
+  outline-offset: 2px;
+}
+
+/* ── Settings popover (translit / english / punjabi / theme / A- A+) ──── */
+
+.follow-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0 clamp(14px, 3vw, 24px) 12px;
+  padding: 14px 16px;
+  border: 1px solid color-mix(in srgb, var(--follow-accent) 22%, transparent);
+  border-radius: 14px;
+  background: var(--follow-card-bg);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  animation: follow-settings-in 140ms ease-out;
+}
+@keyframes follow-settings-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.follow-settings-eyebrow {
+  margin: 0;
+  color: var(--follow-accent-soft);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.follow-settings-toggles {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+/* Sun / Moon theme group in the header (mirrors the main app's
+   ThemeSwitcher pattern). Two pill buttons; the active one gets the
+   kesari fill, the inactive one is muted. */
+.follow-theme-group {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px;
+  border: 1px solid var(--follow-divider);
+  border-radius: 9999px;
+  background: var(--follow-toggle-bg);
+}
+.follow-theme-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 9999px;
+  background: transparent;
+  color: var(--follow-text-soft);
+  cursor: pointer;
+  transition: background 140ms ease, color 140ms ease;
+}
+.follow-theme-btn:hover {
+  color: var(--follow-text);
+}
+.follow-theme-btn-on {
+  background: color-mix(in srgb, var(--follow-accent) 22%, transparent);
+  color: var(--follow-accent);
+}
+.follow-theme-btn:focus-visible {
+  outline: 2px solid var(--follow-accent);
+  outline-offset: 2px;
+}
+
+.follow-toggle {
+  min-height: 38px;
+  padding: 6px 10px;
+  border: 1px solid var(--follow-divider);
+  border-radius: 9999px;
+  background: var(--follow-toggle-bg);
+  color: var(--follow-text-soft);
+  font-size: 0.92rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 140ms ease, border-color 140ms ease, color 140ms ease;
+}
+.follow-toggle:hover {
+  color: var(--follow-text);
+}
+.follow-toggle-on {
+  background: color-mix(in srgb, var(--follow-accent) 20%, transparent);
+  border-color: color-mix(in srgb, var(--follow-accent) 70%, transparent);
+  color: var(--follow-text);
+}
+
+.follow-settings-font {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.follow-settings-font button {
+  min-width: 48px;
+  min-height: 38px;
+  padding: 6px 12px;
+  border: 1px solid var(--follow-divider);
+  border-radius: 10px;
+  background: var(--follow-toggle-bg);
+  color: var(--follow-text);
+  font-weight: 800;
+  cursor: pointer;
+}
+.follow-settings-font button[disabled] {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.follow-settings-font > span {
+  flex: 1 1 auto;
+  color: var(--follow-text-soft);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-align: center;
+  letter-spacing: 0.04em;
+}
+
+.follow-settings-hint {
+  margin: 0;
+  color: var(--follow-text-muted);
+  font-size: 0.78rem;
+  line-height: 1.4;
+}

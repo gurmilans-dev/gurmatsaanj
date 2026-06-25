@@ -1,0 +1,98 @@
+.toasts {
+  position: fixed;
+  left: var(--sp-4);
+  bottom: var(--sp-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  z-index: 9999;
+  max-width: min(380px, calc(100vw - 2rem));
+}
+
+.toast {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-left: 4px solid var(--color-primary);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-lg);
+  animation: toastSlideIn 220ms var(--ease) both;
+}
+
+.toast-info    { border-left-color: var(--color-primary); }
+.toast-success { border-left-color: var(--color-success); }
+.toast-error   { border-left-color: var(--color-danger); }
+.toast-warning { border-left-color: var(--gold-500); }
+
+.toast-body { flex: 1; min-width: 0; }
+.toast-title {
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 2px;
+  font-size: var(--fs-sm);
+}
+.toast-message {
+  font-size: var(--fs-sm);
+  color: var(--color-text-soft);
+  word-break: break-word;
+}
+
+.toast-close {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-text-soft);
+  font-size: var(--fs-xs);
+  flex-shrink: 0;
+  border: 0;
+  cursor: pointer;
+  transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+}
+.toast-close:hover { background: var(--cream-100); color: var(--color-text); }
+
+/* Inline action button (e.g. "Refresh" on the app-update toast). Pill-shaped
+   kesari fill so it reads as the primary affordance, sits between the body
+   and the dismiss × at the far right. */
+.toast-action {
+  flex: 0 0 auto;
+  align-self: center;
+  padding: 7px 12px;
+  border: 1px solid var(--kesari-500);
+  border-radius: var(--r-pill);
+  background: var(--kesari-500);
+  color: #fff;
+  font-size: var(--fs-xs);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: background 160ms ease, transform 160ms ease;
+}
+.toast-action:hover {
+  background: color-mix(in srgb, var(--kesari-500) 88%, white);
+  transform: translateY(-1px);
+}
+.toast-action:focus-visible {
+  outline: 2px solid var(--kesari-500);
+  outline-offset: 2px;
+}
+
+@keyframes toastSlideIn {
+  from { opacity: 0; transform: translateX(-20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@media (max-width: 540px) {
+  .toasts {
+    left: var(--sp-3);
+    bottom: var(--sp-3);
+    max-width: calc(100vw - 1.5rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast { animation: none; }
+}

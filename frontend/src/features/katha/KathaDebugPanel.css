@@ -1,0 +1,58 @@
+.katha-debug-panel {
+  border: 1px solid var(--color-border);
+  border-radius: var(--r-md);
+  background: var(--color-surface);
+  overflow: hidden;
+}
+
+.katha-debug-panel summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: 8px 12px;
+  cursor: pointer;
+  color: var(--color-text);
+  font-size: var(--fs-xs);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.katha-debug-panel summary::marker {
+  color: var(--kesari-500);
+}
+
+.katha-debug-panel summary span:last-child {
+  color: var(--color-text-soft);
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.katha-debug-grid {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+  gap: 8px 12px;
+  padding: 10px 12px 12px;
+  border-top: 1px solid var(--color-border);
+  font-size: var(--fs-xs);
+}
+
+.katha-debug-grid span {
+  color: var(--color-text-soft);
+  font-weight: 700;
+}
+
+.katha-debug-grid strong {
+  min-width: 0;
+  color: var(--color-text);
+  font-weight: 600;
+  word-break: break-word;
+}
+
+@media (max-width: 640px) {
+  .katha-debug-grid {
+    grid-template-columns: 1fr;
+  }
+}

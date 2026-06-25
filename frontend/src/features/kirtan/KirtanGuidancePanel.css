@@ -1,0 +1,249 @@
+.kirtan-guide {
+  padding: var(--sp-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--r-md);
+  background:
+    linear-gradient(135deg,
+      color-mix(in srgb, var(--kesari-100) 42%, var(--color-surface)),
+      var(--color-surface));
+  box-shadow: var(--shadow-sm);
+}
+
+.kirtan-guide-head {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-3);
+}
+
+.kirtan-guide-head h2 {
+  color: var(--color-text);
+  font-size: var(--fs-xl);
+  font-weight: 850;
+  line-height: 1.15;
+}
+
+.kirtan-guide-head > span {
+  flex-shrink: 0;
+  padding: 5px 9px;
+  border: 1px solid color-mix(in srgb, var(--kesari-400) 42%, var(--color-border));
+  border-radius: var(--r-pill);
+  background: var(--color-surface);
+  color: var(--color-primary-deep);
+  font-size: var(--fs-xs);
+  font-weight: 850;
+}
+
+.kirtan-guide-head-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.kirtan-guide-head-actions > span {
+  padding: 5px 9px;
+  border: 1px solid color-mix(in srgb, var(--kesari-400) 42%, var(--color-border));
+  border-radius: var(--r-pill);
+  background: var(--color-surface);
+  color: var(--color-primary-deep);
+  font-size: var(--fs-xs);
+  font-weight: 850;
+}
+
+.kirtan-guide-collapse {
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  background: var(--color-surface);
+  color: var(--color-text-soft);
+  cursor: pointer;
+}
+
+.kirtan-guide-collapse:hover {
+  color: var(--color-text);
+  border-color: var(--kesari-300);
+}
+
+.kirtan-guide-mini {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: var(--color-text-soft);
+  font-size: var(--fs-sm);
+}
+
+.kirtan-guide-mini strong {
+  color: var(--color-primary-deep);
+  font-weight: 850;
+}
+
+.kirtan-guide-collapsed {
+  padding-block: var(--sp-3);
+}
+
+.kirtan-guide-collapsed .kirtan-guide-head {
+  margin-bottom: var(--sp-2);
+}
+
+.kirtan-guide-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-3);
+}
+
+.kirtan-guide-block {
+  min-width: 0;
+  padding: var(--sp-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--r-md);
+  background: color-mix(in srgb, var(--color-surface) 86%, white);
+}
+
+.kirtan-guide-block-head h3 {
+  color: var(--color-text);
+  font-size: var(--fs-md);
+  font-weight: 850;
+}
+
+.kirtan-guide-block-head p,
+.kirtan-guide-note,
+.kirtan-guide-source {
+  color: var(--color-text-soft);
+  font-size: var(--fs-xs);
+  line-height: 1.45;
+}
+
+.kirtan-guide-block-head p {
+  margin-top: 2px;
+  font-weight: 700;
+}
+
+.kirtan-guide-raags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: var(--sp-2);
+}
+
+.kirtan-guide-raags button {
+  padding: 4px 8px;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: color-mix(in srgb, var(--kesari-500) 9%, var(--color-surface));
+  color: var(--color-primary-deep);
+  font-size: var(--fs-xs);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.kirtan-guide-raags button:hover {
+  background: color-mix(in srgb, var(--kesari-500) 16%, var(--color-surface));
+}
+
+.kirtan-guide-raags button:focus-visible {
+  outline: 2px solid var(--kesari-500);
+  outline-offset: 2px;
+}
+
+.kirtan-guide-note {
+  margin-top: var(--sp-2);
+}
+
+.kirtan-guide-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: var(--sp-3);
+}
+
+.kirtan-guide-suggestion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  min-height: 34px;
+  padding: 7px 9px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--r-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background var(--t-fast) var(--ease),
+    border-color var(--t-fast) var(--ease),
+    transform var(--t-fast) var(--ease);
+}
+
+.kirtan-guide-suggestion:hover {
+  border-color: var(--kesari-300);
+  background: color-mix(in srgb, var(--kesari-500) 7%, var(--color-surface));
+  transform: translateY(-1px);
+}
+
+.kirtan-guide-suggestion-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.kirtan-guide-suggestion-gurmukhi {
+  color: var(--color-text);
+  font-size: var(--fs-xs);
+  line-height: 1.35;
+  font-weight: 850;
+}
+
+.kirtan-guide-suggestion-text small,
+.kirtan-guide-suggestion-raag {
+  flex-shrink: 0;
+  color: var(--color-text-soft);
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.kirtan-guide-suggestion-raag {
+  text-align: right;
+}
+
+.kirtan-guide-source {
+  margin-top: var(--sp-3);
+}
+
+.kirtan-guide-source a {
+  color: var(--color-primary-deep);
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.kirtan-guide-source a:hover {
+  text-decoration: underline;
+}
+
+.kirtan-guide-compact {
+  box-shadow: none;
+}
+
+.kirtan-guide-compact .kirtan-guide-grid {
+  grid-template-columns: 1fr;
+}
+
+@media (max-width: 760px) {
+  .kirtan-guide-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .kirtan-guide-head {
+    flex-direction: column;
+    align-items: start;
+  }
+}

@@ -1,0 +1,65 @@
+.semantic-notice {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: var(--sp-4);
+  border: 1px solid color-mix(in srgb, var(--kesari-500) 30%, var(--color-border));
+  border-radius: var(--r-md);
+  background:
+    linear-gradient(135deg,
+      color-mix(in srgb, var(--kesari-500) 9%, var(--color-surface)),
+      var(--color-surface));
+  box-shadow: var(--shadow-sm);
+}
+
+.semantic-notice-error {
+  border-color: color-mix(in srgb, #d04848 45%, var(--color-border));
+  background: var(--color-surface);
+}
+
+.semantic-notice-eyebrow {
+  margin: 0;
+  color: var(--color-text-soft);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.semantic-notice-title {
+  margin: 0;
+  color: var(--color-text);
+  font-size: var(--fs-md);
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.semantic-notice-body {
+  margin: 0;
+  color: var(--color-text-soft);
+  font-size: var(--fs-sm);
+  line-height: 1.45;
+}
+
+.semantic-notice-bar {
+  position: relative;
+  height: 6px;
+  margin: 4px 0;
+  background: color-mix(in srgb, var(--color-border) 70%, transparent);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+.semantic-notice-bar > span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--kesari-400), var(--leaf-600, var(--kesari-700, var(--kesari-500))));
+  border-radius: inherit;
+  transition: width 200ms ease;
+}
+
+.semantic-notice-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}

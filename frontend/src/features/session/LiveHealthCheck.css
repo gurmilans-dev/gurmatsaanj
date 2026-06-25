@@ -1,0 +1,204 @@
+.live-health-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 34px;
+  padding: 5px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--r-pill);
+  background: var(--color-surface);
+  color: var(--color-text-soft);
+  font-size: var(--fs-xs);
+  font-weight: 900;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.live-health-button:hover,
+.live-health-button:focus-visible {
+  color: var(--color-text);
+  border-color: var(--kesari-300);
+  outline: none;
+}
+
+.live-health-button-ok {
+  border-color: color-mix(in srgb, var(--color-success) 38%, var(--color-border));
+}
+
+.live-health-button-fail {
+  border-color: color-mix(in srgb, var(--color-danger) 45%, var(--color-border));
+  color: var(--color-danger);
+}
+
+.live-health-dot {
+  width: 8px;
+  height: 8px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--color-text-muted);
+}
+
+.live-health-dot-ok {
+  background: var(--color-success);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-success) 15%, transparent);
+}
+
+.live-health-dot-warn,
+.live-health-dot-checking {
+  background: var(--kesari-500);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--kesari-500) 18%, transparent);
+}
+
+.live-health-dot-fail {
+  background: var(--color-danger);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-danger) 14%, transparent);
+}
+
+.live-health-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1800;
+}
+
+.live-health-scrim {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(26, 20, 16, 0.32);
+  cursor: pointer;
+}
+
+.live-health-panel {
+  position: absolute;
+  top: calc(var(--header-h) + 10px);
+  right: 18px;
+  width: min(420px, calc(100vw - 28px));
+  max-height: calc(100vh - var(--header-h) - 26px);
+  overflow: auto;
+  padding: 18px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--r-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-lg);
+  color: var(--color-text);
+}
+
+.live-health-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.live-health-head h2 {
+  margin: 0;
+  font-size: var(--fs-lg);
+}
+
+.live-health-head p:last-child {
+  margin: 4px 0 0;
+  color: var(--color-text-soft);
+  font-size: var(--fs-sm);
+}
+
+.live-health-close {
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  background: var(--color-surface);
+  color: var(--color-text-soft);
+  cursor: pointer;
+}
+
+.live-health-close:hover,
+.live-health-close:focus-visible {
+  color: var(--color-text);
+  border-color: var(--kesari-300);
+  outline: none;
+}
+
+.live-health-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.live-health-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--r-md);
+  background: var(--color-bg-soft);
+}
+
+.live-health-row-main {
+  display: flex;
+  align-items: flex-start;
+  min-width: 0;
+  gap: 10px;
+}
+
+.live-health-row-main strong {
+  display: block;
+  font-size: var(--fs-sm);
+}
+
+.live-health-row-main p {
+  margin: 2px 0 0;
+  color: var(--color-text-soft);
+  font-size: var(--fs-xs);
+  line-height: 1.35;
+}
+
+.live-health-row-action {
+  flex: 0 0 auto;
+  padding: 5px 8px;
+  font-size: var(--fs-xs);
+}
+
+.live-health-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+@media (max-width: 760px) {
+  .live-health-button span:not(.live-health-dot) {
+    display: none;
+  }
+
+  .live-health-button {
+    min-width: 34px;
+    justify-content: center;
+    padding: 5px;
+  }
+
+  .live-health-panel {
+    top: auto;
+    right: 10px;
+    bottom: 10px;
+    left: 10px;
+    width: auto;
+    max-height: min(78vh, 620px);
+  }
+
+  .live-health-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .live-health-row-action {
+    align-self: flex-start;
+  }
+}

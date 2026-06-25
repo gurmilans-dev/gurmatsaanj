@@ -1,0 +1,42 @@
+.confidence-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 4px 10px 4px 6px;
+  border-radius: var(--r-pill);
+  background: var(--cream-100);
+  border: 1px solid var(--color-border);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--color-text-soft);
+  white-space: nowrap;
+}
+
+.confidence-bar {
+  width: 56px;
+  height: 8px;
+  flex-shrink: 0;
+}
+.confidence-bar-track { fill: var(--cream-200); }
+.confidence-bar-fill  {
+  fill: var(--kesari-400);
+  transition: width var(--t-med) var(--ease);
+}
+
+.confidence-text  { font-variant-numeric: tabular-nums; color: var(--color-text); }
+.confidence-label { color: var(--color-text-soft); font-weight: 500; }
+
+/* Tiers */
+.confidence-strong               { background: rgba(47, 107, 71, 0.10); border-color: rgba(47, 107, 71, 0.25); }
+.confidence-strong .confidence-bar-fill { fill: var(--leaf-600); }
+.confidence-strong .confidence-text     { color: var(--leaf-600); }
+
+.confidence-good .confidence-bar-fill   { fill: var(--kesari-500); }
+.confidence-fair .confidence-bar-fill   { fill: var(--gold-500); }
+
+.confidence-weak                        { background: rgba(122, 45, 30, 0.06); border-color: rgba(122, 45, 30, 0.20); }
+.confidence-weak .confidence-bar-fill   { fill: var(--maroon-600); }
+.confidence-weak .confidence-text       { color: var(--maroon-600); }
+
+.confidence-compact .confidence-bar     { width: 40px; }
+.confidence-compact { padding: 2px 8px 2px 4px; }

@@ -1,0 +1,54 @@
+.semantic-chips {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 0 0;
+  padding: 4px 2px 6px;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+  /* Live inside a flex column (search-empty-state) which gives children
+     min-width: auto by default — meaning the chip row would grow to fit all
+     12 chips and overflow the page horizontally instead of scrolling itself.
+     Forcing min-width: 0 + width: 100% lets the row shrink to viewport width
+     so overflow-x: auto can actually kick in. */
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+/* Hide native scrollbar for a cleaner look — the row remains swipeable. */
+.semantic-chips::-webkit-scrollbar { display: none; }
+.semantic-chips { scrollbar-width: none; }
+
+.semantic-chip {
+  flex: 0 0 auto;
+  min-height: 34px;
+  padding: 6px 14px;
+  border: 1px solid color-mix(in srgb, var(--kesari-500) 35%, var(--color-border));
+  border-radius: var(--r-pill);
+  background: color-mix(in srgb, var(--kesari-500) 8%, var(--color-surface));
+  color: var(--color-text);
+  font-size: var(--fs-sm);
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  cursor: pointer;
+  scroll-snap-align: start;
+  transition: background 140ms ease, border-color 140ms ease, transform 100ms ease;
+}
+
+.semantic-chip:hover {
+  background: color-mix(in srgb, var(--kesari-500) 16%, var(--color-surface));
+  border-color: color-mix(in srgb, var(--kesari-500) 55%, var(--color-border));
+}
+
+.semantic-chip:active {
+  transform: scale(0.97);
+}
+
+.semantic-chip:focus-visible {
+  outline: 2px solid var(--kesari-500);
+  outline-offset: 2px;
+}

@@ -1,0 +1,63 @@
+{
+  "name": "Gurmat Saanj",
+  "short_name": "Gurmat Saanj",
+  "description": "Every Line. Live. A live Kirtan and Katha companion for the Gurudwara.",
+  "start_url": "/kirtan",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#E89B2C",
+  "background_color": "#FAF6EF",
+  "lang": "en",
+  "categories": ["lifestyle", "education", "music"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Hukamnama",
+      "short_name": "Hukamnama",
+      "description": "Open Gurmat Saanj ready for Hukamnama.",
+      "url": "/kirtan?shortcut=hukamnama",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Open Anand Sahib",
+      "short_name": "Anand Sahib",
+      "description": "Open Anand Sahib in Bani mode.",
+      "url": "/bani/anand-sahib",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Start Kirtan",
+      "short_name": "Kirtan",
+      "description": "Open the main Kirtan search and live view.",
+      "url": "/kirtan",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Open Remote",
+      "short_name": "Remote",
+      "description": "Open the remote controller.",
+      "url": "/remote",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    }
+  ]
+}

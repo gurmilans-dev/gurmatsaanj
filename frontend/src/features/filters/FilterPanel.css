@@ -1,0 +1,83 @@
+.filter-panel {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--r-lg);
+  padding: var(--sp-4) var(--sp-5);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.filter-panel-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-4);
+}
+
+/* compact (sidebar / inline) — three columns side by side, tight gap */
+.filter-panel-compact .filter-panel-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-2);
+}
+.filter-panel-compact .filter-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+}
+.filter-panel-compact .select {
+  font-size: var(--fs-xs);
+  padding: 6px 28px 6px 10px;
+}
+
+.filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.filter-label {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--color-primary-deep);
+}
+
+.filter-reset {
+  align-self: flex-end;
+  font-size: var(--fs-xs);
+}
+
+.filter-panel-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+}
+.filter-panel-status:empty {
+  display: none;
+}
+.filter-status-loading {
+  font-size: var(--fs-xs);
+  color: var(--color-text-soft);
+  font-style: italic;
+}
+.filter-status-counts {
+  font-size: var(--fs-xs);
+  color: var(--color-text-muted);
+  letter-spacing: 0.04em;
+}
+.filter-status-error {
+  font-size: var(--fs-xs);
+  color: var(--color-danger);
+  font-weight: 600;
+}
+
+.filter-panel-compact { padding: var(--sp-3) var(--sp-4); }
+
+@media (max-width: 820px) {
+  .filter-panel-grid { grid-template-columns: 1fr; gap: var(--sp-3); }
+  /* On narrow screens compact mode also stacks so labels stay readable */
+  .filter-panel-compact .filter-panel-grid { grid-template-columns: 1fr; }
+}

@@ -1,0 +1,90 @@
+.site-footer {
+  margin-top: auto;
+  padding: var(--sp-10) 0 var(--sp-6);
+  border-top: 1px solid var(--color-border);
+  background:
+    radial-gradient(800px 240px at 50% 100%, rgba(232, 155, 44, 0.12), transparent 70%),
+    linear-gradient(180deg, transparent, rgba(232, 155, 44, 0.04));
+}
+
+.site-footer-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+  text-align: center;
+}
+
+.site-footer-ornament {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-3);
+  width: 100%;
+  max-width: 420px;
+  color: var(--kesari-400);
+}
+.site-footer-rule {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--kesari-300), transparent);
+}
+.site-footer-onkar {
+  font-family: var(--font-gurmukhi);
+  font-size: var(--fs-2xl);
+  color: var(--kesari-500);
+  text-shadow: 0 2px 8px rgba(184, 101, 26, 0.18);
+}
+
+.site-footer-quote {
+  font-size: var(--fs-xl);
+  color: var(--color-primary-deep);
+  letter-spacing: 0.03em;
+  font-family: var(--font-gurmukhi);
+}
+
+.site-footer-translit {
+  color: var(--color-text-soft);
+  font-size: var(--fs-sm);
+  margin-bottom: var(--sp-3);
+}
+
+.site-footer-text {
+  color: var(--color-text-soft);
+  font-size: var(--fs-sm);
+  max-width: 540px;
+}
+.site-footer-text a {
+  color: var(--color-primary-deep);
+  font-weight: 600;
+  border-bottom: 1px dotted currentColor;
+}
+.site-footer-text a:hover { color: var(--ink-900); }
+
+.site-footer-links {
+  display: flex;
+  justify-content: center;
+  gap: var(--sp-3);
+  margin-top: var(--sp-1);
+}
+
+.site-footer-links a {
+  color: var(--color-primary-deep);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  text-decoration: none;
+  border-bottom: 1px dotted currentColor;
+}
+
+.site-footer-links a:hover {
+  color: var(--color-text);
+}
+
+.site-footer-copy {
+  color: var(--color-text-muted);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  margin-top: var(--sp-2);
+}

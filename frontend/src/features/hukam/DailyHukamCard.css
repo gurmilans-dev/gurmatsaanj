@@ -1,0 +1,69 @@
+.daily-hukam-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-4);
+  border: 1px solid color-mix(in srgb, var(--kesari-500) 35%, var(--color-border));
+  border-radius: var(--r-md);
+  background:
+    linear-gradient(135deg,
+      color-mix(in srgb, var(--kesari-500) 10%, var(--color-surface)),
+      var(--color-surface));
+  box-shadow: var(--shadow-sm);
+  color: var(--color-text);
+  text-decoration: none;
+  transition:
+    transform var(--t-fast) var(--ease),
+    box-shadow var(--t-fast) var(--ease),
+    border-color var(--t-fast) var(--ease);
+}
+
+.daily-hukam-card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--kesari-500) 55%, var(--color-border));
+  box-shadow: var(--shadow-md);
+}
+
+.daily-hukam-card-eyebrow {
+  color: var(--color-primary-deep);
+  font-size: var(--fs-xs);
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.daily-hukam-card-date {
+  color: var(--color-text-soft);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+}
+
+.daily-hukam-card-gurmukhi {
+  margin: 4px 0 0;
+  color: var(--color-text);
+  font-size: clamp(1.15rem, 3vw, 1.45rem);
+  font-weight: 750;
+  line-height: 1.5;
+  letter-spacing: 0.01em;
+}
+
+.daily-hukam-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+}
+
+.daily-hukam-card-cta {
+  margin-top: 4px;
+  align-self: flex-start;
+  font-size: var(--fs-sm);
+  font-weight: 800;
+  color: var(--color-primary-deep);
+}
+
+@media (max-width: 540px) {
+  .daily-hukam-card {
+    padding: var(--sp-3);
+  }
+}

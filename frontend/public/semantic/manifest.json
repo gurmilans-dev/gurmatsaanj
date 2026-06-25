@@ -1,0 +1,21 @@
+{
+  "version": "731a6490c44c79a2",
+  "generatedAt": "2026-05-21T14:12:37.430Z",
+  "files": {
+    "embeddings.bin": {
+      "hash": "5f2d2c4d5f085bac",
+      "size": 20298240,
+      "updatedAt": "2026-05-21T10:43:27.563Z"
+    },
+    "index.json": {
+      "hash": "bc88bfed172453ba",
+      "size": 96480,
+      "updatedAt": "2026-05-21T10:43:27.563Z"
+    },
+    "shabad-meta.json": {
+      "hash": "30da42c127e33d5e",
+      "size": 7851528,
+      "updatedAt": "2026-05-21T13:49:48.747Z"
+    }
+  }
+}

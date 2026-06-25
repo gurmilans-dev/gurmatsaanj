@@ -1,0 +1,70 @@
+.shabad-prose {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: var(--sp-4, 16px) 0 var(--sp-6, 32px);
+}
+
+.shabad-prose-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: var(--sp-4, 16px);
+}
+
+/* Block 1 — the full Gurmukhi shabad. */
+.shabad-prose-gurmukhi {
+  padding: var(--sp-4, 16px) 0;
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.shabad-prose-line {
+  margin: 0;
+  padding: 5px 0;
+  font-size: clamp(1.15rem, 1rem + 1.2vw, 1.6rem);
+  line-height: 1.85;
+  font-weight: 600;
+  color: var(--color-text);
+  text-align: center;
+}
+
+/* Larivaar — words touch, mirroring the traditional SGGS form. The shared
+   renderGurmukhiLine() already drops inter-word spaces; this nudges any
+   residual spacing closed. */
+.shabad-prose-line-larivaar {
+  word-spacing: -0.18em;
+}
+
+/* Block 2 — flowing translation prose. */
+.shabad-prose-translation {
+  margin-top: var(--sp-5, 24px);
+}
+
+.shabad-prose-tr-label {
+  margin: 0 0 6px;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--kesari-600, var(--kesari-500)) 85%, var(--color-text-soft));
+}
+
+.shabad-prose-tr-body {
+  margin: 0;
+  font-size: var(--fs-md, 1rem);
+  line-height: 1.7;
+  color: var(--color-text-soft);
+}
+
+/* The Punjabi arth uses the Gurmukhi font but reads as prose, so relax the
+   line spacing and keep it left-aligned (the stacked shabad above is centred). */
+.shabad-prose-tr-body.gurmukhi {
+  color: var(--color-text);
+  line-height: 1.95;
+}
+
+.shabad-prose-empty {
+  margin-top: var(--sp-4, 16px);
+  color: var(--color-text-soft);
+  font-style: italic;
+}

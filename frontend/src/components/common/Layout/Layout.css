@@ -1,0 +1,10 @@
+.site-main {
+  flex: 1;
+  width: 100%;
+  padding: calc(var(--header-h) + var(--sp-6)) 0 var(--sp-10);
+  transition: background-color var(--t-med) var(--ease);
+}
+
+@media (max-width: 720px) {
+  .site-main { padding: calc(var(--header-h) + var(--sp-5)) 0 var(--sp-8); }
+}

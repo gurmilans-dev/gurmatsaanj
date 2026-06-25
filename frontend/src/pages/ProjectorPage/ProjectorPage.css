@@ -1,0 +1,452 @@
+/* Projector view — fullscreen, high-contrast, no app chrome */
+.projector-body {
+  margin: 0;
+  background: #0F0B08;
+  color: #FCEAC4;
+  overflow: hidden;
+  height: 100vh;
+}
+.projector-body .site-header,
+.projector-body .site-footer { display: none !important; }
+.projector-body .site-main   { padding: 0 !important; max-width: none !important; }
+
+/* Escape button — only rendered on touch/standalone/narrow devices by
+   <ProjectorEscapeButton>. Floats in the top-left corner, semi-transparent
+   so it doesn't dominate the projection, but obviously tappable. Tap it to
+   return to /kirtan and break out of the projector view (the iOS PWA trap
+   that opening a Shabad would otherwise cause). */
+.projector-escape-btn {
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  z-index: 2000;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: rgba(20, 16, 12, 0.55);
+  color: #FCEAC4;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(252, 234, 196, 0.25);
+  transition: background 160ms ease, transform 160ms ease;
+}
+.projector-escape-btn:hover,
+.projector-escape-btn:focus-visible {
+  background: rgba(20, 16, 12, 0.75);
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.projector {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(ellipse at top, rgba(232, 155, 44, 0.18), transparent 60%),
+    #0F0B08;
+  color: #FCEAC4;
+  padding: clamp(2rem, 4vw, 5rem);
+  text-align: center;
+  font-family: 'Noto Serif Gurmukhi', 'Mukta Mahee', serif;
+}
+
+.projector-theme-contrast {
+  background: #000;
+  color: #fff;
+}
+.projector-theme-contrast .projector-idle-onkar,
+.projector-theme-contrast .projector-line-active {
+  color: #fff;
+  text-shadow: 0 0 24px rgba(255, 255, 255, 0.32);
+}
+.projector-theme-contrast .projector-idle-word,
+.projector-theme-contrast .projector-translit,
+.projector-theme-contrast .projector-translation {
+  color: #fff;
+}
+
+.projector-theme-simple {
+  background: #f8f4eb;
+  color: #1f1710;
+}
+.projector-theme-simple .projector-idle-onkar,
+.projector-theme-simple .projector-line-active {
+  color: #8a4d0d;
+  text-shadow: none;
+}
+.projector-theme-simple .projector-idle-word,
+.projector-theme-simple .projector-translit,
+.projector-theme-simple .projector-translation,
+.projector-theme-simple .projector-shabad-meta,
+.projector-theme-simple .projector-shabad-footer {
+  color: #1f1710;
+}
+
+.projector-bg-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+  filter: saturate(0.92) contrast(0.96);
+}
+.projector-bg-fit-cover { object-fit: cover; }
+.projector-bg-fit-contain {
+  object-fit: contain;
+  background: #0F0B08;
+}
+.projector-bg-fit-fill { object-fit: fill; }
+.projector-bg-light {
+  filter: saturate(0.82) contrast(0.88) brightness(0.88);
+}
+.projector-bg-dark {
+  filter: saturate(1.05) contrast(1.02) brightness(1.08);
+}
+
+.projector-bg-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    radial-gradient(
+      ellipse at center,
+      rgba(15, 11, 8, calc(var(--projector-scrim, 0.62) - 0.12)),
+      rgba(15, 11, 8, var(--projector-scrim-edge, 0.82))
+    ),
+    linear-gradient(
+      180deg,
+      rgba(15, 11, 8, calc(var(--projector-scrim, 0.62) - 0.04)),
+      rgba(15, 11, 8, var(--projector-scrim-edge, 0.82))
+    );
+}
+
+.projector > *:not(.projector-bg-image):not(.projector-bg-scrim) {
+  position: relative;
+  z-index: 2;
+}
+
+/* === Idle ============================================================== */
+.projector-idle-onkar {
+  font-size: calc(clamp(8rem, 22vw, 22rem) * var(--projector-font-scale, 1));
+  line-height: 1;
+  color: #E89B2C;
+  text-shadow: 0 4px 30px rgba(232, 155, 44, 0.5);
+  margin-bottom: clamp(1rem, 3vh, 3rem);
+  animation: projGlow 6s ease-in-out infinite;
+}
+.projector-idle-word {
+  font-size: calc(clamp(4rem, 10vw, 9rem) * var(--projector-font-scale, 1));
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: #FCEAC4;
+}
+.projector-idle-translit {
+  margin-top: 1rem;
+  font-size: calc(clamp(1.5rem, 3vw, 2.5rem) * var(--projector-font-scale, 1));
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #C9A878;
+  font-family: 'Fraunces', serif;
+}
+
+@keyframes projGlow {
+  0%, 100% { text-shadow: 0 4px 30px rgba(232, 155, 44, 0.5); }
+  50%      { text-shadow: 0 4px 50px rgba(232, 155, 44, 0.85); }
+}
+
+/* === Image mode ======================================================== */
+.projector-image {
+  padding: 0;
+}
+.projector-image img {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #000;
+}
+
+.projector-blank {
+  background: #000;
+  padding: 0;
+}
+
+.projector-emergency-screen {
+  gap: clamp(1.5rem, 4vh, 3rem);
+}
+
+.projector-emergency-title {
+  color: #E89B2C;
+  font-size: calc(clamp(2.5rem, 7vw, 6rem) * var(--projector-font-scale, 1));
+  line-height: 1.12;
+  font-weight: 700;
+}
+
+.projector-emergency-line {
+  max-width: 86%;
+  color: #FCEAC4;
+  font-size: calc(clamp(2.7rem, 6vw, 6.8rem) * var(--projector-font-scale, 1));
+  line-height: 1.42;
+  font-weight: 600;
+  text-shadow:
+    0 3px 18px rgba(0, 0, 0, 0.78),
+    0 4px 40px rgba(232, 155, 44, 0.35);
+}
+
+.projector-emergency-translit {
+  max-width: 76%;
+  color: #C9A878;
+  font-family: 'Fraunces', serif;
+  font-size: calc(clamp(1.25rem, 2.4vw, 2.3rem) * var(--projector-font-scale, 1));
+  line-height: 1.4;
+}
+
+/* === Shabad mode ======================================================= */
+.projector-shabad {
+  justify-content: space-between;
+  padding: clamp(1.5rem, 3vh, 3rem) clamp(2rem, 5vw, 5rem);
+}
+
+.projector-shabad-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.5rem;
+  font-size: calc(clamp(0.875rem, 1.4vw, 1.25rem) * var(--projector-font-scale, 1));
+  color: #C9A878;
+  font-family: 'Fraunces', serif;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  justify-content: center;
+}
+
+.projector-stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  gap: clamp(1rem, 3vh, 3rem);
+}
+
+.projector-line {
+  font-family: 'Noto Serif Gurmukhi', serif;
+  line-height: 1.5;
+  margin: 0;
+  max-width: 90%;
+}
+
+.projector-line .shabad-word {
+  color: inherit;
+}
+.projector-line .shabad-word-pause {
+  color: #F2A93C;
+  font-weight: 700;
+  text-shadow: 0 0 18px rgba(242, 169, 60, 0.36);
+}
+.projector-line .shabad-word-yamki {
+  color: #6BC3D2;
+  font-weight: 700;
+  text-shadow: 0 0 14px rgba(107, 195, 210, 0.22);
+}
+.projector-line .shabad-word-rahao {
+  color: #F39579;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  background: rgba(243, 149, 121, 0.14);
+  border-radius: 0.12em;
+  padding: 0 0.12em;
+}
+.projector-line .shabad-word-marker {
+  color: rgba(252, 234, 196, 0.58);
+  font-size: 0.92em;
+  font-weight: 400;
+}
+
+.projector-line-prev {
+  font-size: calc(clamp(1.5rem, 3vw, 3rem) * var(--projector-font-scale, 1));
+  color: #88714F;
+  opacity: 0.65;
+}
+
+.projector-line-active {
+  font-size: calc(clamp(3.5rem, 7vw, 7.5rem) * var(--projector-font-scale, 1));
+  color: #FCEAC4;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-shadow:
+    0 3px 18px rgba(0, 0, 0, 0.78),
+    0 4px 40px rgba(232, 155, 44, 0.35);
+  animation: projLineIn 380ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.projector-line-opening {
+  font-size: calc(clamp(3rem, 6vw, 6rem) * var(--projector-font-scale, 1));
+  color: #C9A878;
+  font-weight: 500;
+}
+
+.projector-line-next {
+  font-size: calc(clamp(1.5rem, 3vw, 3rem) * var(--projector-font-scale, 1));
+  color: #88714F;
+  opacity: 0.65;
+}
+
+@keyframes projLineIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.projector-line-active-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+}
+
+.projector-translit {
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  font-size: calc(clamp(1.25rem, 2.4vw, 2rem) * var(--projector-font-scale, 1));
+  color: #C9A878;
+  margin: 0;
+  max-width: 80%;
+}
+
+.projector-translation {
+  font-family: 'Fraunces', serif;
+  font-size: calc(clamp(1.125rem, 1.8vw, 1.6rem) * var(--projector-font-scale, 1));
+  color: #E0CC9F;
+  margin: 0;
+  max-width: 70%;
+  line-height: 1.5;
+}
+
+.projector-translation-pa {
+  font-family: 'Noto Serif Gurmukhi', 'Mukta Mahee', serif;
+  color: #FCC078;
+  font-weight: 500;
+}
+
+.projector-shabad-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  font-size: calc(clamp(0.875rem, 1.2vw, 1rem) * var(--projector-font-scale, 1));
+  color: #88714F;
+  font-family: 'Fraunces', serif;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.projector-tracker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.projector-tracker::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #88714F;
+}
+.projector-tracker-on::before {
+  background: #2F6B47;
+  box-shadow: 0 0 10px rgba(47, 107, 71, 0.7);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .projector-line-active,
+  .projector-idle-onkar { animation: none; }
+}
+
+.projector-sangat-qr-corner {
+  position: fixed;
+  bottom: 18px;
+  right: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+  z-index: 50;
+  pointer-events: none;
+}
+
+.projector-sangat-qr-label {
+  color: #111;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.projector-sangat-qr-corner-svg {
+  display: block;
+  width: 112px;
+  height: 112px;
+  border-radius: 4px;
+}
+
+.projector-sangat-qr-full {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(16px, 3vh, 32px);
+  padding: clamp(16px, 4vw, 48px);
+  background: rgba(0, 0, 0, 0.92);
+  z-index: 80;
+  animation: projector-sangat-qr-fade-in 200ms ease-out;
+}
+
+@keyframes projector-sangat-qr-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.projector-sangat-qr-eyebrow {
+  color: #ffd887;
+  font-size: clamp(1rem, 2.4vw, 1.6rem);
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.projector-sangat-qr-full-svg {
+  width: min(72vmin, 720px);
+  height: min(72vmin, 720px);
+  border-radius: 12px;
+  background: #fff;
+  padding: 16px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5);
+}
+
+.projector-sangat-qr-url {
+  color: rgba(255, 255, 255, 0.85);
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
+  font-size: clamp(0.85rem, 1.8vw, 1.1rem);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding-inline: 12px;
+}
