@@ -281,8 +281,104 @@
   margin-left: calc(var(--sp-3) * -1);
 }
 
+/* Hover/focus meaning panel -------------------------------------------- */
+.shabad-meaning-bar {
+  position: fixed;
+  left: max(12px, env(safe-area-inset-left));
+  right: max(12px, env(safe-area-inset-right));
+  bottom: calc(12px + env(safe-area-inset-bottom));
+  z-index: 70;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.shabad-meaning-card {
+  width: min(960px, 100%);
+  max-height: min(30vh, 240px);
+  overflow: hidden;
+  padding: var(--sp-4) var(--sp-5);
+  border: 1px solid color-mix(in srgb, var(--kesari-300) 55%, var(--color-border));
+  border-radius: var(--r-lg);
+  background:
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--color-surface) 94%, var(--kesari-50)),
+      var(--color-surface));
+  box-shadow: var(--shadow-lg);
+}
+
+.shabad-meaning-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-3);
+  color: var(--color-text-soft);
+  font-size: var(--fs-xs);
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.shabad-meaning-head strong {
+  color: var(--color-primary-deep);
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.shabad-meaning-items {
+  display: grid;
+  gap: var(--sp-3);
+}
+
+.shabad-meaning-item {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.shabad-meaning-label {
+  color: var(--color-text-muted);
+  font-size: var(--fs-xs);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.shabad-meaning-en {
+  color: var(--leaf-600);
+  font-family: var(--font-display);
+  font-size: var(--fs-base);
+  font-style: italic;
+  line-height: 1.5;
+}
+
+.shabad-meaning-pa {
+  color: var(--color-primary-deep);
+  font-family: var(--font-gurmukhi);
+  font-size: var(--fs-base);
+  font-weight: 500;
+  line-height: 1.65;
+}
+
+:root[data-theme="dark"] .shabad-meaning-card {
+  background:
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--color-surface) 88%, var(--kesari-700)),
+      var(--color-surface));
+}
+:root[data-theme="dark"] .shabad-meaning-en { color: #88C9A0; }
+:root[data-theme="dark"] .shabad-meaning-pa { color: #FCC078; }
+
 @media (max-width: 640px) {
   .shabad-line { padding: var(--sp-3); gap: var(--sp-3); }
   .shabad-line-gurmukhi { font-size: var(--fs-md); }
   .shabad-header { padding: var(--sp-4); }
+  .shabad-meaning-card {
+    padding: var(--sp-3) var(--sp-4);
+    max-height: min(34vh, 260px);
+  }
+  .shabad-meaning-head {
+    margin-bottom: var(--sp-2);
+  }
 }

@@ -23,6 +23,8 @@
  * "host connected" flag, SESSION_GRACE_MS before the session is purged).
  */
 
+const crypto = require('crypto');
+
 const MAX_PANKTI_LINES = 220;
 const MAX_PANKTI_LEN = 260;
 const MAX_TRANSLATION_LEN = 420;
@@ -63,6 +65,22 @@ const SUPPORTED_COMMANDS = Array.from(ALLOWED_COMMANDS);
 
 function cleanString(value, max = 180) {
   return String(value || '').trim().slice(0, max);
+}
+
+function makeHostToken() {
+  return crypto.randomBytes(24).toString('base64url');
+}
+
+function hostTokenFrom(value) {
+  return cleanString(value, 160);
+}
+
+function verifyHostToken(session, token) {
+  return Boolean(session?.hostToken && hostTokenFrom(token) === session.hostToken);
+}
+
+function rejectHostAuth(res) {
+  return res.status(403).json({ error: 'Main app session is not authorized. Refresh the main app and try again.' });
 }
 
 function sanitizeLines(raw) {
@@ -174,12 +192,13 @@ function makeFollowCode() {
   return `${Date.now().toString(36).slice(-6).toUpperCase()}`;
 }
 
-function createSession(hostId) {
+function createSession(hostId, hostToken = '') {
   const code = makeCode();
   const followCode = makeFollowCode();
   const now = Date.now();
   const session = {
     hostId,
+    hostToken: hostTokenFrom(hostToken) || makeHostToken(),
     code,
     followCode,
     generatedAt: now,
@@ -200,8 +219,8 @@ function createSession(hostId) {
   return session;
 }
 
-function getOrCreateSession(hostId) {
-  return sessions.get(hostId) || createSession(hostId);
+function getOrCreateSession(hostId, hostToken = '') {
+  return sessions.get(hostId) || createSession(hostId, hostToken);
 }
 
 function rotateCode(session) {
@@ -361,7 +380,7 @@ function publicSession(session, clientId = '', includeCode = false) {
     pendingControl: pendingRequests.some((request) => request.clientId === clientKey),
   }));
   return {
-    ...(includeCode ? { code: session.code, followCode: session.followCode } : {}),
+    ...(includeCode ? { code: session.code, followCode: session.followCode, hostToken: session.hostToken } : {}),
     role,
     paired: Boolean(client),
     locked: Boolean(session.controllerId),
@@ -523,10 +542,15 @@ function postState(req, res) {
   cleanupSessions();
   const body = req.body || {};
   const hostId = cleanString(body.remoteHostId, 80);
+  const hostToken = hostTokenFrom(body.hostToken);
   if (!hostId) {
     return res.status(400).json({ error: 'Missing main app id.' });
   }
-  const session = getOrCreateSession(hostId);
+  const existing = sessions.get(hostId);
+  if (existing && !verifyHostToken(existing, hostToken)) {
+    return rejectHostAuth(res);
+  }
+  const session = existing || getOrCreateSession(hostId, hostToken);
   session.hostLastSeen = Date.now();
 
   const nextState = {
@@ -809,6 +833,7 @@ function grantControl(req, res) {
   // Determine which session to operate on. Prefer hostId (host approval),
   // otherwise fall back to clientId (controller approval).
   const hostId = cleanString(req.body?.hostId || req.body?.remoteHostId, 80);
+  const hostToken = hostTokenFrom(req.body?.hostToken);
   const approverClientId = cleanString(req.body?.clientId, 80);
   const code = cleanString(req.body?.code, 12);
   const session = (hostId && sessions.get(hostId))
@@ -828,7 +853,7 @@ function grantControl(req, res) {
     return res.status(404).json({ error: 'That control request has expired.' });
   }
 
-  const isHostApproval = Boolean(hostId && session.hostId === hostId);
+  const isHostApproval = Boolean(hostId && session.hostId === hostId && verifyHostToken(session, hostToken));
   const isControllerApproval = Boolean(
     approverClientId &&
     code === session.code &&
@@ -880,11 +905,13 @@ function leaveSession(req, res) {
 function kickClient(req, res) {
   cleanupSessions();
   const hostId = cleanString(req.body?.hostId || req.body?.remoteHostId, 80);
+  const hostToken = hostTokenFrom(req.body?.hostToken);
   const targetClientId = cleanString(req.body?.targetClientId || req.body?.clientId, 80);
   if (!hostId) return res.status(400).json({ error: 'Missing main app id.' });
   if (!targetClientId) return res.status(400).json({ error: 'Missing remote device.' });
   const session = sessions.get(hostId);
   if (!session) return res.status(404).json({ error: 'Remote session is not connected.' });
+  if (!verifyHostToken(session, hostToken)) return rejectHostAuth(res);
 
   const target = session.clients.get(targetClientId);
   session.kickedClients?.add(targetClientId);
@@ -906,6 +933,7 @@ function kickClient(req, res) {
 function resetSession(req, res) {
   cleanupSessions();
   const hostId = cleanString(req.body?.hostId || req.body?.remoteHostId, 80);
+  const hostToken = hostTokenFrom(req.body?.hostToken);
   if (!hostId) {
     return res.status(400).json({ error: 'Missing main app id.' });
   }
@@ -914,9 +942,10 @@ function resetSession(req, res) {
     // No session yet for this host — create one so the host has a code to
     // share. This also means a brand-new main app pressing "New code"
     // before its first state publish gets a fresh session.
-    const fresh = createSession(hostId);
+    const fresh = createSession(hostId, hostToken);
     return res.json({ ok: true, session: publicSession(fresh, '', true) });
   }
+  if (!verifyHostToken(session, hostToken)) return rejectHostAuth(res);
   // Rotate the code, drop all paired clients (they need to re-pair with
   // the new code). Only this host's session is affected.
   rotateCode(session);

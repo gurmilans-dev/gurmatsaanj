@@ -217,8 +217,8 @@ There are no formal automated test scripts in `package.json` at the moment.
 
 ## Current Gotchas
 
-- The old `CLAUDE.md` and previous README mention routes/components/env files that no longer exist. Prefer this file and the source tree.
-- `README.md` should not claim `.env.example` files exist; they do not.
+- The old `CLAUDE.md` has several stale route/component/default notes. Prefer this file and the source tree.
+- `backend/.env.example` and `frontend/.env.example` exist and should stay aligned with actual config defaults.
 - `README.md` should not claim rate limit default is 60; the current default is 600.
 - Remote state is not durable.
 - Service worker registration only happens in production builds.

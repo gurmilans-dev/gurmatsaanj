@@ -17,11 +17,9 @@
  *
  * Uses the same `fuzzball` library as the backend so scores are identical.
  */
-// fuzzball is CommonJS. A namespace import + default fallback resolves the
-// scoring fns whether bundled by Vite (default = module.exports) or run under
-// Node's native ESM loader (named exports on the namespace, no default).
+// fuzzball exposes named ESM exports in the frontend build.
 import * as fuzzball from 'fuzzball';
-const fuzz = fuzzball.default || fuzzball;
+const fuzz = fuzzball;
 
 // ── Gurmukhi normalization (mirrors backend/src/utils/gurmukhi.js) ──────────
 

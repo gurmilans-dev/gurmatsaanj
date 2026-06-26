@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import ShabadView from '../../features/shabadView/ShabadView';
+import ShabadView, { renderGurmukhiLine } from '../../features/shabadView/ShabadView';
 import ShabadProse from '../../features/hukam/ShabadProse';
 import ShabadViewToggle from '../../features/hukam/ShabadViewToggle';
 import ProjectorControls from '../../features/projector/ProjectorControls';
@@ -36,6 +36,62 @@ const MicOffIcon = () => (
     <line x1="3.5" y1="3.5" x2="16.5" y2="16.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
   </svg>
 );
+
+const RAHAO_RE = /ਰਹਾਉ/;
+
+function isRahaoVerse(verse) {
+  return Boolean(verse?.isRahao) || RAHAO_RE.test(String(verse?.gurmukhi || ''));
+}
+
+function rahaoScopeKey(verse) {
+  return (
+    verse?.shabadId ||
+    verse?.meta?.shabadId ||
+    verse?.sectionTitle ||
+    verse?.sectionMeta ||
+    ''
+  );
+}
+
+function pickRahaoAnchor(verses, activeIndex) {
+  const candidates = (verses || [])
+    .map((verse, index) => ({ verse, index }))
+    .filter((item) => isRahaoVerse(item.verse));
+
+  if (!candidates.length) return null;
+  if (!Number.isFinite(Number(activeIndex)) || activeIndex < 0) return candidates[0];
+
+  const activeVerse = verses?.[activeIndex];
+  const activeScope = rahaoScopeKey(activeVerse);
+  const scoped = activeScope
+    ? candidates.filter((item) => rahaoScopeKey(item.verse) === activeScope)
+    : [];
+  const pool = scoped.length ? scoped : candidates;
+  const before = [...pool].reverse().find((item) => item.index <= activeIndex);
+  return before || pool.find((item) => item.index > activeIndex) || pool[0];
+}
+
+function RahaoAnchorBar({ anchor, activeIndex, larivaar, onJump }) {
+  if (!anchor?.verse) return null;
+  const isCurrent = Number(activeIndex) === Number(anchor.index);
+  return (
+    <button
+      type="button"
+      className={`shabad-rahao-anchor${isCurrent ? ' shabad-rahao-anchor-current' : ''}`}
+      onClick={() => onJump?.(anchor.index)}
+      aria-label={`Jump to Rahao line ${anchor.index + 1}`}
+      title="Jump to Rahao"
+    >
+      <span className="shabad-rahao-anchor-kicker">
+        Rahao
+        <strong>Line {anchor.index + 1}</strong>
+      </span>
+      <span className={`shabad-rahao-anchor-text gurmukhi${larivaar ? ' shabad-line-larivaar' : ''}`}>
+        {renderGurmukhiLine(anchor.verse.gurmukhi, anchor.verse.vishraams, larivaar)}
+      </span>
+    </button>
+  );
+}
 
 const QueueRemoveIcon = () => (
   <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
@@ -370,6 +426,10 @@ export default function ShabadPage() {
   const tracked = isKatha ? kathaTracking.tracked : kirtanTracking.tracked;
   const activeIndex = manualLine !== null ? manualLine : trackedIndex;
   const isManual = manualLine !== null;
+  const rahaoAnchor = useMemo(
+    () => pickRahaoAnchor(verses, activeIndex),
+    [verses, activeIndex],
+  );
 
   const handleAutoAdvance = useCallback((candidate) => {
     if (!candidate?.shabadId) return;
@@ -814,6 +874,15 @@ export default function ShabadPage() {
             )}
           </div>
         </div>
+
+        {!loading && !error && shabad && viewMode === 'reader' && rahaoAnchor && (
+          <RahaoAnchorBar
+            anchor={rahaoAnchor}
+            activeIndex={activeIndex}
+            larivaar={!!display.larivaar}
+            onJump={correctToLine}
+          />
+        )}
 
         {!loading && !error && shabad && (
           <div className="shabad-control-groups" aria-label="Live Shabad controls">

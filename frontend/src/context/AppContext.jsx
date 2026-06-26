@@ -23,6 +23,7 @@ const QUEUE_KEY = 'saanj-kirtan.queue';
 const PROJECTOR_PRESET_KEY = 'saanj-kirtan.projectorPreset';
 const KATHA_STAY_KEY = 'saanj-kirtan.kathaStayInCurrent';
 const REMOTE_HOST_KEY = 'saanj-kirtan.remoteHostId';
+const REMOTE_HOST_TOKEN_KEY = 'saanj-kirtan.remoteHostToken';
 
 export const PROJECTOR_PRESETS = [
   { id: 'contrast', label: 'High Contrast', fontScale: 1.12, tone: 'dark' },
@@ -226,6 +227,29 @@ function getOrCreateRemoteHostId() {
   }
 }
 
+function getOrCreateRemoteHostToken() {
+  try {
+    const existing = localStorage.getItem(REMOTE_HOST_TOKEN_KEY);
+    if (existing) return existing;
+    const next = randomId('host-token');
+    localStorage.setItem(REMOTE_HOST_TOKEN_KEY, next);
+    return next;
+  } catch {
+    return randomId('host-token');
+  }
+}
+
+function saveRemoteHostToken(token) {
+  if (!token) return;
+  try { localStorage.setItem(REMOTE_HOST_TOKEN_KEY, token); } catch { /* noop */ }
+}
+
+function remotePairingFromSession(session) {
+  if (!session || typeof session !== 'object') return session;
+  const { hostToken, ...safeSession } = session;
+  return safeSession;
+}
+
 function historyKeyFor(entry) {
   if (!entry) return '';
   if (entry.historyId) return entry.historyId;
@@ -412,6 +436,7 @@ export function AppProvider({ children }) {
   const [remoteLineCommand, setRemoteLineCommand] = useState(null);
   const [remoteLinesExpanded, setRemoteLinesExpanded] = useState(false);
   const remoteHostIdRef = useRef(getOrCreateRemoteHostId());
+  const remoteHostTokenRef = useRef(getOrCreateRemoteHostToken());
   const remoteOpenHistoryRef = useRef([]);
   const [remoteOpenHistoryVersion, setRemoteOpenHistoryVersion] = useState(0);
   const [remotePairing, setRemotePairing] = useState(null);
@@ -628,26 +653,40 @@ export function AppProvider({ children }) {
   }, []);
 
   const resetRemotePairing = useCallback(async () => {
-    const result = await api.resetRemoteSession(remoteHostIdRef.current);
-    if (result?.session) setRemotePairing(result.session);
+    const result = await api.resetRemoteSession(remoteHostIdRef.current, remoteHostTokenRef.current);
+    if (result?.session?.hostToken) {
+      remoteHostTokenRef.current = result.session.hostToken;
+      saveRemoteHostToken(result.session.hostToken);
+    }
+    if (result?.session) setRemotePairing(remotePairingFromSession(result.session));
     return result?.session || null;
   }, []);
 
   const approveRemoteControlRequest = useCallback(async (targetClientId) => {
     const result = await api.grantRemoteControl({
       hostId: remoteHostIdRef.current,
+      hostToken: remoteHostTokenRef.current,
       targetClientId,
     });
-    if (result?.session) setRemotePairing(result.session);
+    if (result?.session?.hostToken) {
+      remoteHostTokenRef.current = result.session.hostToken;
+      saveRemoteHostToken(result.session.hostToken);
+    }
+    if (result?.session) setRemotePairing(remotePairingFromSession(result.session));
     return result;
   }, []);
 
   const kickRemoteClient = useCallback(async (targetClientId) => {
     const result = await api.kickRemoteClient({
       hostId: remoteHostIdRef.current,
+      hostToken: remoteHostTokenRef.current,
       targetClientId,
     });
-    if (result?.session) setRemotePairing(result.session);
+    if (result?.session?.hostToken) {
+      remoteHostTokenRef.current = result.session.hostToken;
+      saveRemoteHostToken(result.session.hostToken);
+    }
+    if (result?.session) setRemotePairing(remotePairingFromSession(result.session));
     return result;
   }, []);
 
@@ -1992,16 +2031,21 @@ export function AppProvider({ children }) {
         const result = await api.publishRemoteState({
           ...state,
           remoteHostId: remoteHostIdRef.current,
+          hostToken: remoteHostTokenRef.current,
           micListening: Boolean(resolveRemoteMicTarget()?.isListening),
         });
         if (!cancelled && result?.session) {
+          if (result.session.hostToken) {
+            remoteHostTokenRef.current = result.session.hostToken;
+            saveRemoteHostToken(result.session.hostToken);
+          }
           const generation = Number(result.session.generatedAt || 0);
           if (generation && generation !== remoteSessionGenerationRef.current) {
             remoteSessionGenerationRef.current = generation;
             lastRemoteCommandRef.current = 0;
             processedRemoteCommandIdsRef.current = new Set();
           }
-          setRemotePairing(result.session);
+          setRemotePairing(remotePairingFromSession(result.session));
         }
         delay = 1000;
       } catch {

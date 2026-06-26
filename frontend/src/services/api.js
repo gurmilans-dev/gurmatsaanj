@@ -144,8 +144,8 @@ export const api = {
   leaveRemoteSession({ clientId }) {
     return http.post('/remote/leave', { clientId }).then((r) => r.data);
   },
-  kickRemoteClient({ hostId, targetClientId }) {
-    return http.post('/remote/kick', { hostId, targetClientId }).then((r) => r.data);
+  kickRemoteClient({ hostId, hostToken, targetClientId }) {
+    return http.post('/remote/kick', { hostId, hostToken, targetClientId }).then((r) => r.data);
   },
   heartbeatRemoteSession({ code, clientId, name }) {
     return http.post('/remote/heartbeat', { code, clientId, name }).then((r) => r.data);
@@ -156,10 +156,10 @@ export const api = {
   releaseRemoteControl({ code, clientId, name }) {
     return http.post('/remote/release', { code, clientId, name }).then((r) => r.data);
   },
-  grantRemoteControl({ code, clientId, name, targetClientId, hostId }) {
-    return http.post('/remote/grant', { code, clientId, name, targetClientId, hostId }).then((r) => r.data);
+  grantRemoteControl({ code, clientId, name, targetClientId, hostId, hostToken }) {
+    return http.post('/remote/grant', { code, clientId, name, targetClientId, hostId, hostToken }).then((r) => r.data);
   },
-  resetRemoteSession(hostId) {
-    return http.post('/remote/reset', { hostId }).then((r) => r.data);
+  resetRemoteSession(hostId, hostToken) {
+    return http.post('/remote/reset', { hostId, hostToken }).then((r) => r.data);
   },
 };

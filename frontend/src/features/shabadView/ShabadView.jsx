@@ -1,4 +1,4 @@
-import { Fragment, memo, useCallback, useEffect, useRef } from 'react';
+import { Fragment, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import './ShabadView.css';
 
@@ -98,6 +98,9 @@ const ShabadLine = memo(function ShabadLine({
   punjabiSteek,
   larivaar,
   onClick,
+  meaningEnabled,
+  onMeaningEnter,
+  onMeaningLeave,
   registerRef,
 }) {
   const punjabiText = showPunjabi ? pickPunjabiSteek(verse, punjabiSteek) : '';
@@ -117,6 +120,10 @@ const ShabadLine = memo(function ShabadLine({
       aria-current={isActive ? 'true' : undefined}
       aria-label={onClick ? `Select line ${index + 1}` : undefined}
       onClick={onClick ? () => onClick(index) : undefined}
+      onMouseEnter={meaningEnabled ? () => onMeaningEnter(index) : undefined}
+      onMouseLeave={meaningEnabled ? onMeaningLeave : undefined}
+      onFocus={meaningEnabled ? () => onMeaningEnter(index) : undefined}
+      onBlur={meaningEnabled ? onMeaningLeave : undefined}
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}
       onKeyDown={onClick ? (e) => {
@@ -145,6 +152,26 @@ const ShabadLine = memo(function ShabadLine({
   );
 });
 
+function meaningForVerse(verse, display) {
+  if (!verse || (display.showEnglish && display.showPunjabi)) return null;
+
+  const english = String(verse.translationEn || '').trim();
+  const punjabi = String(pickPunjabiSteek(verse, display.punjabiSteek) || '').trim();
+  const items = [];
+
+  if (!display.showEnglish && english) {
+    items.push({ id: 'english', label: 'English', text: english, className: 'shabad-meaning-en' });
+  }
+  if (!display.showPunjabi && punjabi) {
+    items.push({ id: 'punjabi', label: 'Punjabi', text: punjabi, className: 'shabad-meaning-pa gurmukhi' });
+  }
+
+  if (!items.length) return null;
+  return {
+    items,
+  };
+}
+
 /**
  * Renders the verses of a Shabad. Highlights the line currently being sung
  * (driven by the parent which runs useLineTracking) and auto-scrolls it into
@@ -164,9 +191,20 @@ export default function ShabadView({
 }) {
   const { display } = useApp();
   const lineRefs = useRef([]);
+  const [meaningIndex, setMeaningIndex] = useState(-1);
+  const meaningEnabled = !(display.showEnglish && display.showPunjabi);
 
   const registerRef = useCallback((i, el) => {
     lineRefs.current[i] = el;
+  }, []);
+
+  const showMeaningForLine = useCallback((index) => {
+    if (!meaningEnabled) return;
+    setMeaningIndex((current) => (current === index ? current : index));
+  }, [meaningEnabled]);
+
+  const hideMeaning = useCallback(() => {
+    setMeaningIndex(-1);
   }, []);
 
   // Auto-scroll the active line into view (centered) whenever it changes.
@@ -178,6 +216,15 @@ export default function ShabadView({
       el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   }, [activeIndex, disableAutoScroll]);
+
+  useEffect(() => {
+    if (!meaningEnabled) setMeaningIndex(-1);
+  }, [meaningEnabled]);
+
+  const hoverMeaning = useMemo(() => {
+    if (!meaningEnabled || meaningIndex < 0) return null;
+    return meaningForVerse(verses?.[meaningIndex], display);
+  }, [display, meaningEnabled, meaningIndex, verses]);
 
   if (!verses || verses.length === 0) {
     return (
@@ -214,12 +261,33 @@ export default function ShabadView({
                 punjabiSteek={display.punjabiSteek}
                 larivaar={!!display.larivaar}
                 onClick={onLineClick}
+                meaningEnabled={meaningEnabled}
+                onMeaningEnter={showMeaningForLine}
+                onMeaningLeave={hideMeaning}
                 registerRef={registerRef}
               />
             </Fragment>
           );
         })}
       </ol>
+      {hoverMeaning && (
+        <aside className="shabad-meaning-bar" role="note">
+          <div className="shabad-meaning-card">
+            <div className="shabad-meaning-head">
+              <span>Meaning</span>
+              {meaningIndex >= 0 && <strong>Line {meaningIndex + 1}</strong>}
+            </div>
+            <div className="shabad-meaning-items">
+              {hoverMeaning.items.map((item) => (
+                <section key={item.id} className="shabad-meaning-item">
+                  <span className="shabad-meaning-label">{item.label}</span>
+                  <p className={item.className}>{item.text}</p>
+                </section>
+              ))}
+            </div>
+          </div>
+        </aside>
+      )}
     </article>
   );
 }
