@@ -103,10 +103,11 @@ Vite dev and preview use HTTPS with a self-signed cert and proxy `/api` to `http
 
 ## Backend Notes
 
-- `server.js` mounts `/health` and `/api/*`, applies security middleware, JSON limits, Morgan logging, 404 JSON, and centralized error handling.
+- `src/app.js` (`createApp()`) mounts `/health` and `/api/*`, applies security middleware, JSON limits, Morgan logging, 404 JSON, and centralized error handling. `server.js` loads env and listens on `config.port`.
 - `banidb.service.js` owns BaniDB retries, 12-hour in-memory cache, Unicode Gurmukhi selection, search-type detection, Ang lookup, Bani lookup, daily Hukam, and fallback shaping.
 - `matching.service.js` owns live Shabad suggestions and backend line tracking fallback with fuzzy scoring.
 - `remote.controller.js` is process-local memory only. Remote sessions, pair codes, follow codes, clients, queues, and latest state are lost on backend restart.
+- Phone remotes authenticate with `clientId` + a server-minted `clientToken` from `/remote/join`; a `clientId` alone is never a credential. See `docs/security/remote-control.md`.
 - Do not add BaniDB search type `5` to generic text fallback chains; type `5` is Ang/page search.
 - Preserve the `pickUnicode`/`isUnicodeGurmukhi` behavior when reshaping BaniDB responses.
 
@@ -190,7 +191,14 @@ cd frontend
 npm run build
 ```
 
-For backend changes, at minimum start the API and hit health:
+For backend changes, run the automated tests (Node's built-in `node:test`; local ephemeral ports only, no BaniDB calls):
+
+```powershell
+cd backend
+npm test
+```
+
+Then start the API and hit health:
 
 ```powershell
 cd backend
@@ -213,7 +221,7 @@ For live features, manually verify in a browser:
 - `/follow/:code` if remote/follow state changed
 - `/setup` if audio code changed
 
-There are no formal automated test scripts in `package.json` at the moment.
+Automated tests exist only for the backend (`backend/tests/`: dependency floor, body parsing, remote-control auth). The frontend has no automated test script.
 
 ## Current Gotchas
 

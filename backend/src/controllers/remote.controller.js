@@ -11,11 +11,12 @@
  *   - postState : creates/updates the session keyed by remoteHostId in body.
  *   - getCommands / streamCommands : main app asks for its OWN session's
  *     commands, identified by remoteHostId query param.
- *   - postCommand : phone-remote posts with clientId + code. We look up the
- *     session by clientId (bound during /join), or fall back to code lookup.
  *   - joinSession : phone enters a code. We find the matching session, bind
- *     its clientId so future requests resolve to the same session.
- *   - heartbeat / claim / release / grant : clientId resolves the session.
+ *     its clientId, and return a per-device secret (clientToken).
+ *   - postCommand / heartbeat / claim / release / grant / leave / getState :
+ *     the phone proves its identity with clientId + clientToken. A clientId
+ *     alone is never enough: every paired device can see the other devices'
+ *     ids in the session roster.
  *   - resetSession : hostId resolves the session (host can only reset its
  *     own session, never anyone else's).
  *
@@ -67,12 +68,26 @@ function cleanString(value, max = 180) {
   return String(value || '').trim().slice(0, max);
 }
 
-function makeHostToken() {
+function makeSecretToken() {
   return crypto.randomBytes(24).toString('base64url');
 }
 
 function hostTokenFrom(value) {
   return cleanString(value, 160);
+}
+
+const CLIENT_TOKEN_HEADER = 'x-remote-client-token';
+const KICKED_ERROR = 'This remote was removed from the session. Ask the main app to generate a new code if you need to rejoin.';
+
+/** Device secret from the header (GET /state) or the JSON body (POSTs). */
+function clientTokenFrom(req) {
+  return cleanString(req.get?.(CLIENT_TOKEN_HEADER) || req.body?.clientToken, 160);
+}
+
+function tokensMatch(expected, presented) {
+  const a = Buffer.from(String(expected || ''));
+  const b = Buffer.from(String(presented || ''));
+  return a.length > 0 && a.length === b.length && crypto.timingSafeEqual(a, b);
 }
 
 function verifyHostToken(session, token) {
@@ -198,7 +213,7 @@ function createSession(hostId, hostToken = '') {
   const now = Date.now();
   const session = {
     hostId,
-    hostToken: hostTokenFrom(hostToken) || makeHostToken(),
+    hostToken: hostTokenFrom(hostToken) || makeSecretToken(),
     code,
     followCode,
     generatedAt: now,
@@ -346,6 +361,9 @@ function touchClient(session, clientId, patch = {}) {
     id,
     name: cleanString(patch.name || existing.name || 'Remote device', 80),
     lastSeen: Date.now(),
+    // Per-device secret, minted once when the device first joins. Never
+    // included in publicSession() payloads.
+    token: existing.token || makeSecretToken(),
   };
   session.clients.set(id, client);
   clientToHost.set(id, session.hostId);
@@ -437,34 +455,49 @@ function emptyPublicSession() {
   };
 }
 
-function verifyController(body = {}) {
+/**
+ * Authenticate a paired remote device: it must be a current member of the
+ * session and present the clientToken minted for it by /join.
+ *
+ * With requireCode (default) the session is the one matching the current pair
+ * code. Without it (getState, leave) the device's own clientId binding is
+ * also tried, so a device whose local code was cleared can still read state
+ * or leave. Resolving by code first means a clientId binding that someone
+ * else re-pointed cannot redirect an authenticated device.
+ */
+function authenticateClient({ clientId, code, token }, { requireCode = true } = {}) {
+  const id = cleanString(clientId, 80);
+  const pairCode = cleanString(code, 12);
+  if (!id) return { ok: false, reason: 'unpaired', clientId: id, session: null };
+  const byCode = findSessionByCode(pairCode);
+  const candidates = requireCode ? [byCode] : [byCode, findSessionByClientId(id)];
+  let kicked = false;
+  for (const session of candidates) {
+    if (!session) continue;
+    if (session.kickedClients?.has(id)) { kicked = true; continue; }
+    cleanupSessionClients(session);
+    const client = session.clients.get(id);
+    if (client && tokensMatch(client.token, token)) return { ok: true, clientId: id, session, client };
+  }
+  return { ok: false, reason: kicked ? 'kicked' : 'unpaired', clientId: id, session: null };
+}
+
+function verifyController(body = {}, token = '') {
   cleanupSessions();
-  const clientId = cleanString(body.clientId, 80);
-  const code = cleanString(body.code, 12);
-  const session = findSessionByClientId(clientId) || findSessionByCode(code);
-  if (!session || !clientId || code !== session.code) {
+  const auth = authenticateClient({ clientId: body.clientId, code: body.code, token });
+  if (!auth.ok) {
     return {
       ok: false,
       status: 403,
-      error: 'Remote is not paired. Enter the current remote code again.',
-      clientId,
+      error: auth.reason === 'kicked'
+        ? KICKED_ERROR
+        : 'Remote is not paired. Enter the current remote code again.',
+      clientId: auth.clientId,
       session: null,
     };
   }
-  if (session.kickedClients?.has(clientId)) {
-    return {
-      ok: false,
-      status: 403,
-      error: 'This remote was removed from the session. Ask the main app to generate a new code if you need to rejoin.',
-      clientId,
-      session,
-    };
-  }
-  cleanupSessionClients(session);
-  const client = touchClient(session, clientId, { name: body.clientName || body.name });
-  if (!client) {
-    return { ok: false, status: 403, error: 'Remote client is missing.', clientId, session };
-  }
+  const { session, clientId } = auth;
+  touchClient(session, clientId, { name: body.clientName || body.name });
   if (!session.controllerId) session.controllerId = clientId;
   if (session.controllerId !== clientId) {
     const controller = session.clients.get(session.controllerId);
@@ -605,11 +638,20 @@ function getState(req, res) {
   cleanupSessions();
   const clientId = cleanString(req.query?.clientId, 80);
   const code = cleanString(req.query?.code, 24);
-  const session = findSessionByClientId(clientId) || findSessionByFollowCode(code);
+  const auth = clientId
+    ? authenticateClient(
+      { clientId, code: req.query?.pairCode, token: clientTokenFrom(req) },
+      { requireCode: false },
+    )
+    : null;
+  const session = auth?.ok ? auth.session : findSessionByFollowCode(code);
   if (!session) {
     return res.json(publicRemoteState(null, '', { includeCommands: true, includeSession: true }));
   }
-  res.json(publicRemoteState(session, clientId, { includeCommands: true, includeSession: Boolean(clientId) }));
+  res.json(publicRemoteState(session, auth?.ok ? clientId : '', {
+    includeCommands: true,
+    includeSession: Boolean(auth?.ok),
+  }));
 }
 
 function getFollowState(req, res) {
@@ -628,7 +670,7 @@ function postCommand(req, res) {
   if (!ALLOWED_COMMANDS.has(type)) {
     return res.status(400).json({ error: 'Unsupported remote command.' });
   }
-  const auth = verifyController(req.body || {});
+  const auth = verifyController(req.body || {}, clientTokenFrom(req));
   if (!auth.ok) {
     return res.status(auth.status).json({
       error: auth.error,
@@ -756,43 +798,52 @@ function joinSession(req, res) {
     return res.status(403).json({ error: 'Wrong remote code. Check the main app and try again.' });
   }
   if (session.kickedClients?.has(clientId)) {
-    return res.status(403).json({
-      error: 'This remote was removed from the session. Ask the main app to generate a new code if you need to rejoin.',
-    });
+    return res.status(403).json({ error: KICKED_ERROR });
   }
   cleanupSessionClients(session);
-  touchClient(session, clientId, { name: req.body?.name || req.body?.clientName });
+  // A device already in the session may only re-join (page reload, second
+  // tab) with its own secret. Otherwise any viewer could join under the
+  // controller's visible clientId and be handed its identity.
+  const existing = session.clients.get(clientId);
+  if (existing && !tokensMatch(existing.token, clientTokenFrom(req))) {
+    return res.status(409).json({
+      error: 'This remote ID is already paired in this session. Close other remote tabs, wait a minute, then pair again.',
+    });
+  }
+  const client = touchClient(session, clientId, { name: req.body?.name || req.body?.clientName });
   if (!session.controllerId) session.controllerId = clientId;
-  return res.json({ ok: true, session: publicSession(session, clientId) });
+  return res.json({ ok: true, clientToken: client.token, session: publicSession(session, clientId) });
+}
+
+/** Shared auth for heartbeat / claim / release; sends the 403 itself. */
+function requirePairedClient(req, res, unpairedError) {
+  const auth = authenticateClient({
+    clientId: req.body?.clientId,
+    code: req.body?.code,
+    token: clientTokenFrom(req),
+  });
+  if (!auth.ok) {
+    res.status(403).json({
+      error: auth.reason === 'kicked' ? 'This remote was removed from the session.' : unpairedError,
+    });
+  }
+  return auth;
 }
 
 function heartbeat(req, res) {
   cleanupSessions();
-  const clientId = cleanString(req.body?.clientId, 80);
-  const code = cleanString(req.body?.code, 12);
-  const session = findSessionByClientId(clientId) || findSessionByCode(code);
-  if (!session || !clientId || code !== session.code || !session.clients.has(clientId)) {
-    return res.status(403).json({ error: 'Remote session expired. Pair again.' });
-  }
-  if (session.kickedClients?.has(clientId)) {
-    return res.status(403).json({ error: 'This remote was removed from the session.' });
-  }
+  const auth = requirePairedClient(req, res, 'Remote session expired. Pair again.');
+  if (!auth.ok) return undefined;
+  const { session, clientId } = auth;
   touchClient(session, clientId, { name: req.body?.name || req.body?.clientName });
   return res.json({ ok: true, session: publicSession(session, clientId) });
 }
 
 function claimControl(req, res) {
   cleanupSessions();
-  const clientId = cleanString(req.body?.clientId, 80);
-  const code = cleanString(req.body?.code, 12);
-  const session = findSessionByClientId(clientId) || findSessionByCode(code);
-  if (!session || !clientId || code !== session.code || !session.clients.has(clientId)) {
-    return res.status(403).json({ error: 'Pair this remote before taking control.' });
-  }
-  if (session.kickedClients?.has(clientId)) {
-    return res.status(403).json({ error: 'This remote was removed from the session.' });
-  }
-  cleanupSessionClients(session);
+  const auth = requirePairedClient(req, res, 'Pair this remote before taking control.');
+  if (!auth.ok) return undefined;
+  const { session, clientId } = auth;
   if (session.controllerId && session.controllerId !== clientId) {
     touchClient(session, clientId, { name: req.body?.name || req.body?.clientName });
     addControlRequest(session, clientId);
@@ -812,15 +863,9 @@ function claimControl(req, res) {
 
 function releaseControl(req, res) {
   cleanupSessions();
-  const clientId = cleanString(req.body?.clientId, 80);
-  const code = cleanString(req.body?.code, 12);
-  const session = findSessionByClientId(clientId) || findSessionByCode(code);
-  if (!session || !clientId || code !== session.code || !session.clients.has(clientId)) {
-    return res.status(403).json({ error: 'Remote session expired. Pair again.' });
-  }
-  if (session.kickedClients?.has(clientId)) {
-    return res.status(403).json({ error: 'This remote was removed from the session.' });
-  }
+  const auth = requirePairedClient(req, res, 'Remote session expired. Pair again.');
+  if (!auth.ok) return undefined;
+  const { session, clientId } = auth;
   touchClient(session, clientId, { name: req.body?.name || req.body?.clientName });
   if (session.controllerId === clientId) session.controllerId = '';
   clearControlRequests(session, clientId);
@@ -837,12 +882,28 @@ function grantControl(req, res) {
   const approverClientId = cleanString(req.body?.clientId, 80);
   const code = cleanString(req.body?.code, 12);
   const session = (hostId && sessions.get(hostId))
-    || findSessionByClientId(approverClientId)
-    || findSessionByCode(code);
+    || findSessionByCode(code)
+    || findSessionByClientId(approverClientId);
   if (!session) {
     return res.status(404).json({ error: 'That session is no longer connected.' });
   }
   cleanupSessionClients(session);
+
+  const isHostApproval = Boolean(hostId && session.hostId === hostId && verifyHostToken(session, hostToken));
+  const approverAuthenticated = Boolean(
+    approverClientId &&
+    code === session.code &&
+    !session.kickedClients?.has(approverClientId) &&
+    tokensMatch(session.clients.get(approverClientId)?.token, clientTokenFrom(req))
+  );
+  const isControllerApproval = approverAuthenticated && session.controllerId === approverClientId;
+  if (!isHostApproval && !isControllerApproval) {
+    return res.status(403).json({
+      error: 'Only the main app or current controller can approve control.',
+      session: approverAuthenticated ? publicSession(session, approverClientId) : emptyPublicSession(),
+    });
+  }
+
   const targetClient = targetClientId ? session.clients.get(targetClientId) : null;
   if (!targetClient) {
     return res.status(404).json({ error: 'That remote is no longer connected.' });
@@ -851,20 +912,6 @@ function grantControl(req, res) {
   const hasRequest = requests.some((r) => r.clientId === targetClientId);
   if (!hasRequest) {
     return res.status(404).json({ error: 'That control request has expired.' });
-  }
-
-  const isHostApproval = Boolean(hostId && session.hostId === hostId && verifyHostToken(session, hostToken));
-  const isControllerApproval = Boolean(
-    approverClientId &&
-    code === session.code &&
-    session.clients.has(approverClientId) &&
-    session.controllerId === approverClientId
-  );
-  if (!isHostApproval && !isControllerApproval) {
-    return res.status(403).json({
-      error: 'Only the main app or current controller can approve control.',
-      session: publicSession(session, approverClientId),
-    });
   }
   if (isControllerApproval) {
     touchClient(session, approverClientId, { name: req.body?.name || req.body?.clientName });
@@ -885,20 +932,25 @@ function grantControl(req, res) {
  * Phone explicitly wants to forget its pairing — drop it from the session
  * and from clientToHost so the next /state poll returns "unpaired" instead
  * of the stale binding we'd otherwise hand back. Used by the "Pair another
- * code" button on the remote page.
+ * code" button on the remote page. Only the device itself (clientToken) can
+ * leave; a bare clientId must not disconnect someone else's remote.
  */
 function leaveSession(req, res) {
   cleanupSessions();
   const clientId = cleanString(req.body?.clientId, 80);
   if (!clientId) return res.status(400).json({ error: 'Missing remote client id.' });
-  const hostId = clientToHost.get(clientId);
-  const session = hostId ? sessions.get(hostId) : null;
-  if (session) {
-    if (session.controllerId === clientId) session.controllerId = '';
-    session.clients.delete(clientId);
-    clearControlRequests(session, clientId);
+  const auth = authenticateClient(
+    { clientId, code: req.body?.code, token: clientTokenFrom(req) },
+    { requireCode: false },
+  );
+  if (!auth.ok) {
+    return res.status(403).json({ error: 'Remote is not paired with this session.' });
   }
-  clientToHost.delete(clientId);
+  const { session } = auth;
+  if (session.controllerId === clientId) session.controllerId = '';
+  session.clients.delete(clientId);
+  clearControlRequests(session, clientId);
+  if (clientToHost.get(clientId) === session.hostId) clientToHost.delete(clientId);
   return res.json({ ok: true });
 }
 

@@ -37,6 +37,9 @@ const COMMANDS = {
 const REMOTE_CLIENT_KEY = 'saanj-kirtan.remoteClientId';
 const REMOTE_CODE_KEY = 'saanj-kirtan.remotePairCode';
 const REMOTE_NAME_KEY = 'saanj-kirtan.remoteName';
+// Per-device secret issued by /remote/join. Proves this phone owns its
+// clientId; other paired devices can see clientIds but never this token.
+const REMOTE_CLIENT_TOKEN_KEY = 'saanj-kirtan.remoteClientToken';
 
 function randomClientId() {
   try {
@@ -781,16 +784,19 @@ export default function RemoteControlPage() {
     return next;
   });
   const [pairCode, setPairCode] = useState(() => codeFromUrl() || storedValue(REMOTE_CODE_KEY));
+  const [clientToken, setClientToken] = useState(() => storedValue(REMOTE_CLIENT_TOKEN_KEY));
   const [clientName, setClientName] = useState(() =>
     storedValue(REMOTE_NAME_KEY, defaultRemoteName())
   );
   const [remoteSession, setRemoteSession] = useState(null);
   const [pairing, setPairing] = useState(false);
   const searchModeTouchedRef = useRef(false);
-  // Mirror pairCode through a ref so the state-poll loop (which mounts once)
-  // can read the latest value without restarting on every keystroke.
+  // Mirror pairCode / clientToken through refs so the state-poll loop (which
+  // mounts once) can read the latest values without restarting.
   const pairCodeRef = useRef(pairCode);
   useEffect(() => { pairCodeRef.current = pairCode; }, [pairCode]);
+  const clientTokenRef = useRef(clientToken);
+  useEffect(() => { clientTokenRef.current = clientToken; }, [clientToken]);
 
   const supportedCommands = useMemo(() => {
     if (Array.isArray(state?.supportedCommands)) return new Set(state.supportedCommands);
@@ -814,7 +820,11 @@ export default function RemoteControlPage() {
     let delay = 1000;
     const load = async () => {
       try {
-        const next = await api.getRemoteState({ clientId });
+        const next = await api.getRemoteState({
+          clientId,
+          pairCode: pairCodeRef.current,
+          clientToken: clientTokenRef.current,
+        });
         if (!cancelled) {
           setState(next);
           // If the user just clicked "Pair another code" (local pairCode is
@@ -854,9 +864,10 @@ export default function RemoteControlPage() {
 
   const remoteAuth = useMemo(() => ({
     clientId,
+    clientToken,
     code: pairCode,
     name: clientName,
-  }), [clientId, clientName, pairCode]);
+  }), [clientId, clientName, clientToken, pairCode]);
   useEffect(() => {
     if (!remoteSession?.paired || pairCode.length !== 4) return undefined;
     let cancelled = false;
@@ -892,7 +903,17 @@ export default function RemoteControlPage() {
     try {
       rememberValue(REMOTE_CODE_KEY, pairCode);
       rememberValue(REMOTE_NAME_KEY, clientName || 'Remote device');
-      const result = await api.joinRemoteSession(remoteAuth);
+      // Read the stored token fresh: another tab of this remote shares the
+      // clientId and may have paired (and stored a token) after this mounted.
+      const result = await api.joinRemoteSession({
+        ...remoteAuth,
+        clientToken: storedValue(REMOTE_CLIENT_TOKEN_KEY) || remoteAuth.clientToken,
+      });
+      if (result?.clientToken) {
+        rememberValue(REMOTE_CLIENT_TOKEN_KEY, result.clientToken);
+        clientTokenRef.current = result.clientToken;
+        setClientToken(result.clientToken);
+      }
       setRemoteSession(result?.session || null);
       return true;
     } catch (err) {
@@ -984,14 +1005,14 @@ export default function RemoteControlPage() {
     // returns "unpaired" — otherwise the binding lives in clientToHost and
     // the polling loop would immediately re-paint us as paired.
     if (clientId && api.leaveRemoteSession) {
-      api.leaveRemoteSession({ clientId }).catch(() => { /* best-effort */ });
+      api.leaveRemoteSession({ clientId, clientToken, code: pairCode }).catch(() => { /* best-effort */ });
     }
     forgetValue(REMOTE_CODE_KEY);
     setRemoteSession(null);
     setPairCode('');
     setLastSent('');
     setError('');
-  }, [clientId]);
+  }, [clientId, clientToken, pairCode]);
 
   const commandAvailable = useCallback((command) => supportedCommands.has(command), [supportedCommands]);
 
