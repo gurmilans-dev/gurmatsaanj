@@ -128,10 +128,20 @@ export const api = {
       clientName: auth.name,
     }).then((r) => r.data);
   },
-  getRemoteCommands(after = 0, hostId = '') {
+  // Main app (host) command polling. The hostToken goes in a header, never
+  // in the URL; the host id alone is not accepted by the backend.
+  getRemoteCommands(after = 0, { hostId, hostToken } = {}) {
+    const headers = {};
+    if (hostId) headers['X-Remote-Host-Id'] = hostId;
+    if (hostToken) headers['X-Remote-Host-Token'] = hostToken;
     return http
-      .get('/remote/commands', { params: { after, hostId: hostId || undefined } })
+      .get('/remote/commands', { params: { after }, headers })
       .then((r) => r.data);
+  },
+  // EventSource cannot send headers, so the host exchanges its token for a
+  // short-lived, single-use ticket and puts only that in the stream URL.
+  getRemoteStreamTicket({ hostId, hostToken }) {
+    return http.post('/remote/stream-ticket', { hostId, hostToken }).then((r) => r.data);
   },
   publishRemoteState(state) {
     return http.post('/remote/state', state).then((r) => r.data);

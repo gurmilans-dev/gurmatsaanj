@@ -74,7 +74,11 @@ async function hostView(host) {
 }
 
 async function hostCommands(host) {
-  const res = await call('GET', '/api/remote/commands', { query: { hostId: host.hostId, after: 0 } });
+  const res = await call('GET', '/api/remote/commands', {
+    query: { after: 0 },
+    headers: { 'X-Remote-Host-Id': host.hostId, 'X-Remote-Host-Token': host.hostToken },
+  });
+  assert.equal(res.status, 200);
   return res.data.commands;
 }
 

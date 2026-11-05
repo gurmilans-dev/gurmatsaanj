@@ -226,6 +226,14 @@
   line-height: 1.12;
 }
 
+.follow-expired-title {
+  margin: 0;
+  color: var(--follow-text);
+  font-size: clamp(1.4rem, 5vw, 2.4rem);
+  font-weight: 750;
+  line-height: 1.25;
+}
+
 .follow-blank {
   min-height: 100%;
   background: #000;
