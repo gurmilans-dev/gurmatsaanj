@@ -9,7 +9,6 @@ import { api } from '../services/api';
 
 const STICKY_TTL_MS = 6000;     // keep a missing suggestion visible this long
 const DECAY_PER_CYCLE = 6;      // confidence drop per round it stays missing
-const MIN_CHANGE_CHARS = 2;     // ignore tiny interim-recognition churn
 const ERROR_BACKOFF_MS = 1400;  // brief pause before retrying the same audio
 
 export default function useShabadMatching(transcript, filters, {
@@ -66,13 +65,7 @@ export default function useShabadMatching(transcript, filters, {
       }
 
       const queryKey = `${text.slice(-180)}|${JSON.stringify(latestFilters || {})}`;
-      const previous = lastQueryRef.current;
-      if (
-        queryKey === previous ||
-        (previous && Math.abs(queryKey.length - previous.length) < MIN_CHANGE_CHARS)
-      ) {
-        return;
-      }
+      if (queryKey === lastQueryRef.current) return;
       lastQueryRef.current = queryKey;
 
       const myId = ++reqIdRef.current;

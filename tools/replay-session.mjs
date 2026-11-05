@@ -94,3 +94,5 @@ console.log(
     ? 'EXACT ✓ (deterministic — matcher unchanged)'
     : `${mismatches} mismatch(es) — frontend matchLine has drifted from this recording`}`,
 );
+
+if (mismatches > 0) process.exitCode = 1;

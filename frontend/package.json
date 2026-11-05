@@ -5,6 +5,7 @@
   "type": "module",
   "description": "Gurmat Saanj frontend - Every Line. Live.",
   "scripts": {
+    "test": "vitest run",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
@@ -25,6 +26,8 @@
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-basic-ssl": "^1.2.0",
     "@vitejs/plugin-react": "^4.3.1",
-    "vite": "^5.4.6"
+    "react-test-renderer": "18.3.1",
+    "vite": "^5.4.6",
+    "vitest": "3.2.6"
   }
 }
