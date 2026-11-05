@@ -56,6 +56,9 @@ function useFollowPrefs() {
 
 // ── Stream wiring ────────────────────────────────────────────────────────
 
+const RECONNECT_MIN_MS = 3000;
+const RECONNECT_MAX_MS = 30_000;
+
 function streamUrl(code) {
   const base = import.meta.env.VITE_API_URL || '/api';
   const params = new URLSearchParams({ code });
@@ -88,6 +91,7 @@ export default function FollowPage() {
   const [state, setState] = useState(null);
   const [status, setStatus] = useState('Connecting...');
   const [connected, setConnected] = useState(false);
+  const [expired, setExpired] = useState(false);
 
   const [prefs, updatePrefs] = useFollowPrefs();
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -127,53 +131,98 @@ export default function FollowPage() {
   }, [settingsOpen]);
 
   // SSE subscription (with REST fallback for browsers without EventSource).
+  //
+  // When the host generates new codes or the session ends, the backend
+  // closes this stream with a `revoked` event and answers 404 over REST.
+  // Then we close the EventSource (otherwise the browser reconnects forever),
+  // drop the last line from the screen and show the expired-link message.
   useEffect(() => {
     let cancelled = false;
+    let revoked = false;
     let pollTimer = null;
+    let reconnectTimer = null;
+    let reconnectDelay = RECONNECT_MIN_MS;
     let es = null;
+
+    setExpired(false);
+
+    const stopAll = () => {
+      if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+      if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
+      if (es) { es.close(); es = null; }
+    };
+
+    const markRevoked = () => {
+      if (cancelled || revoked) return;
+      revoked = true;
+      stopAll();
+      setState(null);
+      setConnected(false);
+      setExpired(true);
+      setStatus('Link expired');
+    };
+
+    const applyState = (next) => {
+      if (cancelled || revoked) return;
+      setState(next);
+      setConnected(Boolean(next?.connected));
+      setStatus(next?.connected ? 'Live' : 'Waiting');
+    };
 
     const loadOnce = async () => {
       try {
-        const next = await api.getFollowState(code);
-        if (cancelled) return;
-        setState(next);
-        setConnected(Boolean(next?.connected));
-        setStatus(next?.connected ? 'Live' : 'Waiting');
-      } catch {
-        if (cancelled) return;
+        applyState(await api.getFollowState(code));
+      } catch (err) {
+        if (cancelled || revoked) return;
+        if (err?.response?.status === 404) { markRevoked(); return; }
         setConnected(false);
         setStatus('Reconnecting...');
       }
     };
 
-    loadOnce();
-
-    if (typeof EventSource !== 'undefined') {
-      es = new EventSource(streamUrl(code));
-      es.addEventListener('state', (event) => {
+    const connect = () => {
+      if (cancelled || revoked) return;
+      const source = new EventSource(streamUrl(code));
+      es = source;
+      source.addEventListener('state', (event) => {
         try {
-          const next = JSON.parse(event.data);
-          if (cancelled) return;
-          setState(next);
-          setConnected(Boolean(next?.connected));
-          setStatus(next?.connected ? 'Live' : 'Waiting');
+          applyState(JSON.parse(event.data));
+          reconnectDelay = RECONNECT_MIN_MS;
         } catch {
           // Ignore one malformed packet; the next state event will repair it.
         }
       });
-      es.addEventListener('error', () => {
-        if (cancelled) return;
+      source.addEventListener('revoked', markRevoked);
+      source.addEventListener('error', () => {
+        if (cancelled || revoked || es !== source) return;
         setConnected(false);
         setStatus('Reconnecting...');
+        // EventSource retries network drops by itself but gives up for good
+        // on an HTTP error, e.g. the dev/preview proxy's 502 while the
+        // backend restarts. Reopen it ourselves; the REST check first
+        // catches a link that expired meanwhile.
+        if (source.readyState === EventSource.CLOSED) {
+          source.close();
+          es = null;
+          reconnectTimer = setTimeout(() => {
+            reconnectTimer = null;
+            loadOnce().then(connect);
+          }, reconnectDelay);
+          reconnectDelay = Math.min(RECONNECT_MAX_MS, reconnectDelay * 2);
+        }
       });
+    };
+
+    loadOnce();
+    if (typeof EventSource !== 'undefined') {
+      connect();
     } else {
       pollTimer = setInterval(loadOnce, 2000);
     }
 
     return () => {
       cancelled = true;
-      if (pollTimer) clearInterval(pollTimer);
-      if (es) es.close();
+      stopAll();
     };
   }, [code]);
 
@@ -210,7 +259,15 @@ export default function FollowPage() {
   const isIdle      = view === 'waheguru' || view === 'idle' || !view;
 
   let content;
-  if (isBlank) {
+  if (expired) {
+    content = (
+      <main className="follow-stage follow-idle follow-expired">
+        <h1 className="follow-onkar gurmukhi">ੴ</h1>
+        <p className="follow-expired-title" role="status">This Sangat View link has expired.</p>
+        <p className="follow-translit">Scan the new QR code shown by the main app.</p>
+      </main>
+    );
+  } else if (isBlank) {
     content = <div className="follow-blank" aria-label="Blank projector screen" />;
   } else if (isEmergency) {
     content = (

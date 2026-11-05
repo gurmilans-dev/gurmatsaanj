@@ -9,8 +9,15 @@
  *
  * Routing rules:
  *   - postState : creates/updates the session keyed by remoteHostId in body.
- *   - getCommands / streamCommands : main app asks for its OWN session's
- *     commands, identified by remoteHostId query param.
+ *   - getCommands : main app polls its OWN session's commands with the
+ *     X-Remote-Host-Id + X-Remote-Host-Token headers. The host id alone is
+ *     never enough.
+ *   - createStreamTicket / streamCommands : EventSource cannot send headers,
+ *     so the main app trades its hostToken for a short-lived, single-use
+ *     ticket and opens /stream?ticket=... The hostToken never goes in a URL.
+ *   - streamFollowState : Sangat View, keyed by the shared follow code.
+ *     Rotating the code (resetSession) or ending the session closes every
+ *     stream opened with the old code with a `revoked` event.
  *   - joinSession : phone enters a code. We find the matching session, bind
  *     its clientId, and return a per-device secret (clientToken).
  *   - postCommand / heartbeat / claim / release / grant / leave / getState :
@@ -38,6 +45,13 @@ const CLIENT_TTL_MS = 45_000;
 const CONTROLLER_TTL_MS = 30_000;
 const CONTROL_REQUEST_TTL_MS = 60_000;
 const REMOTE_CONTENT_TTL_MS = 12_000;
+const STREAM_TICKET_TTL_MS = 30_000;      // host SSE connect ticket lifetime
+const MAX_STREAM_TICKETS_PER_SESSION = 4;
+const SSE_HEARTBEAT_MS = 20_000;
+// `retry:` sent with a revoked Sangat View stream. A page that predates the
+// `revoked` event would otherwise let EventSource reconnect every few seconds
+// for as long as the phone stays open.
+const REVOKED_RETRY_MS = 24 * 60 * 60 * 1000;
 
 const ALLOWED_COMMANDS = new Set([
   // Line navigation
@@ -77,7 +91,10 @@ function hostTokenFrom(value) {
 }
 
 const CLIENT_TOKEN_HEADER = 'x-remote-client-token';
+const HOST_TOKEN_HEADER = 'x-remote-host-token';
+const HOST_ID_HEADER = 'x-remote-host-id';
 const KICKED_ERROR = 'This remote was removed from the session. Ask the main app to generate a new code if you need to rejoin.';
+const FOLLOW_EXPIRED_ERROR = 'Sangat View link has expired. Generate a new QR from the main app.';
 
 /** Device secret from the header (GET /state) or the JSON body (POSTs). */
 function clientTokenFrom(req) {
@@ -91,7 +108,22 @@ function tokensMatch(expected, presented) {
 }
 
 function verifyHostToken(session, token) {
-  return Boolean(session?.hostToken && hostTokenFrom(token) === session.hostToken);
+  return Boolean(session?.hostToken && tokensMatch(session.hostToken, hostTokenFrom(token)));
+}
+
+/**
+ * Host credentials for GET endpoints come from headers; POSTs may use the
+ * JSON body. Never the query string: URLs end up in request logs. The host id
+ * is only an identifier, so a query value is still accepted for it.
+ */
+function authenticateHost(req) {
+  const hostId = cleanString(
+    req.get?.(HOST_ID_HEADER) || req.body?.hostId || req.body?.remoteHostId || req.query?.hostId,
+    80,
+  );
+  const token = req.get?.(HOST_TOKEN_HEADER) || req.body?.hostToken;
+  const session = hostId ? sessions.get(hostId) : null;
+  return session && verifyHostToken(session, token) ? session : null;
 }
 
 function rejectHostAuth(res) {
@@ -238,6 +270,99 @@ function getOrCreateSession(hostId, hostToken = '') {
   return sessions.get(hostId) || createSession(hostId, hostToken);
 }
 
+// ── SSE subscriptions ────────────────────────────────────────────────────
+// session.sseClients (host command streams) and session.stateSseClients
+// (Sangat View streams) hold { res, stop, ...meta } subscriptions.
+
+function openSseResponse(res) {
+  res.set({
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache, no-transform',
+    Connection: 'keep-alive',
+    'X-Accel-Buffering': 'no',
+  });
+  res.flushHeaders?.();
+}
+
+function subscribe(set, req, res, meta = {}) {
+  const heartbeat = setInterval(() => {
+    try { res.write(': hb\n\n'); } catch { /* noop */ }
+  }, SSE_HEARTBEAT_MS);
+  const sub = { res, ...meta, stop: null };
+  sub.stop = () => {
+    clearInterval(heartbeat);
+    set.delete(sub);
+  };
+  set.add(sub);
+  req.on('close', sub.stop);
+  res.on('close', sub.stop);
+  res.on('error', sub.stop);
+  return sub;
+}
+
+/** Server-side close: unsubscribe first so no later broadcast reaches it. */
+function endSubscription(sub, finalFrame = '') {
+  sub.stop();
+  try {
+    if (finalFrame) sub.res.write(finalFrame);
+    sub.res.end();
+  } catch { /* socket already gone */ }
+}
+
+const FOLLOW_REVOKED_FRAME = `retry: ${REVOKED_RETRY_MS}\nevent: revoked\ndata: ${JSON.stringify({ error: FOLLOW_EXPIRED_ERROR })}\n\n`;
+
+/** Close every Sangat View stream of a session (code reset / session end). */
+function revokeFollowStreams(session) {
+  for (const sub of Array.from(session.stateSseClients)) endSubscription(sub, FOLLOW_REVOKED_FRAME);
+}
+
+// ── Host stream tickets ──────────────────────────────────────────────────
+// EventSource cannot send headers, and the long-lived hostToken must not go
+// in a URL. The host trades its token for a random ticket that opens exactly
+// one /remote/stream connection within STREAM_TICKET_TTL_MS. A ticket is
+// bound to the session object, so it dies with the session (expiry, backend
+// restart) even if the same host id later creates a new session.
+
+/** @type {Map<string, { session: object, hostToken: string, expiresAt: number }>} */
+const streamTickets = new Map();
+
+function revokeStreamTickets(session) {
+  for (const [ticket, entry] of streamTickets) {
+    if (entry.session === session) streamTickets.delete(ticket);
+  }
+}
+
+function pruneStreamTickets(now = Date.now()) {
+  for (const [ticket, entry] of streamTickets) {
+    if (now > entry.expiresAt) streamTickets.delete(ticket);
+  }
+}
+
+function issueStreamTicket(session) {
+  const now = Date.now();
+  pruneStreamTickets(now);
+  // Map order is issue order: drop this session's oldest beyond the cap.
+  const own = Array.from(streamTickets).filter(([, entry]) => entry.session === session);
+  for (const [ticket] of own.slice(0, Math.max(0, own.length - MAX_STREAM_TICKETS_PER_SESSION + 1))) {
+    streamTickets.delete(ticket);
+  }
+  const ticket = makeSecretToken();
+  streamTickets.set(ticket, { session, hostToken: session.hostToken, expiresAt: now + STREAM_TICKET_TTL_MS });
+  return ticket;
+}
+
+function redeemStreamTicket(value) {
+  const ticket = cleanString(value, 160);
+  const entry = ticket ? streamTickets.get(ticket) : null;
+  if (!entry) return null;
+  streamTickets.delete(ticket); // single use
+  const { session } = entry;
+  if (Date.now() > entry.expiresAt) return null;
+  if (sessions.get(session.hostId) !== session) return null;
+  if (!tokensMatch(session.hostToken, entry.hostToken)) return null;
+  return session;
+}
+
 function rotateCode(session) {
   if (session.code) codeToHost.delete(session.code);
   if (session.followCode) followCodeToHost.delete(session.followCode);
@@ -247,6 +372,8 @@ function rotateCode(session) {
   session.kickedClients = new Set();
   codeToHost.set(session.code, session.hostId);
   followCodeToHost.set(session.followCode, session.hostId);
+  // The old Sangat View link is revoked: close streams opened with it.
+  revokeFollowStreams(session);
 }
 
 function purgeSession(hostId) {
@@ -257,12 +384,9 @@ function purgeSession(hostId) {
   for (const clientId of session.clients.keys()) {
     if (clientToHost.get(clientId) === hostId) clientToHost.delete(clientId);
   }
-  for (const res of session.sseClients) {
-    try { res.end(); } catch { /* noop */ }
-  }
-  for (const res of session.stateSseClients) {
-    try { res.end(); } catch { /* noop */ }
-  }
+  for (const sub of Array.from(session.sseClients)) endSubscription(sub);
+  revokeFollowStreams(session);
+  revokeStreamTickets(session);
   sessions.delete(hostId);
 }
 
@@ -273,6 +397,7 @@ function cleanupSessions() {
       purgeSession(hostId);
     }
   }
+  pruneStreamTickets(now);
 }
 
 function findSessionByClientId(clientId) {
@@ -556,16 +681,22 @@ function mergeHeartbeatState(currentState, nextState) {
 function broadcastSseToSession(session, command) {
   if (!session?.sseClients?.size) return;
   const payload = `event: command\ndata: ${JSON.stringify(command)}\n\n`;
-  for (const res of session.sseClients) {
-    try { res.write(payload); } catch { /* will be cleaned up by req close handler */ }
+  for (const sub of session.sseClients) {
+    try { sub.res.write(payload); } catch { /* will be cleaned up by req close handler */ }
   }
 }
 
 function broadcastStateToSession(session) {
   if (!session?.stateSseClients?.size) return;
   const payload = `event: state\ndata: ${JSON.stringify(publicRemoteState(session))}\n\n`;
-  for (const res of session.stateSseClients) {
-    try { res.write(payload); } catch { /* cleaned up on close */ }
+  for (const sub of Array.from(session.stateSseClients)) {
+    // Defense in depth: a stream opened with a follow code that is no longer
+    // current never gets new state, even if a revocation path missed it.
+    if (sub.followCode !== session.followCode) {
+      endSubscription(sub, FOLLOW_REVOKED_FRAME);
+      continue;
+    }
+    try { sub.res.write(payload); } catch { /* cleaned up on close */ }
   }
 }
 
@@ -693,98 +824,64 @@ function postCommand(req, res) {
   return res.json({ ok: true, command });
 }
 
+/** Host polling. Needs X-Remote-Host-Id + X-Remote-Host-Token headers. */
 function getCommands(req, res) {
   cleanupSessions();
-  const hostId = cleanString(req.query?.hostId || req.query?.remoteHostId, 80);
-  const session = sessions.get(hostId);
+  const session = authenticateHost(req);
+  if (!session) return rejectHostAuth(res);
   const after = Number(req.query?.after || 0) || 0;
-  if (!session) {
-    return res.json({ commands: [], latestId: after });
-  }
   res.json({
     commands: session.commands.filter((c) => c.id > after),
     latestId: session.commands[session.commands.length - 1]?.id || after,
   });
 }
 
-function streamCommands(req, res) {
-  res.set({
-    'Content-Type': 'text/event-stream',
-    'Cache-Control': 'no-cache, no-transform',
-    Connection: 'keep-alive',
-    'X-Accel-Buffering': 'no',
-  });
-  res.flushHeaders?.();
-
+/** Host trades its token for a single-use ticket to open /remote/stream. */
+function createStreamTicket(req, res) {
   cleanupSessions();
-  const hostId = cleanString(req.query?.hostId || req.query?.remoteHostId, 80);
-  // If the main app hasn't published yet, hold the connection anyway —
-  // the session will be created on the first state publish and we'll
-  // attach to it then. To keep this simple, we tell the client there's
-  // nothing to replay and let it reconnect; clients reconnect on EventSource
-  // close automatically. So: close immediately if no session exists yet.
-  const session = hostId ? sessions.get(hostId) : null;
+  const session = authenticateHost(req);
+  if (!session) return rejectHostAuth(res);
+  res.set('Cache-Control', 'no-store');
+  return res.json({ ok: true, ticket: issueStreamTicket(session), expiresInMs: STREAM_TICKET_TTL_MS });
+}
 
+function streamCommands(req, res) {
+  cleanupSessions();
+  // The ticket alone selects the session; any hostId in the URL is ignored.
+  const session = redeemStreamTicket(req.query?.ticket);
   if (!session) {
-    res.write(`event: cursor\ndata: ${JSON.stringify({ latestId: 0 })}\n\n`);
-    // No session exists until the host publishes /remote/state. If we kept
-    // this connection open, it would never be attached to the later-created
-    // session and commands could be missed. Close it so the frontend starts
-    // its polling fallback; the next mount/retry can attach to the session.
-    res.end();
-    return;
+    // A non-200 answer makes EventSource stop instead of replaying a used
+    // ticket; the main app falls back to polling and asks for a new ticket.
+    return rejectHostAuth(res);
   }
 
+  openSseResponse(res);
   const after = Number(req.query?.after || 0) || 0;
   const backlog = session.commands.filter((c) => c.id > after);
   for (const c of backlog) {
     res.write(`event: command\ndata: ${JSON.stringify(c)}\n\n`);
   }
   res.write(`event: cursor\ndata: ${JSON.stringify({ latestId: session.commands[session.commands.length - 1]?.id || 0 })}\n\n`);
-
-  session.sseClients.add(res);
-  const heartbeat = setInterval(() => {
-    try { res.write(': hb\n\n'); } catch { /* noop */ }
-  }, 20_000);
-  const cleanup = () => {
-    clearInterval(heartbeat);
-    session.sseClients.delete(res);
-  };
-  req.on('close', cleanup);
-  req.on('end', cleanup);
-  res.on('error', cleanup);
+  subscribe(session.sseClients, req, res);
 }
 
 function streamFollowState(req, res) {
-  res.set({
-    'Content-Type': 'text/event-stream',
-    'Cache-Control': 'no-cache, no-transform',
-    Connection: 'keep-alive',
-    'X-Accel-Buffering': 'no',
-  });
-  res.flushHeaders?.();
-
+  openSseResponse(res);
   cleanupSessions();
   const code = cleanString(req.query?.code || req.params?.code, 24);
   const session = findSessionByFollowCode(code);
   if (!session) {
-    res.write(`event: error\ndata: ${JSON.stringify({ error: 'Sangat View link has expired. Generate a new QR from the main app.' })}\n\n`);
+    // Unknown, reset or expired link. `revoked` tells Sangat View to stop
+    // reconnecting; a revoked code never maps to a session again.
+    res.write(FOLLOW_REVOKED_FRAME);
     res.end();
     return;
   }
 
   res.write(`event: state\ndata: ${JSON.stringify(publicRemoteState(session))}\n\n`);
-  session.stateSseClients.add(res);
-  const heartbeat = setInterval(() => {
-    try { res.write(': hb\n\n'); } catch { /* noop */ }
-  }, 20_000);
-  const cleanup = () => {
-    clearInterval(heartbeat);
-    session.stateSseClients.delete(res);
-  };
-  req.on('close', cleanup);
-  req.on('end', cleanup);
-  res.on('error', cleanup);
+  // Remember which link opened the stream so a later code rotation can
+  // revoke it (see revokeFollowStreams / broadcastStateToSession).
+  subscribe(session.stateSseClients, req, res, { followCode: session.followCode });
 }
 
 function joinSession(req, res) {
@@ -999,8 +1096,11 @@ function resetSession(req, res) {
   }
   if (!verifyHostToken(session, hostToken)) return rejectHostAuth(res);
   // Rotate the code, drop all paired clients (they need to re-pair with
-  // the new code). Only this host's session is affected.
+  // the new code). Only this host's session is affected. rotateCode also
+  // closes Sangat View streams on the old link. Unused stream tickets are
+  // dropped; the host's own open command stream stays connected.
   rotateCode(session);
+  revokeStreamTickets(session);
   for (const clientId of session.clients.keys()) {
     if (clientToHost.get(clientId) === session.hostId) clientToHost.delete(clientId);
   }
@@ -1016,6 +1116,7 @@ function resetSession(req, res) {
 module.exports = {
   postCommand,
   getCommands,
+  createStreamTicket,
   streamCommands,
   postState,
   getState,

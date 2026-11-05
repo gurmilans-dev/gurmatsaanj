@@ -1783,14 +1783,16 @@ export function AppProvider({ children }) {
       }
     };
 
+    const hostAuth = () => ({
+      hostId: remoteHostIdRef.current,
+      hostToken: remoteHostTokenRef.current,
+    });
+
     let timer = null;
     let delay = 300;
     const poll = async () => {
       try {
-        const res = await api.getRemoteCommands(
-          lastRemoteCommandRef.current,
-          remoteHostIdRef.current,
-        );
+        const res = await api.getRemoteCommands(lastRemoteCommandRef.current, hostAuth());
         const incoming = Array.isArray(res?.commands) ? res.commands : [];
         // On the very first poll, just snap the cursor forward to the
         // latest id without running anything. Otherwise reloading the
@@ -1811,39 +1813,85 @@ export function AppProvider({ children }) {
       }
     };
 
-    const tick = async () => {
-      await poll();
-      if (!cancelled) timer = setTimeout(tick, delay);
-    };
-
-    // Try Server-Sent Events first — it pushes commands within ~50ms, way
-    // faster than the 300ms polling cycle. We still seed a single poll() to
-    // sync the cursor (so the first-poll skip behaviour above also applies
-    // here), then keep the polling tick disabled while SSE is connected.
-    // If SSE fails or the browser doesn't support EventSource, fall back to
-    // the polling loop transparently.
-    let sse = null;
+    // Polling chain. `pollGeneration` makes stopPolling() final even while a
+    // poll is in flight, so SSE and polling never run two chains at once.
+    let polling = false;
+    let pollGeneration = 0;
     const startPolling = () => {
-      if (timer || cancelled) return;
+      if (polling || cancelled) return;
+      polling = true;
+      pollGeneration += 1;
+      const generation = pollGeneration;
+      const tick = async () => {
+        await poll();
+        if (!cancelled && polling && generation === pollGeneration) {
+          timer = setTimeout(tick, delay);
+        }
+      };
       tick();
     };
     const stopPolling = () => {
+      polling = false;
       if (timer) { clearTimeout(timer); timer = null; }
     };
 
-    const trySse = () => {
+    // Try Server-Sent Events first — it pushes commands within ~50ms, way
+    // faster than the 300ms polling cycle. The stream's cursor event syncs
+    // the cursor (so the first-poll skip behaviour above also applies here)
+    // and polling stays off while SSE is connected.
+    //
+    // EventSource cannot send headers, so every connection uses a single-use
+    // ticket from /remote/stream-ticket; the hostToken never goes in a URL.
+    // The browser's own auto-reconnect would replay a used ticket, so on any
+    // stream error we close it, poll in the meantime, and reconnect with a
+    // fresh ticket after a backoff (backend restart, laptop sleep, proxy 502).
+    const SSE_RETRY_MIN_MS = 2000;
+    const SSE_RETRY_MAX_MS = 30_000;
+    let sse = null;
+    let sseRetryTimer = null;
+    let sseRetryDelay = SSE_RETRY_MIN_MS;
+
+    const scheduleSseRetry = () => {
+      if (cancelled || sseRetryTimer) return;
+      sseRetryTimer = setTimeout(() => {
+        sseRetryTimer = null;
+        trySse();
+      }, sseRetryDelay);
+      sseRetryDelay = Math.min(SSE_RETRY_MAX_MS, sseRetryDelay * 2);
+    };
+
+    const sseFailed = () => {
+      if (sse) { sse.close(); sse = null; }
+      if (cancelled) return;
+      startPolling();
+      scheduleSseRetry();
+    };
+
+    const trySse = async () => {
+      if (cancelled) return;
       if (typeof window === 'undefined' || typeof window.EventSource !== 'function') {
         startPolling();
         return;
       }
+      let ticket = '';
+      try {
+        const res = await api.getRemoteStreamTicket(hostAuth());
+        ticket = typeof res?.ticket === 'string' ? res.ticket : '';
+      } catch {
+        // Session not published yet (first load, backend restart) or the
+        // backend is unreachable. Poll and retry.
+      }
+      if (cancelled) return;
+      if (!ticket) { sseFailed(); return; }
       try {
         const base = (import.meta.env.VITE_API_URL || '/api').replace(/\/$/, '');
         const params = new URLSearchParams({
           after: String(lastRemoteCommandRef.current),
-          hostId: remoteHostIdRef.current || '',
+          ticket,
         });
-        sse = new EventSource(`${base}/remote/stream?${params.toString()}`);
-        sse.addEventListener('command', (ev) => {
+        const source = new EventSource(`${base}/remote/stream?${params.toString()}`);
+        sse = source;
+        source.addEventListener('command', (ev) => {
           let command = null;
           try { command = JSON.parse(ev.data); } catch { return; }
           if (!command?.id) return;
@@ -1856,7 +1904,7 @@ export function AppProvider({ children }) {
           // that cursor makes SSE skip the whole initial backlog, matching
           // the polling path's first-poll behavior.
         });
-        sse.addEventListener('cursor', (ev) => {
+        source.addEventListener('cursor', (ev) => {
           try {
             const { latestId } = JSON.parse(ev.data);
             if (Number(latestId) > lastRemoteCommandRef.current) {
@@ -1864,15 +1912,15 @@ export function AppProvider({ children }) {
             }
             firstPollDone = true;
           } catch { /* ignore */ }
+          // Connected and caught up: SSE carries commands from here on.
+          sseRetryDelay = SSE_RETRY_MIN_MS;
+          stopPolling();
         });
-        sse.onerror = () => {
-          // EventSource auto-retries, but if the endpoint is unreachable we
-          // close it and fall back to polling so the remote still works.
-          if (sse) { sse.close(); sse = null; }
-          if (!cancelled) startPolling();
+        source.onerror = () => {
+          if (sse === source) sseFailed();
         };
       } catch {
-        startPolling();
+        sseFailed();
       }
     };
 
@@ -1880,6 +1928,7 @@ export function AppProvider({ children }) {
     return () => {
       cancelled = true;
       stopPolling();
+      if (sseRetryTimer) { clearTimeout(sseRetryTimer); sseRetryTimer = null; }
       if (sse) { sse.close(); sse = null; }
     };
   }, [

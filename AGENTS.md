@@ -108,6 +108,8 @@ Vite dev and preview use HTTPS with a self-signed cert and proxy `/api` to `http
 - `matching.service.js` owns live Shabad suggestions and backend line tracking fallback with fuzzy scoring.
 - `remote.controller.js` is process-local memory only. Remote sessions, pair codes, follow codes, clients, queues, and latest state are lost on backend restart.
 - Phone remotes authenticate with `clientId` + a server-minted `clientToken` from `/remote/join`; a `clientId` alone is never a credential. See `docs/security/remote-control.md`.
+- The main app (host) reads its commands with `hostId` + `hostToken`: `X-Remote-Host-Id` / `X-Remote-Host-Token` headers for `/remote/commands` polling, and a single-use 30 s ticket from `POST /remote/stream-ticket` for the `/remote/stream` EventSource. Never put `hostToken` in a URL.
+- Sangat View links are revocable: `/remote/reset` and session expiry close open `/remote/follow/stream` connections with an `event: revoked`, and `FollowPage.jsx` stops reconnecting on it.
 - Do not add BaniDB search type `5` to generic text fallback chains; type `5` is Ang/page search.
 - Preserve the `pickUnicode`/`isUnicodeGurmukhi` behavior when reshaping BaniDB responses.
 
@@ -118,7 +120,7 @@ Backend API map:
 - `/api/hukamnamas/today`
 - `/api/voice/suggest`, `/api/voice/track-line`
 - `/api/filters/raags`, `/writers`, `/sources`
-- `/api/remote/command`, `/commands`, `/stream`, `/state`, `/join`, `/leave`, `/kick`, `/heartbeat`, `/claim`, `/release`, `/grant`, `/reset`, `/follow/:code/state`, `/follow/stream`
+- `/api/remote/command`, `/commands`, `/stream-ticket`, `/stream`, `/state`, `/join`, `/leave`, `/kick`, `/heartbeat`, `/claim`, `/release`, `/grant`, `/reset`, `/follow/:code/state`, `/follow/stream`
 
 ## Frontend Notes
 
@@ -221,7 +223,7 @@ For live features, manually verify in a browser:
 - `/follow/:code` if remote/follow state changed
 - `/setup` if audio code changed
 
-Automated tests exist only for the backend (`backend/tests/`: dependency floor, body parsing, remote-control auth). The frontend has no automated test script.
+Backend tests live in `backend/tests/` (dependency floor, body parsing, remote-control client auth, host command auth and stream tickets, Sangat View revocation). Frontend `npm test` runs Vitest over `frontend/test/` (recognition hooks, voice controller, session replay); it does not cover the remote/Sangat View pages, so check those in a browser.
 
 ## Current Gotchas
 

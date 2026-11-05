@@ -2,8 +2,12 @@ const router = require('express').Router();
 const ctrl = require('../controllers/remote.controller');
 
 router.post('/command', ctrl.postCommand);
+// Host only. Polling sends X-Remote-Host-Id / X-Remote-Host-Token headers.
 router.get('/commands', ctrl.getCommands);
 // SSE stream — same data as /commands but pushed instead of polled.
+// EventSource cannot send headers: POST /stream-ticket first, then
+// GET /stream?ticket=... (single use, 30 s).
+router.post('/stream-ticket', ctrl.createStreamTicket);
 router.get('/stream', ctrl.streamCommands);
 router.post('/state', ctrl.postState);
 router.get('/state', ctrl.getState);
