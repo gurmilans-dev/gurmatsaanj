@@ -145,6 +145,7 @@ export default function useAutoShabadAdvance({
   const lastSignatureRef = useRef('');
   const cooldownUntilRef = useRef(0);
   const inFlightRef = useRef(false);
+  const requestGenerationRef = useRef(0);
   const queueCacheRef = useRef(new Map());
   const [preloadedQueue, setPreloadedQueue] = useState(new Map());
 
@@ -153,14 +154,17 @@ export default function useAutoShabadAdvance({
     [shabadVerses]
   );
 
-  // Reset the miss counter when the open Shabad changes (new context).
+  // Reset discovery when the reader changes context or listening is toggled.
   // Cooldown is intentionally NOT reset — after an advance fires, the long
   // cooldown carries across the navigation so the new shabad gets a quiet
   // window to settle before any further re-evaluation.
   useEffect(() => {
+    requestGenerationRef.current += 1;
+    inFlightRef.current = false;
     absentCountRef.current = 0;
     lastSignatureRef.current = '';
-  }, [currentShabadId]);
+    return () => { requestGenerationRef.current += 1; };
+  }, [active, currentShabadId]);
 
   const queueCandidates = useMemo(() => {
     const seen = new Set();
@@ -237,6 +241,8 @@ export default function useAutoShabadAdvance({
     const query = queryWords.join(' ');
 
     inFlightRef.current = true;
+    const generation = requestGenerationRef.current;
+    const isCurrentRequest = () => generation === requestGenerationRef.current;
 
     const otherQueueCandidates = orderedQueueCandidates(queueCandidates, currentShabadId);
 
@@ -244,6 +250,7 @@ export default function useAutoShabadAdvance({
       const scored = await Promise.all(otherQueueCandidates.map(async (item, orderIndex) => {
         try {
           const cached = preloadedQueue.get(String(item.shabadId)) || await getQueueCacheEntry(item, queueCacheRef);
+          if (!isCurrentRequest()) return null;
           const data = cached?.data;
           const verses = data?.verses || [];
           if (!verses.length) return null;
@@ -257,6 +264,7 @@ export default function useAutoShabadAdvance({
             verses,
             -1
           ).catch(() => null);
+          if (!isCurrentRequest()) return null;
           const rawConfidence = Number(lineMatch?.confidence || 0);
           const tracked = Boolean(lineMatch?.tracked);
           const score =
@@ -289,6 +297,7 @@ export default function useAutoShabadAdvance({
 
     tryQueueFirst()
       .then((queuedMatch) => {
+        if (!isCurrentRequest()) return null;
         if (queuedMatch?.shabadId) {
           cooldownUntilRef.current = Date.now() + COOLDOWN_MS;
           absentCountRef.current = 0;
@@ -298,7 +307,7 @@ export default function useAutoShabadAdvance({
         return api.suggestShabads(query, {});
       })
       .then((res) => {
-        if (!res) return;
+        if (!res || !isCurrentRequest()) return;
         const suggestions = Array.isArray(res?.suggestions) ? res.suggestions : [];
         const current = suggestions.find((s) =>
           s?.shabadId && String(s.shabadId) === String(currentShabadId)
@@ -329,7 +338,7 @@ export default function useAutoShabadAdvance({
         // best effort
       })
       .finally(() => {
-        inFlightRef.current = false;
+        if (isCurrentRequest()) inFlightRef.current = false;
       });
   }, [
     active,

@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "durationMs": 190,
+  "shabads": {
+    "fixture": [{ "gurmukhi": "ਮਨ ਤੂੰ ਜੋਤਿ ਸਰੂਪੁ ਹੈ" }]
+  },
+  "events": [{
+    "t": 190,
+    "shabadId": "fixture",
+    "tail": "ਮਨ ਤੂੰ ਜੋਤਿ ਸਰੂਪੁ ਹੈ",
+    "currentLine": -1,
+    "lineIndex": 99,
+    "confidence": 100,
+    "tracked": true
+  }]
+}

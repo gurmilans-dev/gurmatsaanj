@@ -10,7 +10,7 @@ const config = require('../config');
 
 function clampTranscript(t) {
   if (typeof t !== 'string') return '';
-  return t.trim().slice(0, config.matching.maxQueryLength);
+  return t.trim().slice(-config.matching.maxQueryLength);
 }
 
 async function suggestShabads(req, res, next) {
