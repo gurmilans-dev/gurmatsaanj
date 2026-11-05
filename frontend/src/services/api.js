@@ -115,11 +115,15 @@ export const api = {
   listSources() { return http.get('/filters/sources').then((r) => r.data); },
 
   // Local-network remote controller -------------------------------------
+  // Phone remotes authenticate with clientId + the clientToken returned by
+  // /remote/join. POSTs carry it in the body; GET /remote/state uses a header
+  // so the secret stays out of URLs and request logs.
   sendRemoteCommand(type, payload = {}, auth = {}) {
     return http.post('/remote/command', {
       type,
       payload,
       clientId: auth.clientId,
+      clientToken: auth.clientToken,
       code: auth.code,
       clientName: auth.name,
     }).then((r) => r.data);
@@ -133,31 +137,38 @@ export const api = {
     return http.post('/remote/state', state).then((r) => r.data);
   },
   getRemoteState(auth = {}) {
-    return http.get('/remote/state', { params: { clientId: auth.clientId || undefined, code: auth.code || undefined } }).then((r) => r.data);
+    return http.get('/remote/state', {
+      params: {
+        clientId: auth.clientId || undefined,
+        pairCode: auth.pairCode || undefined,
+        code: auth.code || undefined,
+      },
+      headers: auth.clientToken ? { 'X-Remote-Client-Token': auth.clientToken } : undefined,
+    }).then((r) => r.data);
   },
   getFollowState(code) {
     return http.get(`/remote/follow/${encodeURIComponent(code)}/state`).then((r) => r.data);
   },
-  joinRemoteSession({ code, clientId, name }) {
-    return http.post('/remote/join', { code, clientId, name }).then((r) => r.data);
+  joinRemoteSession({ code, clientId, clientToken, name }) {
+    return http.post('/remote/join', { code, clientId, clientToken, name }).then((r) => r.data);
   },
-  leaveRemoteSession({ clientId }) {
-    return http.post('/remote/leave', { clientId }).then((r) => r.data);
+  leaveRemoteSession({ code, clientId, clientToken }) {
+    return http.post('/remote/leave', { code, clientId, clientToken }).then((r) => r.data);
   },
   kickRemoteClient({ hostId, hostToken, targetClientId }) {
     return http.post('/remote/kick', { hostId, hostToken, targetClientId }).then((r) => r.data);
   },
-  heartbeatRemoteSession({ code, clientId, name }) {
-    return http.post('/remote/heartbeat', { code, clientId, name }).then((r) => r.data);
+  heartbeatRemoteSession({ code, clientId, clientToken, name }) {
+    return http.post('/remote/heartbeat', { code, clientId, clientToken, name }).then((r) => r.data);
   },
-  claimRemoteControl({ code, clientId, name }) {
-    return http.post('/remote/claim', { code, clientId, name }).then((r) => r.data);
+  claimRemoteControl({ code, clientId, clientToken, name }) {
+    return http.post('/remote/claim', { code, clientId, clientToken, name }).then((r) => r.data);
   },
-  releaseRemoteControl({ code, clientId, name }) {
-    return http.post('/remote/release', { code, clientId, name }).then((r) => r.data);
+  releaseRemoteControl({ code, clientId, clientToken, name }) {
+    return http.post('/remote/release', { code, clientId, clientToken, name }).then((r) => r.data);
   },
-  grantRemoteControl({ code, clientId, name, targetClientId, hostId, hostToken }) {
-    return http.post('/remote/grant', { code, clientId, name, targetClientId, hostId, hostToken }).then((r) => r.data);
+  grantRemoteControl({ code, clientId, clientToken, name, targetClientId, hostId, hostToken }) {
+    return http.post('/remote/grant', { code, clientId, clientToken, name, targetClientId, hostId, hostToken }).then((r) => r.data);
   },
   resetRemoteSession(hostId, hostToken) {
     return http.post('/remote/reset', { hostId, hostToken }).then((r) => r.data);
