@@ -373,11 +373,12 @@ export default function ShabadPage() {
 
   // Lock / Follow auto-hold (kirtan mode). Freezes the display during vyakhya
   // / instrumental gaps (no confident track) and lets the operator pin a
-  // shabad manually. `held` suppresses shabad auto-advance below.
+  // shabad manually. Auto-hold freezes the Pangti while discovery continues.
   const follow = useFollowHold({
     active: !isKatha && pageVoice.isListening,
     tracked: kirtanTracking.tracked,
     confidence: kirtanTracking.confidence,
+    observation: kirtanTracking.observation,
   });
 
   const handleNearbyNavigate = useCallback((group, lineIndex = 0) => {
@@ -410,10 +411,10 @@ export default function ShabadPage() {
   }, [isKatha, kathaTracking.tracked, kathaTracking.lineIndex]);
 
   useEffect(() => {
-    if (!isKatha && kirtanTracking.tracked && kirtanTracking.lineIndex >= 0) {
+    if (!isKatha && !follow.held && kirtanTracking.tracked && kirtanTracking.lineIndex >= 0) {
       setLineHint(kirtanTracking.lineIndex);
     }
-  }, [isKatha, kirtanTracking.tracked, kirtanTracking.lineIndex]);
+  }, [isKatha, follow.held, kirtanTracking.tracked, kirtanTracking.lineIndex]);
 
   useEffect(() => {
     if (isKatha && manualLine !== null) setLineHint(manualLine);
@@ -421,7 +422,7 @@ export default function ShabadPage() {
 
   const trackedIndex = isKatha
     ? (kathaTracking.lineIndex >= 0 ? kathaTracking.lineIndex : lineHint)
-    : (kirtanTracking.lineIndex >= 0 ? kirtanTracking.lineIndex : lineHint);
+    : (!follow.held && kirtanTracking.lineIndex >= 0 ? kirtanTracking.lineIndex : lineHint);
   const confidence = isKatha ? kathaTracking.confidence : kirtanTracking.confidence;
   const tracked = isKatha ? kathaTracking.tracked : kirtanTracking.tracked;
   const activeIndex = manualLine !== null ? manualLine : trackedIndex;
@@ -471,15 +472,13 @@ export default function ShabadPage() {
   ), [currentQueueSessionId, currentShabadId, shabadQueue]);
 
   useAutoShabadAdvance({
-    // Suppressed while held/locked — vyakhya or a manual lock must not let the
-    // display wander to another shabad.
-    active: !isKatha && pageVoice.isListening && !loading && !error && shabad && !follow.held,
+    active: Boolean(!isKatha && pageVoice.isListening && !loading && !error && shabad),
+    navigationBlocked: follow.locked || manualLine !== null,
+    anchorVersion: manualAnchorVersion,
     transcript: pageVoice.transcript,
     currentShabadId,
     shabadVerses: verses,
     queueEntries: kirtanQueue,
-    currentLineTracked: kirtanTracking.tracked,
-    currentLineConfidence: kirtanTracking.confidence,
     onAdvance: handleAutoAdvance,
   });
 
@@ -511,9 +510,9 @@ export default function ShabadPage() {
     setActiveLine({
       index: activeIndex,
       text: verse?.gurmukhi || '',
-      tracked: !isManual && tracked,
+      tracked: !isManual && tracked && (isKatha || !follow.held),
     });
-  }, [activeIndex, verses, isManual, tracked, setActiveLine]);
+  }, [activeIndex, verses, isManual, tracked, isKatha, follow.held, setActiveLine]);
 
   useEffect(() => {
     if (!setKathaBoundary) return;

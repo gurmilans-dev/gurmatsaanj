@@ -8,9 +8,8 @@ import { useEffect, useRef, useState } from 'react';
  * transcript stops matching the shabad's verses, so the line tracker's
  * `tracked` goes false. This hook turns that signal into an explicit,
  * visible state so the display freezes calmly ("paused — waiting for kirtan")
- * instead of looking broken, and — crucially — so the caller can suppress
- * shabad auto-advance while held (vyakhya must not drag the screen to another
- * shabad).
+ * instead of looking broken. Auto-hold freezes the Pangti while background
+ * discovery can continue; manual lock still forbids automatic navigation.
  *
  * States:
  *   'following' — confident tracking; cursor follows the singer.
@@ -29,7 +28,7 @@ import { useEffect, useRef, useState } from 'react';
 const HOLD_AFTER_MS = 2500;   // continuous "not tracked" before auto-holding
 const RESUME_MIN_CONF = 50;   // a current-shabad match this strong resumes follow
 
-export default function useFollowHold({ active, tracked, confidence }) {
+export default function useFollowHold({ active, tracked, confidence, observation }) {
   const [locked, setLocked] = useState(false);
   const [autoHeld, setAutoHeld] = useState(false);
   const lastTrackedAtRef = useRef(Date.now());
@@ -47,11 +46,12 @@ export default function useFollowHold({ active, tracked, confidence }) {
   // a strong match arrives.
   useEffect(() => {
     if (!active) return;
-    if (tracked && Number(confidence) >= RESUME_MIN_CONF) {
-      lastTrackedAtRef.current = Date.now();
+    if (observation && tracked && Number(confidence) >= RESUME_MIN_CONF &&
+        Date.now() - observation.at < HOLD_AFTER_MS) {
+      lastTrackedAtRef.current = observation.at;
       setAutoHeld((h) => (h ? false : h));
     }
-  }, [active, tracked, confidence]);
+  }, [active, tracked, confidence, observation]);
 
   // Enter auto-hold once we've gone HOLD_AFTER_MS without a confident track.
   useEffect(() => {
