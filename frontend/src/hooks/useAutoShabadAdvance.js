@@ -7,37 +7,37 @@
  * after any advance the next jump faces the same strict thresholds.
  *
  * Stage 1 (local, no network): "are these initials anywhere in the open Shabad?"
- *   - Take first letter of each of the user's last 6 spoken words.
- *   - For each verse signature, allow up to TWO mismatched characters in a
- *     sliding window — generous so the singer's small mistranscriptions
- *     don't trigger a false miss.
+ *   - Check the last five spoken initials, allowing one mistranscription.
  *   - Fallback: a strict 4-letter sub-window matching exactly anywhere.
  *   - Pass → singer is still here, do nothing.
  *
  * Stage 2 (backend, only after several consecutive misses):
  *   - Send recent words to /api/voice/suggest.
  *   - Top "other" Shabad must clear a high confidence floor.
- *   - If the current Shabad is also a respectable match, the new one must
- *     beat it by a large margin to override.
+ *   - Always require a clear lead over current and competing candidates.
+ *   - Confirm the same candidate on two fresh, separated observations.
+ *   - Auto-hold freezes the display, but does not disable discovery.
  *   - After firing, a long cooldown prevents rapid re-jumps.
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { api } from '../services/api';
 import { getMainVerse } from '../utils/gurmukhi';
+import { matchLine } from '../utils/matchLine';
 
 const MIN_INITIALS_LEN = 5;          // need 5 letters before we even check
 const RECENT_WORDS = 5;
 const SUBWINDOW_LEN = 4;
-const FUZZY_MISMATCH = 3;            // up to 3 wrong letters in fuzzy match
+const FUZZY_MISMATCH = 1;
 const QUERY_RECENT_WORDS = 8;
 
-const ABSENT_CHECKS_TO_FIRE = 4;     // need 4 consecutive new-signature misses
-const ABSENT_CHECKS_TO_FIRE_WHEN_UNTRACKED = 2;
+const ABSENT_CHECKS_TO_FIRE = 2;
 const CONFIDENCE_TO_OPEN = 60;       // top other must be a strong match
 const QUEUE_CONFIDENCE_TO_OPEN = 60;
 const QUEUE_MIN_SCORE_GAP = 8;
 const MIN_MARGIN_OVER_CURRENT = 10;  // and beat current's score by at least this
-const CURRENT_STILL_OK = 70;         // if current ≥ 45 in suggestions, treat as ambiguous
+const MIN_CANDIDATE_GAP = 8;
+const CONFIRMATION_INTERVAL_MS = 1200;
+const EVIDENCE_MAX_AGE_MS = 4000;
 const COOLDOWN_MS = 5000;            // long cooldown — no rapid re-jumps
 const PRELOAD_QUEUE_LIMIT = 5;       // preload when Kirtan queue has fewer than 6 Shabads
 
@@ -72,7 +72,7 @@ function fuzzyContains(haystack, needle, maxMis) {
 }
 
 function isOnCurrentShabad(userInitials, verseSignatures, maxMis = FUZZY_MISMATCH) {
-  // 2-mismatch tolerant search of the full user signature
+  // Mismatch-tolerant search of the full user signature.
   for (const vSig of verseSignatures) {
     if (fuzzyContains(vSig, userInitials, maxMis)) return true;
   }
@@ -137,15 +137,20 @@ export default function useAutoShabadAdvance({
   currentShabadId,
   shabadVerses,
   queueEntries = [],
-  currentLineTracked = false,
-  currentLineConfidence = 0,
+  navigationBlocked = false,
+  anchorVersion = 0,
   onAdvance,
 }) {
   const absentCountRef = useRef(0);
   const lastSignatureRef = useRef('');
   const cooldownUntilRef = useRef(0);
   const inFlightRef = useRef(false);
+  const requestStartedAtRef = useRef(0);
   const requestGenerationRef = useRef(0);
+  const candidateEvidenceRef = useRef(null);
+  const lastObservationAtRef = useRef(null);
+  const nextDiscoveryAtRef = useRef(0);
+  const previousAnchorRef = useRef(anchorVersion);
   const queueCacheRef = useRef(new Map());
   const [preloadedQueue, setPreloadedQueue] = useState(new Map());
 
@@ -163,8 +168,15 @@ export default function useAutoShabadAdvance({
     inFlightRef.current = false;
     absentCountRef.current = 0;
     lastSignatureRef.current = '';
+    candidateEvidenceRef.current = null;
+    lastObservationAtRef.current = null;
+    nextDiscoveryAtRef.current = 0;
+    if (anchorVersion !== previousAnchorRef.current) {
+      previousAnchorRef.current = anchorVersion;
+      cooldownUntilRef.current = Math.max(cooldownUntilRef.current, Date.now() + COOLDOWN_MS);
+    }
     return () => { requestGenerationRef.current += 1; };
-  }, [active, currentShabadId]);
+  }, [active, currentShabadId, navigationBlocked, anchorVersion]);
 
   const queueCandidates = useMemo(() => {
     const seen = new Set();
@@ -207,33 +219,42 @@ export default function useAutoShabadAdvance({
   }, [active, queueCandidates]);
 
   useEffect(() => {
-    if (!active || !currentShabadId || !verseSignatures.length || !onAdvance) return;
-    if (inFlightRef.current || Date.now() < cooldownUntilRef.current) return;
+    if (!active || navigationBlocked || !currentShabadId || !verseSignatures.length || !onAdvance) return;
+
+    const clearEvidence = () => {
+      requestGenerationRef.current += 1;
+      inFlightRef.current = false;
+      absentCountRef.current = 0;
+      candidateEvidenceRef.current = null;
+    };
 
     const recentInitials = firstLetters(transcript, RECENT_WORDS);
     if (recentInitials.length < MIN_INITIALS_LEN) {
-      absentCountRef.current = 0;
+      clearEvidence();
+      lastSignatureRef.current = '';
       return;
     }
 
     if (recentInitials === lastSignatureRef.current) return;
     lastSignatureRef.current = recentInitials;
 
-    const currentTrackerStrong = Boolean(currentLineTracked) && Number(currentLineConfidence || 0) >= 45;
-    const currentInitialsStillMatch = isOnCurrentShabad(
-      recentInitials,
-      verseSignatures,
-      currentTrackerStrong ? FUZZY_MISMATCH : 1
-    );
+    const now = Date.now();
+    if ((lastObservationAtRef.current != null && now - lastObservationAtRef.current > EVIDENCE_MAX_AGE_MS) ||
+        (inFlightRef.current && now - requestStartedAtRef.current > EVIDENCE_MAX_AGE_MS)) {
+      clearEvidence();
+    }
+    lastObservationAtRef.current = now;
 
-    if (currentTrackerStrong || currentInitialsStillMatch) {
-      absentCountRef.current = 0;
+    // A local line score describes cursor tracking, not Shabad identity.
+    // Positive current-text evidence can cancel even an in-flight discovery.
+    if (isOnCurrentShabad(recentInitials, verseSignatures)) {
+      clearEvidence();
       return;
     }
 
     absentCountRef.current += 1;
-    const checksToFire = currentTrackerStrong ? ABSENT_CHECKS_TO_FIRE : ABSENT_CHECKS_TO_FIRE_WHEN_UNTRACKED;
-    if (absentCountRef.current < checksToFire) return;
+    if (absentCountRef.current < ABSENT_CHECKS_TO_FIRE) return;
+    if (inFlightRef.current || now < cooldownUntilRef.current || now < nextDiscoveryAtRef.current) return;
 
     const allTokens = String(transcript || '').trim().split(/\s+/).filter(Boolean);
     const queryWords = allTokens.slice(-QUERY_RECENT_WORDS);
@@ -241,8 +262,24 @@ export default function useAutoShabadAdvance({
     const query = queryWords.join(' ');
 
     inFlightRef.current = true;
+    requestStartedAtRef.current = now;
+    nextDiscoveryAtRef.current = now + CONFIRMATION_INTERVAL_MS;
     const generation = requestGenerationRef.current;
-    const isCurrentRequest = () => generation === requestGenerationRef.current;
+    const isCurrentRequest = () => generation === requestGenerationRef.current && Date.now() - now <= EVIDENCE_MAX_AGE_MS;
+
+    const considerCandidate = (candidate) => {
+      const previous = candidateEvidenceRef.current;
+      const sameCandidate = previous && String(previous.shabadId) === String(candidate.shabadId);
+      if (!sameCandidate || now - previous.observedAt > EVIDENCE_MAX_AGE_MS) {
+        candidateEvidenceRef.current = { shabadId: candidate.shabadId, observedAt: now, signature: recentInitials };
+        return;
+      }
+      if (recentInitials === previous.signature || now - previous.observedAt < CONFIRMATION_INTERVAL_MS) return;
+      cooldownUntilRef.current = Date.now() + COOLDOWN_MS;
+      absentCountRef.current = 0;
+      candidateEvidenceRef.current = null;
+      onAdvance(candidate);
+    };
 
     const otherQueueCandidates = orderedQueueCandidates(queueCandidates, currentShabadId);
 
@@ -284,12 +321,15 @@ export default function useAutoShabadAdvance({
         .sort((a, b) => b.score - a.score || a.orderIndex - b.orderIndex);
       const best = ranked[0];
       if (!best) return null;
-      const secondScore = ranked[1]?.score ?? 0;
-      const gap = best.score - secondScore;
+      // Queue order is a search preference, not evidence of identity. Compare
+      // raw scores against both competitors and current on the same query.
+      const secondScore = Math.max(0, ...ranked.slice(1).map((item) => item.rawConfidence));
+      const currentScore = Number(matchLine(shabadVerses, query, { currentLine: -1 }).confidence || 0);
       const confident =
         best.tracked &&
         best.rawConfidence >= QUEUE_CONFIDENCE_TO_OPEN &&
-        (gap >= QUEUE_MIN_SCORE_GAP || best.score >= 78);
+        best.rawConfidence >= currentScore + MIN_MARGIN_OVER_CURRENT &&
+        best.rawConfidence >= secondScore + QUEUE_MIN_SCORE_GAP;
 
       if (!confident) return null;
       return candidateFromQueueData(best.item, best.data);
@@ -299,46 +339,41 @@ export default function useAutoShabadAdvance({
       .then((queuedMatch) => {
         if (!isCurrentRequest()) return null;
         if (queuedMatch?.shabadId) {
-          cooldownUntilRef.current = Date.now() + COOLDOWN_MS;
-          absentCountRef.current = 0;
-          onAdvance(queuedMatch);
+          considerCandidate(queuedMatch);
           return null;
         }
         return api.suggestShabads(query, {});
       })
       .then((res) => {
         if (!res || !isCurrentRequest()) return;
-        const suggestions = Array.isArray(res?.suggestions) ? res.suggestions : [];
+        const suggestions = (Array.isArray(res?.suggestions) ? res.suggestions : [])
+          .filter((item) => item?.shabadId)
+          .sort((a, b) => Number(b.confidence || 0) - Number(a.confidence || 0));
         const current = suggestions.find((s) =>
           s?.shabadId && String(s.shabadId) === String(currentShabadId)
         );
-        const topOther = suggestions.find((s) =>
+        const alternatives = suggestions.filter((s) =>
           s?.shabadId && String(s.shabadId) !== String(currentShabadId)
         );
+        const topOther = alternatives[0];
 
-        if (!topOther?.shabadId) return;
-        const otherConf = Number(topOther.confidence || 0);
+        const otherConf = Number(topOther?.confidence || 0);
         const currentConf = Number(current?.confidence || 0);
-
-        // Hard floor — top alternative must clear a high threshold.
-        if (otherConf < CONFIDENCE_TO_OPEN) return;
-
-        // If the current Shabad is also a respectable match, demand a clear
-        // margin before overriding. A 70-vs-65 split means "passing
-        // similarity" — keep singing on the current Shabad.
-        if (currentConf >= CURRENT_STILL_OK && otherConf < currentConf + MIN_MARGIN_OVER_CURRENT) {
+        const runnerUpConf = Number(alternatives[1]?.confidence || 0);
+        if (!topOther?.shabadId || otherConf < CONFIDENCE_TO_OPEN ||
+            otherConf < currentConf + MIN_MARGIN_OVER_CURRENT ||
+            otherConf < runnerUpConf + MIN_CANDIDATE_GAP) {
+          candidateEvidenceRef.current = null;
           return;
         }
 
-        cooldownUntilRef.current = Date.now() + COOLDOWN_MS;
-        absentCountRef.current = 0;
-        onAdvance(topOther);
+        considerCandidate(topOther);
       })
       .catch(() => {
-        // best effort
+        if (isCurrentRequest()) candidateEvidenceRef.current = null;
       })
       .finally(() => {
-        if (isCurrentRequest()) inFlightRef.current = false;
+        if (generation === requestGenerationRef.current) inFlightRef.current = false;
       });
   }, [
     active,
@@ -347,8 +382,8 @@ export default function useAutoShabadAdvance({
     verseSignatures,
     queueCandidates,
     preloadedQueue,
-    currentLineTracked,
-    currentLineConfidence,
+    navigationBlocked,
+    anchorVersion,
     onAdvance,
   ]);
 }

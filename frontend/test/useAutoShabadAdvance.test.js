@@ -11,6 +11,7 @@ vi.mock('../src/services/api', () => ({
 const FIRST_MISS = 'alpha bravo charlie delta echo';
 const SECOND_MISS = 'bravo charlie delta echo foxtrot';
 const THIRD_MISS = 'charlie delta echo foxtrot golf';
+const FOURTH_MISS = 'delta echo foxtrot golf hotel';
 const NEXT = { shabadId: 'next', confidence: 90 };
 const QUEUED = {
   meta: { shabadId: 'queued' },
@@ -48,6 +49,12 @@ describe('asynchronous Shabad navigation lifetime (V5)', () => {
     await flushPromises();
   }
 
+  async function confirm(transcript = THIRD_MISS) {
+    await act(async () => { await vi.advanceTimersByTimeAsync(1500); });
+    hook.rerender({ transcript });
+    await flushPromises();
+  }
+
   function invalidate(reason) {
     if (reason === 'unmounted') {
       hook.unmount();
@@ -63,9 +70,10 @@ describe('asynchronous Shabad navigation lifetime (V5)', () => {
     'ignores a global result after the reader becomes %s',
     async (reason) => {
       const pending = deferred();
-      api.suggestShabads.mockReturnValueOnce(pending.promise);
+      api.suggestShabads.mockResolvedValueOnce({ suggestions: [NEXT] }).mockReturnValueOnce(pending.promise);
       await mount();
-      expect(api.suggestShabads).toHaveBeenCalledTimes(1);
+      await confirm();
+      expect(api.suggestShabads).toHaveBeenCalledTimes(2);
       invalidate(reason);
       pending.resolve({ suggestions: [NEXT] });
       await flushPromises();
@@ -77,9 +85,10 @@ describe('asynchronous Shabad navigation lifetime (V5)', () => {
     'ignores a queued result after the reader becomes %s',
     async (reason) => {
       const pending = deferred();
-      api.trackLine.mockReturnValueOnce(pending.promise);
+      api.trackLine.mockResolvedValueOnce({ tracked: true, confidence: 90 }).mockReturnValueOnce(pending.promise);
       await mount([{ shabadId: 'queued' }]);
-      expect(api.trackLine).toHaveBeenCalledTimes(1);
+      await confirm();
+      expect(api.trackLine).toHaveBeenCalledTimes(2);
       invalidate(reason);
       pending.resolve({ tracked: true, confidence: 90 });
       await flushPromises();
@@ -90,8 +99,9 @@ describe('asynchronous Shabad navigation lifetime (V5)', () => {
 
   it('does not start global fallback when an invalidated queue request fails', async () => {
     const pending = deferred();
-    api.trackLine.mockReturnValueOnce(pending.promise);
+    api.trackLine.mockResolvedValueOnce({ tracked: true, confidence: 90 }).mockReturnValueOnce(pending.promise);
     await mount([{ shabadId: 'queued' }]);
+    await confirm();
     invalidate('inactive');
     pending.reject(new Error('fixture timeout'));
     await flushPromises();
@@ -101,9 +111,10 @@ describe('asynchronous Shabad navigation lifetime (V5)', () => {
 
   it('still advances on a valid global result as the transcript continues changing', async () => {
     const pending = deferred();
-    api.suggestShabads.mockReturnValueOnce(pending.promise);
+    api.suggestShabads.mockResolvedValueOnce({ suggestions: [NEXT] }).mockReturnValueOnce(pending.promise);
     await mount();
-    hook.rerender({ transcript: THIRD_MISS });
+    await confirm();
+    hook.rerender({ transcript: FOURTH_MISS });
     pending.resolve({ suggestions: [NEXT] });
     await flushPromises();
     expect(onAdvance).toHaveBeenCalledExactlyOnceWith(NEXT);
@@ -111,6 +122,8 @@ describe('asynchronous Shabad navigation lifetime (V5)', () => {
 
   it('preserves queue-first navigation for a valid request', async () => {
     await mount([{ shabadId: 'queued' }]);
+    expect(onAdvance).not.toHaveBeenCalled();
+    await confirm();
     expect(onAdvance).toHaveBeenCalledOnce();
     expect(onAdvance.mock.calls[0][0]).toMatchObject({ shabadId: 'queued', queued: true });
     expect(api.suggestShabads).not.toHaveBeenCalled();
@@ -119,35 +132,45 @@ describe('asynchronous Shabad navigation lifetime (V5)', () => {
   it('does not let old completion release a newer request or consume its cooldown', async () => {
     const old = deferred();
     const current = deferred();
-    api.suggestShabads.mockReturnValueOnce(old.promise).mockReturnValueOnce(current.promise);
+    const fresh = { shabadId: 'fresh', confidence: 90 };
+    api.suggestShabads
+      .mockResolvedValueOnce({ suggestions: [NEXT] }).mockReturnValueOnce(old.promise)
+      .mockResolvedValueOnce({ suggestions: [fresh] }).mockReturnValueOnce(current.promise);
     await mount();
+    await confirm();
     hook.rerender({ currentShabadId: 'manually-selected', transcript: FIRST_MISS });
     hook.rerender({ transcript: SECOND_MISS });
     await flushPromises();
-    expect(api.suggestShabads).toHaveBeenCalledTimes(2);
+    await confirm();
+    expect(api.suggestShabads).toHaveBeenCalledTimes(4);
 
     old.resolve({ suggestions: [NEXT] });
     await flushPromises();
     expect(onAdvance).not.toHaveBeenCalled();
-    hook.rerender({ transcript: THIRD_MISS });
+    hook.rerender({ transcript: FOURTH_MISS });
     await flushPromises();
-    expect(api.suggestShabads).toHaveBeenCalledTimes(2);
+    expect(api.suggestShabads).toHaveBeenCalledTimes(4);
 
-    current.resolve({ suggestions: [{ shabadId: 'fresh', confidence: 90 }] });
+    current.resolve({ suggestions: [fresh] });
     await flushPromises();
     expect(onAdvance).toHaveBeenCalledExactlyOnceWith({ shabadId: 'fresh', confidence: 90 });
   });
 
   it('preserves the existing five-second cooldown after a valid advance', async () => {
     await mount();
+    await confirm();
     expect(onAdvance).toHaveBeenCalledOnce();
+    api.suggestShabads.mockResolvedValue({ suggestions: [{ shabadId: 'later', confidence: 90 }] });
     hook.rerender({ currentShabadId: 'next', transcript: FIRST_MISS });
     hook.rerender({ transcript: SECOND_MISS });
-    expect(api.suggestShabads).toHaveBeenCalledTimes(1);
+    expect(api.suggestShabads).toHaveBeenCalledTimes(2);
     await act(async () => { await vi.advanceTimersByTimeAsync(5000); });
     hook.rerender({ transcript: THIRD_MISS });
     hook.rerender({ transcript: 'delta echo foxtrot golf hotel' });
     await flushPromises();
-    expect(api.suggestShabads).toHaveBeenCalledTimes(2);
+    expect(api.suggestShabads).toHaveBeenCalledTimes(3);
+    expect(onAdvance).toHaveBeenCalledOnce();
+    await confirm('echo foxtrot golf hotel india');
+    expect(onAdvance).toHaveBeenCalledTimes(2);
   });
 });

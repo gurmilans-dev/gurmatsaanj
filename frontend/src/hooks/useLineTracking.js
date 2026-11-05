@@ -25,11 +25,12 @@ export default function useLineTracking({
   const [lineIndex, setLineIndex] = useState(-1);
   const [confidence, setConfidence] = useState(0);
   const [tracked, setTracked] = useState(false);
+  const [observation, setObservation] = useState(null);
   const [debug, setDebug] = useState({ status: 'idle' });
 
   const lineIndexRef = useRef(-1);
   const lastRunRef = useRef(0);
-  const lastTailRef = useRef('');
+  const lastTranscriptRef = useRef('');
   const timerRef = useRef(null);
   // Far-jump confirmation: a non-adjacent line move must be the best result
   // for two consecutive polls before the cursor commits. Repetitive banis
@@ -48,11 +49,12 @@ export default function useLineTracking({
   useEffect(() => {
     if (prevShabadIdRef.current != null && shabadId !== prevShabadIdRef.current) {
       warmupUntilRef.current = Date.now() + 1500;
-      lastTailRef.current = '';
+      lastTranscriptRef.current = '';
       pendingFarRef.current = null;
       setLineIndex(-1);
       setConfidence(0);
       setTracked(false);
+      setObservation(null);
       setDebug({ status: 'warming-up', reason: 'shabad-changed', lineIndex: -1, confidence: 0 });
     }
     prevShabadIdRef.current = shabadId;
@@ -73,12 +75,13 @@ export default function useLineTracking({
     );
 
     warmupUntilRef.current = Date.now() + 450;
-    lastTailRef.current = '';
+    lastTranscriptRef.current = '';
     pendingFarRef.current = null;
     lineIndexRef.current = next;
     setLineIndex(next);
     setConfidence(0);
     setTracked(false);
+    setObservation(null);
     setDebug({ status: 'manual-anchor', reason: 'line-selected', lineIndex: next, confidence: 0 });
   }, [anchorLineIndex, anchorVersion, verses?.length]);
 
@@ -114,8 +117,10 @@ export default function useLineTracking({
       // what's being sung right now, so the cursor moves within ~1-2 words of
       // a line change.
       const tail = latest.split(/\s+/).slice(-5).join(' ');
-      if (tail === lastTailRef.current) return;
-      lastTailRef.current = tail;
+      // Appended repetitions are fresh observations even when their tail and
+      // score are identical. Timer ticks without new text are not evidence.
+      if (latest === lastTranscriptRef.current) return;
+      lastTranscriptRef.current = latest;
       lastRunRef.current = Date.now();
 
       // Local match — no network. ~1ms over a typical shabad's verses.
@@ -124,6 +129,7 @@ export default function useLineTracking({
       const nextTracked = Boolean(res.tracked);
       setConfidence(nextConfidence);
       setTracked(nextTracked);
+      setObservation({ tail, at: Date.now() });
       setDebug({
         status: nextTracked ? 'tracked' : 'no-match',
         state: nextTracked ? 'accepted' : 'rejected',
@@ -205,5 +211,5 @@ export default function useLineTracking({
     };
   }, [shabadId, verses, transcript, active, intervalMs]);
 
-  return { lineIndex, confidence, tracked, status: debug?.status || 'idle', debug };
+  return { lineIndex, confidence, tracked, observation, status: debug?.status || 'idle', debug };
 }
