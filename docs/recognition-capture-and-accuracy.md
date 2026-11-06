@@ -329,6 +329,64 @@ $calibrationHash = (Get-FileHash -LiteralPath $calibrationFile -Algorithm SHA256
 @{sha256=$calibrationHash;onlineRecognitionAuthorized=$true;synthetic=$true;provenance='Original locally synthesized calibration phrase; authorized online diagnostic only'} | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $calibrationDirectory 'control-policy.json') -Encoding utf8
 ```
 
+## Integration review corrections and caveats
+
+The integration review reproduced the native application control (7 recognition,
+5 matcher, 2 page and 2 projector-acknowledgement events; 44,434 audio bytes) three
+times in Chrome 156.0.8078.80, and found three defects. Each is fixed on the
+integration branch with a regression test:
+
+- **Microphone ownership.** Ending an online test capture stopped the viewer mic
+  even after the operator, or a remote mic toggle, had restarted it on the ordinary
+  microphone. A mic started while the capture's permission prompt was open was
+  worse: the rejected `start(track)` left the capture track recorded as the
+  session input, so the next engine restart moved live recognition onto that track
+  and the capture's end stopped it. A rejected start now keeps the running
+  session's input, and the panel stops only recognition still reading its own
+  track (`frontend/test/capturePanel.test.js`).
+- **Build identity.** Vite 5 writes `vite.config.js.timestamp-*.mjs` beside the
+  config while loading it, so every build recorded `dirty: true`. The Phase 5
+  evidence above carries that flag, so its manifests do not identify an exact tree
+  (`frontend/test/buildIdentity.test.js`).
+- **Speech gate.** The routing probe counted whitespace-only transcripts as
+  processed speech; it now requires text (`frontend/test/captureReview.test.js`).
+
+These limits are unchanged and matter for future scoring:
+
+- With online recognition, live recognition reads the capture's track, so it ends
+  whenever the capture ends, including the automatic stop at ten minutes or
+  16 MiB. Restart the ordinary mic afterwards. The track carries raw audio (echo
+  cancellation, noise suppression and gain control off), while ordinary operation
+  uses the browser's own microphone capture. Accuracy measured through one input
+  path is not established for the other.
+- Verified labels from the review page always carry a positive timing uncertainty,
+  and the evaluator reports every transition latency as unavailable whenever
+  uncertainty is above zero. This workflow therefore cannot yield transition
+  latency until the evaluator propagates uncertainty into latency bounds.
+- The review page labels every reviewed target `kirtan`, Katha included; activity
+  only reaches transition records. MediaRecorder WebM has no duration header, so
+  the player shows no total length; seeking and **Use current audio time** worked
+  in Chrome and Edge 156.
+- Edge 156 accepted `start(track)` in headless runs, but its recognizer returned
+  blank or unrelated transcripts for the control phrase in all three probes (two
+  track, one ordinary mic). Edge online capture remains unverified. MDN
+  compatibility data lists no `start(audioTrack)` support in Safari, iOS Safari or
+  Chrome Android, so only audio-only capture could apply there; no physical device
+  was tested.
+- `npm run dev` computes the build identity once, when the server starts.
+
+A ten-minute audio-only capture in headless Chrome 156, fed a looping synthetic
+waveform, stopped itself with reason `audio-duration-limit` after 600,087 ms. It
+exported an incomplete, valid bundle: 4,870,093 audio bytes in 589 chunks, no gap
+above 1,027 ms, and build identity `dirty: false`. Chrome and Edge both resolved
+the audio to 599.94 s, which matches the recorder's start-to-stop interval in the
+trace. This confirms the lifecycle timestamps only, not first-sample alignment.
+Recorded audio is held as Blobs outside the JavaScript heap. Its memory is bounded
+by the 16 MiB and ten-minute limits, not by heap sampling.
+
+Integration results: 184/184 frontend tests in 16 files with recording off and on,
+and 64/64 backend tests.
+
 ## Changes and next recommendation
 
 New: `CapturePanel.jsx`, `synchronizedCapture.js`, `captureBundle.js`,
