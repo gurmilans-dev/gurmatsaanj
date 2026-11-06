@@ -40,12 +40,15 @@ async function newHost() {
     },
   });
   assert.equal(res.status, 200);
-  const { code, followCode, hostToken } = res.data.session;
-  return { hostId, hostToken, code, followCode };
+  const { code, pairToken, followCode, hostToken } = res.data.session;
+  return { hostId, hostToken, code, pairToken, followCode };
 }
 
+// Devices enroll through the QR pairing link, which grants full remote
+// rights. Typed-code (view-only) enrollment is covered in
+// pairing-enrollment.test.js.
 function join(host, clientId, extra = {}) {
-  return call('POST', '/api/remote/join', { body: { code: host.code, clientId, name: clientId, ...extra } });
+  return call('POST', '/api/remote/join', { body: { pairToken: host.pairToken, clientId, name: clientId, ...extra } });
 }
 
 async function pairTwo() {
@@ -271,11 +274,11 @@ test('kick and code reset invalidate device credentials', async () => {
 
   const reset = await call('POST', '/api/remote/reset', { body: { hostId: host.hostId, hostToken: host.hostToken } });
   assert.equal(reset.status, 200);
-  const nextCode = reset.data.session.code;
+  const nextLink = reset.data.session.pairToken;
   assert.equal((await call('POST', '/api/remote/heartbeat', { body: auth(host, b) })).status, 403);
 
   const rejoin = await call('POST', '/api/remote/join', {
-    body: { code: nextCode, clientId: b.clientId, clientToken: b.token },
+    body: { pairToken: nextLink, clientId: b.clientId, clientToken: b.token },
   });
   assert.equal(rejoin.status, 200);
   assert.notEqual(rejoin.data.clientToken, b.token);

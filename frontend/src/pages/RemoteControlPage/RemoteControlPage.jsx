@@ -35,6 +35,8 @@ const COMMANDS = {
 };
 
 const REMOTE_CLIENT_KEY = 'saanj-kirtan.remoteClientId';
+// Older builds stored the typed pair code here. It is no longer stored (a
+// paired phone resumes with its device credential); the key is only cleared.
 const REMOTE_CODE_KEY = 'saanj-kirtan.remotePairCode';
 const REMOTE_NAME_KEY = 'saanj-kirtan.remoteName';
 // Per-device secret issued by /remote/join. Proves this phone owns its
@@ -63,15 +65,35 @@ function forgetValue(key) {
   try { localStorage.removeItem(key); } catch { /* noop */ }
 }
 
-function codeFromUrl() {
-  if (typeof window === 'undefined') return '';
+/**
+ * Pairing input from the scanned link. The QR carries a short-lived pairing
+ * token in the URL fragment (`/remote#pair=...`), which browsers never send
+ * to a server or in a Referer; links from older builds carry the typed code
+ * (`?code=1234`). Both are read once and kept in memory only.
+ */
+function readPairingFromUrl() {
+  if (typeof window === 'undefined') return { pairToken: '', code: '' };
   try {
-    return (new URLSearchParams(window.location.search).get('code') || '')
-      .replace(/\D/g, '')
-      .slice(0, 4);
+    const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+    const search = new URLSearchParams(window.location.search);
+    return {
+      pairToken: (hash.get('pair') || '').replace(/[^A-Za-z0-9_-]/g, '').slice(0, 160),
+      code: (search.get('code') || '').replace(/\D/g, '').slice(0, 4),
+    };
   } catch {
-    return '';
+    return { pairToken: '', code: '' };
   }
+}
+
+/** Remove pairing input from the address bar and this history entry. */
+function scrubPairingFromUrl() {
+  if (typeof window === 'undefined') return;
+  try {
+    const url = new URL(window.location.href);
+    if (!url.hash.includes('pair=') && !url.searchParams.has('code')) return;
+    url.searchParams.delete('code');
+    window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}`);
+  } catch { /* noop */ }
 }
 
 function defaultRemoteName() {
@@ -679,7 +701,9 @@ function RemotePairingPanel({
           <p>
             {isController
               ? 'This device can control the main app.'
-              : `${session?.controllerName || 'Another device'} is controlling. This device can watch but not send commands.`}
+              : session?.trusted === false
+                ? 'Paired with the typed code, so this device is view only. Tap Take Control to ask the main app to allow control.'
+                : `${session?.controllerName || 'Another device'} is controlling. This device can watch but not send commands.`}
           </p>
           {isController && otherPendingRequests.length > 0 && (
             <div className="remote-control-request" role="status">
@@ -700,7 +724,11 @@ function RemotePairingPanel({
           {!isController && ownPendingRequest && (
             <div className="remote-control-request remote-control-request-soft" role="status">
               <Icon name="projector" />
-              <span>Control request sent. The current controller can keep going safely.</span>
+              <span>
+                {session?.locked
+                  ? 'Control request sent. The current controller can keep going safely.'
+                  : 'Control request sent. Waiting for the main app to allow it.'}
+              </span>
             </div>
           )}
           <div className="remote-pair-actions">
@@ -776,14 +804,19 @@ export default function RemoteControlPage() {
   useEffect(() => () => { if (lastSentTimerRef.current) clearTimeout(lastSentTimerRef.current); }, []);
   const [remoteSearchMode, setRemoteSearchMode] = useState('kirtan');
   const [remoteOpenAs, setRemoteOpenAs] = useState('shabad');
-  const [clientId] = useState(() => {
+  const [clientId, setClientId] = useState(() => {
     const existing = storedValue(REMOTE_CLIENT_KEY);
     if (existing) return existing;
     const next = randomClientId();
     rememberValue(REMOTE_CLIENT_KEY, next);
     return next;
   });
-  const [pairCode, setPairCode] = useState(() => codeFromUrl() || storedValue(REMOTE_CODE_KEY));
+  const [urlPairing] = useState(readPairingFromUrl);
+  // Typed code being entered (or prefilled from an older `?code=` link).
+  // Never stored: once paired, the device credential is what persists.
+  const [pairCode, setPairCode] = useState(urlPairing.code);
+  // QR pairing token, memory only, tried once.
+  const pairTokenRef = useRef(urlPairing.pairToken);
   const [clientToken, setClientToken] = useState(() => storedValue(REMOTE_CLIENT_TOKEN_KEY));
   const [clientName, setClientName] = useState(() =>
     storedValue(REMOTE_NAME_KEY, defaultRemoteName())
@@ -791,12 +824,21 @@ export default function RemoteControlPage() {
   const [remoteSession, setRemoteSession] = useState(null);
   const [pairing, setPairing] = useState(false);
   const searchModeTouchedRef = useRef(false);
-  // Mirror pairCode / clientToken through refs so the state-poll loop (which
-  // mounts once) can read the latest values without restarting.
-  const pairCodeRef = useRef(pairCode);
-  useEffect(() => { pairCodeRef.current = pairCode; }, [pairCode]);
+  // Mirror clientToken through a ref so the state-poll loop (which mounts
+  // once) can read the latest value without restarting.
   const clientTokenRef = useRef(clientToken);
   useEffect(() => { clientTokenRef.current = clientToken; }, [clientToken]);
+  useEffect(() => {
+    // A pairing link/code in the URL is scrubbed once its join attempt
+    // settles (joinRemote), so a reload mid-join can still use it.
+    if (!urlPairing.pairToken && !urlPairing.code) scrubPairingFromUrl();
+    forgetValue(REMOTE_CODE_KEY);
+  }, [urlPairing]);
+  const dropCredential = useCallback(() => {
+    forgetValue(REMOTE_CLIENT_TOKEN_KEY);
+    clientTokenRef.current = '';
+    setClientToken('');
+  }, []);
 
   const supportedCommands = useMemo(() => {
     if (Array.isArray(state?.supportedCommands)) return new Set(state.supportedCommands);
@@ -820,21 +862,25 @@ export default function RemoteControlPage() {
     let delay = 1000;
     const load = async () => {
       try {
-        const next = await api.getRemoteState({
-          clientId,
-          pairCode: pairCodeRef.current,
-          clientToken: clientTokenRef.current,
-        });
+        const tokenUsed = clientTokenRef.current;
+        const next = await api.getRemoteState({ clientId, clientToken: tokenUsed });
         if (!cancelled) {
           setState(next);
-          // If the user just clicked "Pair another code" (local pairCode is
-          // empty), don't let the polled session overwrite us back into a
-          // paired UI. The backend may still hold the binding for a moment
-          // before /leave lands.
-          if (next?.remoteSession && pairCodeRef.current && pairCodeRef.current.length === 4) {
-            setRemoteSession(next.remoteSession);
-          } else if (!pairCodeRef.current) {
+          // The device credential decides pairing. Ignore the session part
+          // of a response whose credential changed meanwhile (just paired,
+          // or "Pair another code" dropped it before /leave landed).
+          if (!clientTokenRef.current) {
             setRemoteSession(null);
+          } else if (tokenUsed === clientTokenRef.current) {
+            if (next?.remoteSession && next.remoteSession.paired === false) {
+              // Our credential was rejected (new code, removed, expired,
+              // backend restart): drop it and say why.
+              dropCredential();
+              setRemoteSession(null);
+              setError(next.remoteSession.error || 'Remote pairing ended. Scan the QR code or enter the code from the main app.');
+            } else {
+              setRemoteSession(next?.remoteSession || null);
+            }
           }
           setError((prev) => prev === 'Connection to backend lost. Reconnecting...' ? '' : prev);
           delay = 1000;
@@ -853,7 +899,7 @@ export default function RemoteControlPage() {
       cancelled = true;
       if (timer) clearTimeout(timer);
     };
-  }, [clientId]);
+  }, [clientId, dropCredential]);
 
   useEffect(() => {
     if (searchModeTouchedRef.current || !state?.connected) return;
@@ -862,14 +908,14 @@ export default function RemoteControlPage() {
     setRemoteOpenAs(state?.viewerKind === 'ang' ? 'ang' : 'shabad');
   }, [state?.connected, state?.viewerKind, state?.viewerMode]);
 
+  // Device credential only; no pair code travels with paired requests.
   const remoteAuth = useMemo(() => ({
     clientId,
     clientToken,
-    code: pairCode,
     name: clientName,
-  }), [clientId, clientName, clientToken, pairCode]);
+  }), [clientId, clientName, clientToken]);
   useEffect(() => {
-    if (!remoteSession?.paired || pairCode.length !== 4) return undefined;
+    if (!remoteSession?.paired || !clientToken) return undefined;
     let cancelled = false;
     let timer = null;
     const beat = async () => {
@@ -877,10 +923,12 @@ export default function RemoteControlPage() {
         const result = await api.heartbeatRemoteSession(remoteAuth);
         if (!cancelled && result?.session) setRemoteSession(result.session);
       } catch (err) {
-        if (!cancelled) {
+        // Only a rejected credential (kicked, new code, expired) unpairs.
+        // A network blip keeps it; the next beat or state poll recovers.
+        if (!cancelled && err?.response?.status === 403) {
+          dropCredential();
           setRemoteSession(null);
           setError(friendlyRemoteError(err, 'Remote session expired. Pair again.'));
-          forgetValue(REMOTE_CODE_KEY);
         }
       } finally {
         if (!cancelled) timer = setTimeout(beat, 5000);
@@ -891,42 +939,73 @@ export default function RemoteControlPage() {
       cancelled = true;
       if (timer) clearTimeout(timer);
     };
-  }, [pairCode.length, remoteAuth, remoteSession?.paired]);
+  }, [clientToken, dropCredential, remoteAuth, remoteSession?.paired]);
   const joinRemote = useCallback(async (event) => {
     event?.preventDefault?.();
-    if (pairCode.length !== 4) {
+    const pairToken = pairTokenRef.current;
+    pairTokenRef.current = '';
+    if (!pairToken && pairCode.length !== 4) {
       setError('Enter the 4 digit code shown in the main app header.');
       return false;
     }
     setPairing(true);
     setError('');
+    const capability = pairToken ? { pairToken } : { code: pairCode };
+    const attempt = (id, token) => api.joinRemoteSession({ clientId: id, name: clientName, clientToken: token, ...capability });
     try {
-      rememberValue(REMOTE_CODE_KEY, pairCode);
       rememberValue(REMOTE_NAME_KEY, clientName || 'Remote device');
-      // Read the stored token fresh: another tab of this remote shares the
-      // clientId and may have paired (and stored a token) after this mounted.
-      const result = await api.joinRemoteSession({
-        ...remoteAuth,
-        clientToken: storedValue(REMOTE_CLIENT_TOKEN_KEY) || remoteAuth.clientToken,
-      });
+      let result;
+      try {
+        // Read the stored token fresh: another tab of this remote shares the
+        // clientId and may have paired (and stored a token) after this mounted.
+        result = await attempt(clientId, storedValue(REMOTE_CLIENT_TOKEN_KEY) || clientTokenRef.current);
+      } catch (err) {
+        // 409: this device id is already enrolled but we do not hold its
+        // credential (e.g. the reply to an earlier join was lost). Pair as a
+        // new device id instead of waiting for the old one to expire.
+        if (err?.response?.status !== 409) throw err;
+        const freshId = randomClientId();
+        rememberValue(REMOTE_CLIENT_KEY, freshId);
+        setClientId(freshId);
+        result = await attempt(freshId, '');
+      }
       if (result?.clientToken) {
         rememberValue(REMOTE_CLIENT_TOKEN_KEY, result.clientToken);
         clientTokenRef.current = result.clientToken;
         setClientToken(result.clientToken);
       }
       setRemoteSession(result?.session || null);
+      setPairCode('');
       return true;
     } catch (err) {
-      forgetValue(REMOTE_CODE_KEY);
       setPairCode('');
       setError(friendlyRemoteError(err, 'Could not pair remote.'));
       return false;
     } finally {
       setPairing(false);
+      scrubPairingFromUrl();
     }
-  }, [clientName, pairCode, remoteAuth]);
+  }, [clientId, clientName, pairCode]);
+  // A scanned QR link pairs straight away, even if this phone is already
+  // paired elsewhere: scanning is an explicit choice of main app.
+  const joinRemoteRef = useRef(joinRemote);
+  useEffect(() => { joinRemoteRef.current = joinRemote; }, [joinRemote]);
   useEffect(() => {
-    if (remoteSession?.paired || pairCode.length !== 4) return;
+    if (pairTokenRef.current) joinRemoteRef.current();
+    // Scanning a QR while this page is already open may only change the
+    // URL fragment (no reload), so pick the new pairing link up here too.
+    const onHashChange = () => {
+      const { pairToken } = readPairingFromUrl();
+      if (!pairToken) return;
+      pairTokenRef.current = pairToken;
+      joinRemoteRef.current(); // scrubs the URL when it settles
+    };
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, []);
+  // A complete typed code submits itself.
+  useEffect(() => {
+    if (remoteSession?.paired || pairCode.length !== 4) return undefined;
     const timer = setTimeout(() => {
       joinRemote();
     }, 300);
@@ -1004,15 +1083,16 @@ export default function RemoteControlPage() {
     // Tell the backend to drop our binding so the next /state poll really
     // returns "unpaired" — otherwise the binding lives in clientToHost and
     // the polling loop would immediately re-paint us as paired.
-    if (clientId && api.leaveRemoteSession) {
-      api.leaveRemoteSession({ clientId, clientToken, code: pairCode }).catch(() => { /* best-effort */ });
+    if (clientId && clientToken && api.leaveRemoteSession) {
+      api.leaveRemoteSession({ clientId, clientToken }).catch(() => { /* best-effort */ });
     }
+    dropCredential();
     forgetValue(REMOTE_CODE_KEY);
     setRemoteSession(null);
     setPairCode('');
     setLastSent('');
     setError('');
-  }, [clientId, clientToken, pairCode]);
+  }, [clientId, clientToken, dropCredential]);
 
   const commandAvailable = useCallback((command) => supportedCommands.has(command), [supportedCommands]);
 

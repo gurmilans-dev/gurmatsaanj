@@ -26,6 +26,7 @@ function remoteActors(call, prefix) {
     Object.assign(host, {
       hostToken: res.data.session.hostToken,
       code: res.data.session.code,
+      pairToken: res.data.session.pairToken,
       followCode: res.data.session.followCode,
     });
     return res.data.session;
@@ -43,15 +44,22 @@ function remoteActors(call, prefix) {
       body: { hostId: host.hostId, hostToken: host.hostToken },
     });
     assert.equal(res.status, 200);
-    Object.assign(host, { code: res.data.session.code, followCode: res.data.session.followCode });
+    Object.assign(host, {
+      code: res.data.session.code,
+      pairToken: res.data.session.pairToken,
+      followCode: res.data.session.followCode,
+    });
     return res.data.session;
   }
 
-  /** Pair a phone with the host's current code; it becomes controller if free. */
+  /**
+   * Pair a phone through the host's QR pairing link; it becomes controller if
+   * free. (A typed code would pair it view-only: see pairing-enrollment.test.js.)
+   */
   async function pairPhone(host, name = 'phone') {
     seq += 1;
     const clientId = `${prefix}-${name}-${seq}`;
-    const res = await call('POST', '/api/remote/join', { body: { code: host.code, clientId, name } });
+    const res = await call('POST', '/api/remote/join', { body: { pairToken: host.pairToken, clientId, name } });
     assert.equal(res.status, 200, `join failed: ${JSON.stringify(res.data)}`);
     return { clientId, token: res.data.clientToken, code: host.code };
   }

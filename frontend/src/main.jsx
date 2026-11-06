@@ -29,7 +29,16 @@ createRoot(document.getElementById('root')).render(
 //      old version until they choose to refresh.
 if (import.meta.env.PROD && 'serviceWorker' in navigator) {
   let reloading = false;
+  // The very first install also fires `controllerchange` (clients.claim()).
+  // There is no new version to load then, and a reload would wipe what the
+  // user just started, e.g. a remote pairing code being typed or a QR
+  // pairing in flight. Only later changes (real updates) reload.
+  let hasController = Boolean(navigator.serviceWorker.controller);
   navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!hasController) {
+      hasController = true;
+      return;
+    }
     if (reloading) return;
     reloading = true;
     window.location.reload();

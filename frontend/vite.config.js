@@ -61,6 +61,10 @@ export default defineConfig({
         target: 'http://localhost:5000',
         changeOrigin: true,
         secure: false,
+        // Send each phone's address as X-Forwarded-For. The backend trusts it
+        // only from loopback (TRUST_PROXY), so rate limits and the typed-code
+        // pairing budget apply per device instead of to the whole Wi-Fi.
+        xfwd: true,
         timeout: 60_000,
         proxyTimeout: 60_000,
         configure: (proxy) => {
@@ -88,6 +92,7 @@ export default defineConfig({
         target: 'http://localhost:5000',
         changeOrigin: true,
         secure: false,
+        xfwd: true, // see server.proxy
         timeout: 60_000,
         proxyTimeout: 60_000,
       },

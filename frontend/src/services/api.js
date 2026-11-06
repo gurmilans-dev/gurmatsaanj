@@ -146,11 +146,12 @@ export const api = {
   publishRemoteState(state) {
     return http.post('/remote/state', state).then((r) => r.data);
   },
+  // Paired phones identify with clientId + the clientToken header; no pair
+  // code in the URL. `code` here is a read-only Sangat View follow code.
   getRemoteState(auth = {}) {
     return http.get('/remote/state', {
       params: {
         clientId: auth.clientId || undefined,
-        pairCode: auth.pairCode || undefined,
         code: auth.code || undefined,
       },
       headers: auth.clientToken ? { 'X-Remote-Client-Token': auth.clientToken } : undefined,
@@ -159,8 +160,10 @@ export const api = {
   getFollowState(code) {
     return http.get(`/remote/follow/${encodeURIComponent(code)}/state`).then((r) => r.data);
   },
-  joinRemoteSession({ code, clientId, clientToken, name }) {
-    return http.post('/remote/join', { code, clientId, clientToken, name }).then((r) => r.data);
+  // Enrollment: `pairToken` from the QR link (full rights) or the typed
+  // `code` (view only until the main app allows control). Body only.
+  joinRemoteSession({ code, pairToken, clientId, clientToken, name }) {
+    return http.post('/remote/join', { code, pairToken, clientId, clientToken, name }).then((r) => r.data);
   },
   leaveRemoteSession({ code, clientId, clientToken }) {
     return http.post('/remote/leave', { code, clientId, clientToken }).then((r) => r.data);
