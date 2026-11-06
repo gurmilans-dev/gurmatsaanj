@@ -128,7 +128,6 @@ export default function LiveHealthCheck() {
     try {
       await checkBackend(false);
       if (!projectorWindowOpen) openProjector?.();
-      else focusProjector?.();
       if (sessionQueue.length > 0) {
         await preloadQueueSession?.(activeSessionId);
       }
@@ -152,7 +151,6 @@ export default function LiveHealthCheck() {
   }, [
     activeSessionId,
     checkBackend,
-    focusProjector,
     openProjector,
     preloadOfflineSessionPack,
     preloadQueueSession,

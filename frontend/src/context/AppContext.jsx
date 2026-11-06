@@ -711,6 +711,22 @@ export function AppProvider({ children }) {
   const projectorWinRef = useRef(null);
   const [projectorWindowOpen, setProjectorWindowOpen] = useState(false);
 
+  const restoreMainWindowFocus = () => {
+    // Browser/OS window managers may still foreground a newly opened popup,
+    // especially on Windows. Repeatedly ask focus to return to the operator
+    // window without pulling the projector forward.
+    try { window.focus(); } catch { /* noop */ }
+    try { document.body?.focus?.({ preventScroll: true }); } catch { /* noop */ }
+    requestAnimationFrame(() => {
+      try { window.focus(); } catch { /* noop */ }
+    });
+    [60, 180, 420].forEach((ms) => {
+      setTimeout(() => {
+        try { window.focus(); } catch { /* noop */ }
+      }, ms);
+    });
+  };
+
   // Mobile + iOS-standalone-PWA guard. The projector is a separate browser
   // window — that concept only works on desktop. On iOS PWAs in standalone
   // mode, window.open() doesn't open a new window; it navigates the current
@@ -759,17 +775,12 @@ export function AppProvider({ children }) {
     projectorWinRef.current = win;
     setProjectorWindowOpen(true);
 
-    // Open the projector window IN THE BACKGROUND. Browsers focus the new
-    // window by default; we immediately push focus back to the main window
-    // (and ask the projector window to blur itself) so the user keeps
-    // typing/clicking without losing context.
+    // Open the projector window as quietly as browsers allow. A web app
+    // cannot fully force a popup to stay behind the operator window, but
+    // blurring the child and repeatedly restoring main-window focus avoids
+    // most focus stealing on Chrome/Edge.
     try { win.blur(); } catch { /* noop */ }
-    try { window.focus(); } catch { /* noop */ }
-    // Some browsers schedule the focus change for the next tick — fire one
-    // more on the next frame to be safe.
-    requestAnimationFrame(() => {
-      try { window.focus(); } catch { /* noop */ }
-    });
+    restoreMainWindowFocus();
 
     const interval = setInterval(() => {
       if (win.closed) {
