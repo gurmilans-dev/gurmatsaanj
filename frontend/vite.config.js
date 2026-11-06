@@ -3,10 +3,14 @@ import react from '@vitejs/plugin-react';
 import basicSsl from '@vitejs/plugin-basic-ssl';
 import { execFileSync } from 'node:child_process';
 
-function buildInfo() {
+// Vite writes this config's bundled copy (vite.config.js.timestamp-*.mjs) beside it
+// while loading, so that transient file must not mark every build dirty.
+const transientConfigBundle = /^\?\? (?:.*\/)?vite\.config\.js\.timestamp-[^/]+\.mjs$/;
+export function buildInfo(run = execFileSync) {
   try {
-    return { revision: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
-      dirty: Boolean(execFileSync('git', ['status', '--porcelain'], { encoding: 'utf8' }).trim()) };
+    const status = run('git', ['status', '--porcelain'], { encoding: 'utf8' });
+    return { revision: run('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
+      dirty: status.split(/\r?\n/).some((line) => line.trim() && !transientConfigBundle.test(line)) };
   } catch { return { revision: null, dirty: null }; }
 }
 
