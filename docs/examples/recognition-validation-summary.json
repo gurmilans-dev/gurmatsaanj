@@ -1,0 +1,403 @@
+{
+  "version": 1,
+  "status": "completed-with-unavailable-accuracy",
+  "recordingsScored": 0,
+  "localTraces": [
+    {
+      "id": "local-trace-1",
+      "sha256": "43357e7cfdd3e4ed2a42ce97f053db87c88a3bad4683aadd61143801355ba44f",
+      "durationMs": 191716.10000002384,
+      "eventCount": 1008,
+      "traceVersion": 2,
+      "synthetic": false,
+      "capture": {
+        "complete": true,
+        "reason": null,
+        "limits": {
+          "maxEvents": 120000,
+          "maxBytes": 33554432,
+          "maxDurationMs": 43200000
+        },
+        "bytes": 323019
+      },
+      "eventTypes": {
+        "session": 2,
+        "recognition": 341,
+        "page": 44,
+        "hold": 20,
+        "projector.publish": 49,
+        "projector.ack": 97,
+        "matcher": 209,
+        "discovery": 219,
+        "tracker": 27
+      },
+      "recognition": {
+        "baseline": 2,
+        "result": 333,
+        "end": 3,
+        "restart": 3
+      },
+      "scriptObservations": {
+        "gurmukhi": 333,
+        "devanagari": 0,
+        "latin": 0
+      },
+      "discovery": {
+        "invalidate": 61,
+        "miss": 69,
+        "request": 32,
+        "results": 25,
+        "rejected": 24,
+        "pending": 1,
+        "expired": 7
+      },
+      "matcherParity": {
+        "comparedCalls": 209,
+        "mismatches": 0,
+        "status": "exact"
+      },
+      "trackedMatcherCalls": 205,
+      "farMatcherProposals": 13,
+      "capturedGroups": [
+        "40027"
+      ],
+      "selectedPositionChanges": 20,
+      "manualEventsObserved": 0,
+      "stateTime": {
+        "observedMs": 191715.60000002384,
+        "heldMs": 36387.799999952316,
+        "manualMs": 0,
+        "followingMs": 153217.29999995232,
+        "uncertainMs": 2110.5000001192093
+      },
+      "projector": {
+        "publications": 49,
+        "receivedAcks": 49,
+        "committedAcks": 48,
+        "publicationsWithoutCommitAck": 1,
+        "rejectedAcks": 0,
+        "commitUpperBounds": {
+          "status": "available",
+          "n": 48,
+          "medianMs": 4.399999976158142,
+          "p90Ms": 7.699999928474426,
+          "p95Ms": 8.300000071525574,
+          "percentileRule": "Median for n>=1; nearest-rank p90 for n>=10, p95 for n>=20."
+        },
+        "physicalDisplayLatency": {
+          "status": "unavailable",
+          "reason": "No physical display observation or correlated paint timestamps"
+        }
+      },
+      "accuracy": {
+        "status": "unavailable",
+        "reason": "No verified independent labels and recording synchronization supplied"
+      },
+      "interpretation": "Operational counts and sender-clock bounds only. Tracked flags, cursor changes, holds, and parity do not establish correctness."
+    }
+  ],
+  "publicReferences": [
+    {
+      "sourceId": "reviewed-IZOsmkdmmcg",
+      "sourceUrl": "https://raw.githubusercontent.com/karanbirsingh/live-gurbani-captioning-benchmark-v1/5cfa23d583c8157e09beb07c911bc1009ae41b10/test/IZOsmkdmmcg.json",
+      "referenceSha256": "c7e01888c3582bb45502c027d9747a024b34570107e5c1dc64d63e7619e7fe55",
+      "recordingId": "IZOsmkdmmcg",
+      "durationMs": 460900,
+      "scoredWindowMs": {
+        "start": 0,
+        "end": 455900
+      },
+      "canonicalFailures": [],
+      "verifiedTargetMs": 405800,
+      "provenanceReliability": "Publisher-declared human review; canonical IDs independently checked. Audio has not been personally re-annotated.",
+      "canonicalEvidence": {
+        "4377": {
+          "url": "https://api.banidb.com/v2/shabads/4377",
+          "sha256": "dff7307b44442fea70da6fa98f95bef79752e3cd87046a20efefb6175b4f80f8"
+        }
+      },
+      "media": {
+        "originalSha256": "4457e9a6be7c2067dbf8fb44c3bea9972bd826fd27c53ba964502a9fd0fcc852",
+        "sourceUrl": "https://raw.githubusercontent.com/karanbirsingh/bin/f11a12584fd24a49b2d6391b014394d7e413f569/audio/IZOsmkdmmcg.webm",
+        "encoding": 1,
+        "channels": 1,
+        "sampleRate": 16000,
+        "byteRate": 32000,
+        "blockAlign": 2,
+        "bitsPerSample": 16,
+        "dataBytes": 14656808,
+        "durationMs": 458025.25,
+        "sha256": "f713de866c0f5010b6ad9f312adc1462a853ac49f293e8bf1815ad671a053a75",
+        "durationDeltaMs": -2874.75,
+        "status": "duration-mismatch-sync-required"
+      },
+      "readiness": "reference-ready-no-associated-application-capture",
+      "audioRedistributionLicense": "not established; no audio committed",
+      "occurrenceCount": 15
+    },
+    {
+      "sourceId": "reviewed-kZhIA8P6xWI",
+      "sourceUrl": "https://raw.githubusercontent.com/karanbirsingh/live-gurbani-captioning-benchmark-v1/5cfa23d583c8157e09beb07c911bc1009ae41b10/test/kZhIA8P6xWI.json",
+      "referenceSha256": "55faba86ce9fae3aa58a2692271f66f488e16127c7b7acee3a12e9a613a6f9fb",
+      "recordingId": "kZhIA8P6xWI",
+      "durationMs": 308300,
+      "scoredWindowMs": {
+        "start": 0,
+        "end": 303300
+      },
+      "canonicalFailures": [],
+      "verifiedTargetMs": 233200,
+      "provenanceReliability": "Publisher-declared human review; canonical IDs independently checked. Audio has not been personally re-annotated.",
+      "canonicalEvidence": {
+        "1821": {
+          "url": "https://api.banidb.com/v2/shabads/1821",
+          "sha256": "2af317edca637913a8b70103212644ea1c48409f1813a339cab13dcd790c505e"
+        }
+      },
+      "media": {
+        "originalSha256": "0210d81eabf8459bf0e280668148b97614bb2ec88c3e5d06e2c55bf0e910b1d2",
+        "sourceUrl": "https://raw.githubusercontent.com/karanbirsingh/bin/f11a12584fd24a49b2d6391b014394d7e413f569/audio/kZhIA8P6xWI.webm",
+        "encoding": 1,
+        "channels": 1,
+        "sampleRate": 16000,
+        "byteRate": 32000,
+        "blockAlign": 2,
+        "bitsPerSample": 16,
+        "dataBytes": 9792876,
+        "durationMs": 306027.375,
+        "sha256": "0cc9685d5aaceb352e20873f8c17678bb55c8301da9543d851193cb1a9f6616d",
+        "durationDeltaMs": -2272.625,
+        "status": "duration-mismatch-sync-required"
+      },
+      "readiness": "reference-ready-no-associated-application-capture",
+      "audioRedistributionLicense": "not established; no audio committed",
+      "occurrenceCount": 17
+    },
+    {
+      "sourceId": "reviewed-kchMJPK9Axs",
+      "sourceUrl": "https://raw.githubusercontent.com/karanbirsingh/live-gurbani-captioning-benchmark-v1/5cfa23d583c8157e09beb07c911bc1009ae41b10/test/kchMJPK9Axs.json",
+      "referenceSha256": "59106e0e8c720330f0b2135b73a6b4ed98881d3005253a42eb788ecf5768e62d",
+      "recordingId": "kchMJPK9Axs",
+      "durationMs": 654600,
+      "scoredWindowMs": {
+        "start": 0,
+        "end": 649600
+      },
+      "canonicalFailures": [],
+      "verifiedTargetMs": 532900,
+      "provenanceReliability": "Publisher-declared human review; canonical IDs independently checked. Audio has not been personally re-annotated.",
+      "canonicalEvidence": {
+        "1341": {
+          "url": "https://api.banidb.com/v2/shabads/1341",
+          "sha256": "7bfeb4c401b4aff6d6b60aa74e5fe3e2efb6c07f51db351ba97d85b04a6e6464"
+        }
+      },
+      "media": {
+        "originalSha256": "41aed64a56754d8d2a8b36468b904e08c780aa77c6fd4e8f1764a5798dc7ae22",
+        "sourceUrl": "https://raw.githubusercontent.com/karanbirsingh/bin/f11a12584fd24a49b2d6391b014394d7e413f569/audio/kchMJPK9Axs.webm",
+        "encoding": 1,
+        "channels": 1,
+        "sampleRate": 16000,
+        "byteRate": 32000,
+        "blockAlign": 2,
+        "bitsPerSample": 16,
+        "dataBytes": 20801364,
+        "durationMs": 650042.625,
+        "sha256": "71fc93c2040af8fc7ee5c698b033bf5d7f12ae24f972dbd2e050e02520dfbfac",
+        "durationDeltaMs": -4557.375,
+        "status": "duration-mismatch-sync-required"
+      },
+      "readiness": "reference-ready-no-associated-application-capture",
+      "audioRedistributionLicense": "not established; no audio committed",
+      "occurrenceCount": 18
+    },
+    {
+      "sourceId": "reviewed-zOtIpxMT9hU",
+      "sourceUrl": "https://raw.githubusercontent.com/karanbirsingh/live-gurbani-captioning-benchmark-v1/5cfa23d583c8157e09beb07c911bc1009ae41b10/test/zOtIpxMT9hU.json",
+      "referenceSha256": "ef5d3286118da3508d49ce0131a25e144c4f9d46cbc6ef71083d1f76fa5bb920",
+      "recordingId": "zOtIpxMT9hU",
+      "durationMs": 292900,
+      "scoredWindowMs": {
+        "start": 0,
+        "end": 287900
+      },
+      "canonicalFailures": [],
+      "verifiedTargetMs": 235600,
+      "provenanceReliability": "Publisher-declared human review; canonical IDs independently checked. Audio has not been personally re-annotated.",
+      "canonicalEvidence": {
+        "3712": {
+          "url": "https://api.banidb.com/v2/shabads/3712",
+          "sha256": "9efffd8cf3ab2f7702d7c74d162263e7a1d7826168ece22e3b08e6f99e99b954"
+        }
+      },
+      "media": {
+        "originalSha256": "f9ebaa6dfc34da99c016dce3e129e5000bb97def36e454b983276069d684bf27",
+        "sourceUrl": "https://raw.githubusercontent.com/karanbirsingh/bin/f11a12584fd24a49b2d6391b014394d7e413f569/audio/zOtIpxMT9hU.webm",
+        "encoding": 1,
+        "channels": 1,
+        "sampleRate": 16000,
+        "byteRate": 32000,
+        "blockAlign": 2,
+        "bitsPerSample": 16,
+        "dataBytes": 9247858,
+        "durationMs": 288995.5625,
+        "sha256": "9e425a53f1db72015ff11d5d6b4c5abd0eeea20aad6ed1ebc861faef33f4b1bb",
+        "durationDeltaMs": -3904.4375,
+        "status": "duration-mismatch-sync-required"
+      },
+      "readiness": "reference-ready-no-associated-application-capture",
+      "audioRedistributionLicense": "not established; no audio committed",
+      "occurrenceCount": 11
+    }
+  ],
+  "syntheticValidation": {
+    "synthetic": true,
+    "annotation": {
+      "method": "Hand-specified synthetic timeline; not a recording or runtime simulation",
+      "occurrences": 7,
+      "timingUncertaintyMs": 0,
+      "annotatedMs": 60000,
+      "evaluableTargetMs": 50000
+    },
+    "pageAccuracy": {
+      "status": "available",
+      "percent": 60,
+      "correctMs": 30000,
+      "denominatorMs": 50000
+    },
+    "shabadAccuracy": {
+      "status": "available",
+      "percent": 92,
+      "correctMs": 46000,
+      "denominatorMs": 50000
+    },
+    "falseLineJumps": {
+      "status": "available",
+      "count": 1,
+      "perLabeledHour": 72,
+      "denominatorMs": 50000
+    },
+    "falseShabadSwitches": {
+      "status": "available",
+      "count": 1,
+      "perLabeledHour": 72,
+      "denominatorMs": 50000
+    },
+    "transitions": {
+      "status": "available",
+      "n": 3,
+      "medianMs": 2000,
+      "p90Ms": null,
+      "p95Ms": null,
+      "percentileRule": "Median for n>=1; nearest-rank p90 for n>=10, p95 for n>=20.",
+      "stableMs": 1000,
+      "undetected": 1,
+      "unavailable": 0,
+      "insufficientWindow": 0
+    },
+    "interpretation": "Constructed evaluator arithmetic only, never real recognition performance."
+  },
+  "limitations": [
+    "A trace does not contain its original audio.",
+    "Recognition outputs and page selections are not independent ground truth.",
+    "Public labels cannot be attached to a different recording by Shabad identity alone."
+  ],
+  "validationDate": "2026-11-06",
+  "baseRevision": "ea9b895980b332064b1f60ba96be19d495e253df",
+  "recordedApplicationRevision": null,
+  "sourceManifest": "../recognition-sources.json",
+  "regressionResults": {
+    "frontend": {
+      "off": 132,
+      "on": 132,
+      "files": 12,
+      "newEvidenceTests": 24
+    },
+    "backend": {
+      "passed": 64,
+      "failed": 0
+    },
+    "build": "passed-existing-chunk-warning"
+  },
+  "browser": {
+    "fixture": {
+      "synthetic": true,
+      "checks": [
+        "disabled-state-envelope-unchanged",
+        "manual-correction-and-cross-tab-projector-sync",
+        "trace-export-schema-and-projector-acknowledgements",
+        "blank-projector-state",
+        "katha-viewer-mic-fixture"
+      ],
+      "errors": [],
+      "nativeAudioProbe": null,
+      "traceEvents": 45,
+      "status": "passed"
+    },
+    "nativeProbe": {
+      "synthetic": false,
+      "checks": [],
+      "errors": [],
+      "nativeAudioProbe": [
+        {
+          "type": "start",
+          "error": null,
+          "results": 0,
+          "t": 394.89999997615814
+        },
+        {
+          "type": "audiostart",
+          "error": null,
+          "results": 0,
+          "t": 1802
+        },
+        {
+          "type": "audioend",
+          "error": null,
+          "results": 0,
+          "t": 9702.399999976158
+        },
+        {
+          "type": "error",
+          "error": "no-speech",
+          "results": 0,
+          "t": 9702.5
+        },
+        {
+          "type": "end",
+          "error": null,
+          "results": 0,
+          "t": 9702.600000023842
+        }
+      ],
+      "audioEvidence": {
+        "sha256": "07c2404261a33d5e67a0cb8db26d7afc846be11ccffaa8ec53924ee5273d9e91",
+        "encoding": 1,
+        "channels": 1,
+        "sampleRate": 16000,
+        "byteRate": 32000,
+        "blockAlign": 2,
+        "bitsPerSample": 16,
+        "dataBytes": 640000,
+        "durationMs": 20000
+      },
+      "nativeCaptureStatus": "blocked-no-transcript",
+      "interpretation": "Native browser speech-service availability probe on a public file; not an accuracy evaluation or a synchronized performance trace.",
+      "status": "blocked"
+    }
+  },
+  "syntheticResourceProbe": {
+    "runtime": "v24.17.0",
+    "disabledMicrosecondsPerCall": 0.0341,
+    "enabledMicrosecondsPerCall": 3.96564,
+    "callsPerMode": 10000,
+    "attemptedStressEvents": 130000,
+    "retainedStressEvents": 120000,
+    "stopReason": "event-limit",
+    "exportBytes": 10389596,
+    "heapDeltaBytes": 53270120,
+    "inactiveEventGrowth": 0,
+    "disabledPayloadCalls": 0,
+    "caveat": "Single Node allocation/serialization run with GC noise; not a browser heap guarantee or accuracy measurement."
+  }
+}

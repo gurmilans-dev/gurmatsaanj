@@ -1,5 +1,9 @@
 # Recognition benchmark and recording guide
 
+For the automated external-reference workflow and measured Phase 4 results,
+see [Recognition real-world validation](recognition-real-world-validation.md).
+The manual annotation instructions below remain an optional low-level workflow.
+
 This phase adds optional measurement, not a recognition change. Matching
 weights, thresholds, temporal confirmation, hold/cooldown periods, recognition
 models, ranking, and remote authorization retain their existing behavior.

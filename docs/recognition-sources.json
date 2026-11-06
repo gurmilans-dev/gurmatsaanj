@@ -1,0 +1,89 @@
+{
+  "version": 1,
+  "sources": [
+    {
+      "id": "reviewed-IZOsmkdmmcg",
+      "kind": "reviewed-reference",
+      "recordingId": "IZOsmkdmmcg",
+      "url": "https://raw.githubusercontent.com/karanbirsingh/live-gurbani-captioning-benchmark-v1/5cfa23d583c8157e09beb07c911bc1009ae41b10/test/IZOsmkdmmcg.json",
+      "license": "CC-BY-4.0",
+      "licenseUrl": "https://github.com/karanbirsingh/live-gurbani-captioning-benchmark-v1/blob/5cfa23d583c8157e09beb07c911bc1009ae41b10/LICENSE",
+      "attribution": "Live Captioning for Gurbani Kirtan benchmark v1 — Karanbir Singh",
+      "annotationMethod": "Publisher-declared hand review; canonical identifiers require separate validation",
+      "mediaUrl": "https://raw.githubusercontent.com/karanbirsingh/bin/f11a12584fd24a49b2d6391b014394d7e413f569/audio/IZOsmkdmmcg.webm",
+      "mediaUse": "Publisher-linked benchmark playback; no explicit audio redistribution license located; never commit audio",
+      "limitations": [
+        "No multi-Shabad or Katha coverage established",
+        "External review is not personal re-annotation",
+        "A synchronized application capture of this exact recording is required"
+      ],
+      "referenceSha256": "c7e01888c3582bb45502c027d9747a024b34570107e5c1dc64d63e7619e7fe55",
+      "mediaSha256": "4457e9a6be7c2067dbf8fb44c3bea9972bd826fd27c53ba964502a9fd0fcc852"
+    },
+    {
+      "id": "reviewed-kZhIA8P6xWI",
+      "kind": "reviewed-reference",
+      "recordingId": "kZhIA8P6xWI",
+      "url": "https://raw.githubusercontent.com/karanbirsingh/live-gurbani-captioning-benchmark-v1/5cfa23d583c8157e09beb07c911bc1009ae41b10/test/kZhIA8P6xWI.json",
+      "license": "CC-BY-4.0",
+      "licenseUrl": "https://github.com/karanbirsingh/live-gurbani-captioning-benchmark-v1/blob/5cfa23d583c8157e09beb07c911bc1009ae41b10/LICENSE",
+      "attribution": "Live Captioning for Gurbani Kirtan benchmark v1 — Karanbir Singh",
+      "annotationMethod": "Publisher-declared hand review; canonical identifiers require separate validation",
+      "mediaUrl": "https://raw.githubusercontent.com/karanbirsingh/bin/f11a12584fd24a49b2d6391b014394d7e413f569/audio/kZhIA8P6xWI.webm",
+      "mediaUse": "Publisher-linked benchmark playback; no explicit audio redistribution license located; never commit audio",
+      "limitations": [
+        "No multi-Shabad or Katha coverage established",
+        "External review is not personal re-annotation",
+        "A synchronized application capture of this exact recording is required"
+      ],
+      "referenceSha256": "55faba86ce9fae3aa58a2692271f66f488e16127c7b7acee3a12e9a613a6f9fb",
+      "mediaSha256": "0210d81eabf8459bf0e280668148b97614bb2ec88c3e5d06e2c55bf0e910b1d2"
+    },
+    {
+      "id": "reviewed-kchMJPK9Axs",
+      "kind": "reviewed-reference",
+      "recordingId": "kchMJPK9Axs",
+      "url": "https://raw.githubusercontent.com/karanbirsingh/live-gurbani-captioning-benchmark-v1/5cfa23d583c8157e09beb07c911bc1009ae41b10/test/kchMJPK9Axs.json",
+      "license": "CC-BY-4.0",
+      "licenseUrl": "https://github.com/karanbirsingh/live-gurbani-captioning-benchmark-v1/blob/5cfa23d583c8157e09beb07c911bc1009ae41b10/LICENSE",
+      "attribution": "Live Captioning for Gurbani Kirtan benchmark v1 — Karanbir Singh",
+      "annotationMethod": "Publisher-declared hand review; canonical identifiers require separate validation",
+      "mediaUrl": "https://raw.githubusercontent.com/karanbirsingh/bin/f11a12584fd24a49b2d6391b014394d7e413f569/audio/kchMJPK9Axs.webm",
+      "mediaUse": "Publisher-linked benchmark playback; no explicit audio redistribution license located; never commit audio",
+      "limitations": [
+        "No multi-Shabad or Katha coverage established",
+        "External review is not personal re-annotation",
+        "A synchronized application capture of this exact recording is required"
+      ],
+      "referenceSha256": "59106e0e8c720330f0b2135b73a6b4ed98881d3005253a42eb788ecf5768e62d",
+      "mediaSha256": "41aed64a56754d8d2a8b36468b904e08c780aa77c6fd4e8f1764a5798dc7ae22"
+    },
+    {
+      "id": "reviewed-zOtIpxMT9hU",
+      "kind": "reviewed-reference",
+      "recordingId": "zOtIpxMT9hU",
+      "url": "https://raw.githubusercontent.com/karanbirsingh/live-gurbani-captioning-benchmark-v1/5cfa23d583c8157e09beb07c911bc1009ae41b10/test/zOtIpxMT9hU.json",
+      "license": "CC-BY-4.0",
+      "licenseUrl": "https://github.com/karanbirsingh/live-gurbani-captioning-benchmark-v1/blob/5cfa23d583c8157e09beb07c911bc1009ae41b10/LICENSE",
+      "attribution": "Live Captioning for Gurbani Kirtan benchmark v1 — Karanbir Singh",
+      "annotationMethod": "Publisher-declared hand review; canonical identifiers require separate validation",
+      "mediaUrl": "https://raw.githubusercontent.com/karanbirsingh/bin/f11a12584fd24a49b2d6391b014394d7e413f569/audio/zOtIpxMT9hU.webm",
+      "mediaUse": "Publisher-linked benchmark playback; no explicit audio redistribution license located; never commit audio",
+      "limitations": [
+        "No multi-Shabad or Katha coverage established",
+        "External review is not personal re-annotation",
+        "A synchronized application capture of this exact recording is required"
+      ],
+      "referenceSha256": "ef5d3286118da3508d49ce0131a25e144c4f9d46cbc6ef71083d1f76fa5bb920",
+      "mediaSha256": "f9ebaa6dfc34da99c016dce3e129e5000bb97def36e454b983276069d684bf27"
+    },
+    {
+      "id": "ocr-derived-audio-dataset",
+      "kind": "provisional-dataset",
+      "url": "https://huggingface.co/datasets/surindersinghssj/gurbani-kirtan-dataset-v2",
+      "license": "Provider card claims CC-BY-4.0; upstream audio rights not independently established",
+      "annotationMethod": "Slide OCR and canonical fuzzy matching; not independently verified performance timing",
+      "access": "HTTP 401 during this run; no authentication bypass attempted"
+    }
+  ]
+}
