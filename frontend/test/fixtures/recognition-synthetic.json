@@ -1,0 +1,479 @@
+{
+  "version": 2,
+  "app": "saanj-kirtan",
+  "sessionId": "synthetic-mixed-60s",
+  "clock": "relative-monotonic-ms",
+  "startedAt": 0,
+  "durationMs": 60000,
+  "eventCount": 28,
+  "metadata": {
+    "mode": "kirtan",
+    "synthetic": true
+  },
+  "capture": {
+    "complete": true,
+    "reason": null
+  },
+  "shabads": {
+    "synthetic-a": [
+      {
+        "gurmukhi": "Synthetic canonical fixture synthetic-a line 0",
+        "shabadId": "synthetic-a",
+        "verseId": "synthetic-a-0"
+      },
+      {
+        "gurmukhi": "Synthetic canonical fixture synthetic-a line 1",
+        "shabadId": "synthetic-a",
+        "verseId": "synthetic-a-1"
+      },
+      {
+        "gurmukhi": "Synthetic canonical fixture synthetic-a line 2",
+        "shabadId": "synthetic-a",
+        "verseId": "synthetic-a-2"
+      }
+    ],
+    "synthetic-b": [
+      {
+        "gurmukhi": "Synthetic canonical fixture synthetic-b line 0",
+        "shabadId": "synthetic-b",
+        "verseId": "synthetic-b-0"
+      },
+      {
+        "gurmukhi": "Synthetic canonical fixture synthetic-b line 1",
+        "shabadId": "synthetic-b",
+        "verseId": "synthetic-b-1"
+      }
+    ],
+    "synthetic-c": [
+      {
+        "gurmukhi": "Synthetic canonical fixture synthetic-c line 0",
+        "shabadId": "synthetic-c",
+        "verseId": "synthetic-c-0"
+      }
+    ]
+  },
+  "events": [
+    {
+      "id": "e1",
+      "t": 0,
+      "type": "session",
+      "data": {
+        "action": "start"
+      }
+    },
+    {
+      "id": "e2",
+      "t": 0,
+      "type": "page",
+      "data": {
+        "position": {
+          "shabadId": "synthetic-a",
+          "groupId": "synthetic-a",
+          "verseId": "synthetic-a-0",
+          "lineIndex": 0
+        },
+        "mode": "kirtan",
+        "held": false,
+        "tracked": true,
+        "manual": false
+      }
+    },
+    {
+      "id": "e3",
+      "t": 1000,
+      "type": "recognition",
+      "data": {
+        "action": "result",
+        "streamId": "synthetic-viewer",
+        "epoch": 1,
+        "language": "pa-IN",
+        "source": "viewer",
+        "append": "",
+        "interim": "alpha",
+        "final": false,
+        "resultIndex": 0
+      }
+    },
+    {
+      "id": "e4",
+      "t": 1100,
+      "type": "recognition",
+      "data": {
+        "action": "result",
+        "streamId": "synthetic-viewer",
+        "epoch": 1,
+        "append": "",
+        "interim": "alpha beta",
+        "final": false,
+        "resultIndex": 0
+      }
+    },
+    {
+      "id": "e5",
+      "t": 1200,
+      "type": "recognition",
+      "data": {
+        "action": "result",
+        "streamId": "synthetic-viewer",
+        "epoch": 1,
+        "append": "alpha beta",
+        "interim": "",
+        "final": true,
+        "resultIndex": 0
+      }
+    },
+    {
+      "id": "e6",
+      "t": 3900,
+      "type": "matcher",
+      "data": {
+        "engine": "katha",
+        "shabadId": "synthetic-a",
+        "tail": "synthetic wrong proposal",
+        "currentLine": 0,
+        "lineIndex": 2,
+        "confidence": 90,
+        "tracked": true,
+        "position": {
+          "shabadId": "synthetic-a",
+          "groupId": "synthetic-a",
+          "verseId": "synthetic-a-2",
+          "lineIndex": 2
+        },
+        "reason": "synthetic-proposal"
+      }
+    },
+    {
+      "id": "e7",
+      "t": 4000,
+      "type": "tracker",
+      "data": {
+        "engine": "katha",
+        "position": {
+          "shabadId": "synthetic-a",
+          "groupId": "synthetic-a",
+          "verseId": "synthetic-a-2",
+          "lineIndex": 2
+        },
+        "accepted": true,
+        "reason": "synthetic-commit"
+      }
+    },
+    {
+      "id": "e8",
+      "t": 4000,
+      "type": "page",
+      "data": {
+        "position": {
+          "shabadId": "synthetic-a",
+          "groupId": "synthetic-a",
+          "verseId": "synthetic-a-2",
+          "lineIndex": 2
+        },
+        "mode": "kirtan",
+        "held": false,
+        "tracked": true,
+        "manual": false
+      }
+    },
+    {
+      "id": "e9",
+      "t": 6000,
+      "type": "manual",
+      "data": {
+        "action": "line-correction",
+        "position": {
+          "shabadId": "synthetic-a",
+          "groupId": "synthetic-a",
+          "verseId": "synthetic-a-0",
+          "lineIndex": 0
+        },
+        "source": "operator"
+      }
+    },
+    {
+      "id": "e10",
+      "t": 6000,
+      "type": "page",
+      "data": {
+        "position": {
+          "shabadId": "synthetic-a",
+          "groupId": "synthetic-a",
+          "verseId": "synthetic-a-0",
+          "lineIndex": 0
+        },
+        "mode": "kirtan",
+        "held": false,
+        "tracked": false,
+        "manual": true
+      }
+    },
+    {
+      "id": "e11",
+      "t": 7000,
+      "type": "page",
+      "data": {
+        "position": {
+          "shabadId": "synthetic-a",
+          "groupId": "synthetic-a",
+          "verseId": "synthetic-a-0",
+          "lineIndex": 0
+        },
+        "mode": "kirtan",
+        "held": false,
+        "tracked": true,
+        "manual": false
+      }
+    },
+    {
+      "id": "e12",
+      "t": 12000,
+      "type": "page",
+      "data": {
+        "position": {
+          "shabadId": "synthetic-a",
+          "groupId": "synthetic-a",
+          "verseId": "synthetic-a-1",
+          "lineIndex": 1
+        },
+        "mode": "kirtan",
+        "held": false,
+        "tracked": true,
+        "manual": false
+      }
+    },
+    {
+      "id": "e13",
+      "t": 20000,
+      "type": "hold",
+      "data": {
+        "state": "held",
+        "freshnessMs": 2800
+      }
+    },
+    {
+      "id": "e14",
+      "t": 20000,
+      "type": "page",
+      "data": {
+        "position": {
+          "shabadId": "synthetic-a",
+          "groupId": "synthetic-a",
+          "verseId": "synthetic-a-1",
+          "lineIndex": 1
+        },
+        "mode": "kirtan",
+        "held": true,
+        "tracked": false,
+        "manual": false
+      }
+    },
+    {
+      "id": "e15",
+      "t": 27000,
+      "type": "hold",
+      "data": {
+        "state": "following",
+        "freshnessMs": 0
+      }
+    },
+    {
+      "id": "e16",
+      "t": 27000,
+      "type": "page",
+      "data": {
+        "position": {
+          "shabadId": "synthetic-a",
+          "groupId": "synthetic-a",
+          "verseId": "synthetic-a-0",
+          "lineIndex": 0
+        },
+        "mode": "kirtan",
+        "held": false,
+        "tracked": true,
+        "manual": false
+      }
+    },
+    {
+      "id": "e17",
+      "t": 35000,
+      "type": "discovery",
+      "data": {
+        "action": "request",
+        "requestId": "request-1",
+        "generation": 1,
+        "tail": "synthetic transition words"
+      }
+    },
+    {
+      "id": "e18",
+      "t": 35020,
+      "type": "discovery",
+      "data": {
+        "action": "pending",
+        "requestId": "request-1",
+        "generation": 1,
+        "shabadId": "synthetic-c",
+        "confidence": 95
+      }
+    },
+    {
+      "id": "e19",
+      "t": 36200,
+      "type": "discovery",
+      "data": {
+        "action": "request",
+        "requestId": "request-2",
+        "generation": 1,
+        "tail": "new synthetic transition words"
+      }
+    },
+    {
+      "id": "e20",
+      "t": 37000,
+      "type": "discovery",
+      "data": {
+        "action": "results",
+        "requestId": "request-2",
+        "generation": 1,
+        "evidenceAgeMs": 800,
+        "competitors": [
+          {
+            "position": {
+              "shabadId": "synthetic-c",
+              "groupId": "synthetic-c",
+              "verseId": "synthetic-c-0",
+              "lineIndex": 0
+            },
+            "confidence": 95
+          },
+          {
+            "position": {
+              "shabadId": "synthetic-b",
+              "groupId": "synthetic-b",
+              "verseId": "synthetic-b-0",
+              "lineIndex": 0
+            },
+            "confidence": 60
+          }
+        ]
+      }
+    },
+    {
+      "id": "e21",
+      "t": 37000,
+      "type": "discovery",
+      "data": {
+        "action": "committed",
+        "requestId": "request-2",
+        "shabadId": "synthetic-c",
+        "cooldownMs": 5000
+      }
+    },
+    {
+      "id": "e22",
+      "t": 37000,
+      "type": "navigation",
+      "data": {
+        "action": "requested",
+        "source": "automatic",
+        "position": {
+          "shabadId": "synthetic-c",
+          "groupId": "synthetic-c",
+          "verseId": "synthetic-c-0",
+          "lineIndex": 0
+        },
+        "reason": "synthetic-transition"
+      }
+    },
+    {
+      "id": "e23",
+      "t": 37000,
+      "type": "navigation",
+      "data": {
+        "action": "committed",
+        "source": "automatic",
+        "position": {
+          "shabadId": "synthetic-c",
+          "groupId": "synthetic-c",
+          "verseId": "synthetic-c-0",
+          "lineIndex": 0
+        },
+        "reason": "route-loaded"
+      }
+    },
+    {
+      "id": "e24",
+      "t": 37000,
+      "type": "page",
+      "data": {
+        "position": {
+          "shabadId": "synthetic-c",
+          "groupId": "synthetic-c",
+          "verseId": "synthetic-c-0",
+          "lineIndex": 0
+        },
+        "mode": "kirtan",
+        "held": false,
+        "tracked": true,
+        "manual": false
+      }
+    },
+    {
+      "id": "e25",
+      "t": 39000,
+      "type": "manual",
+      "data": {
+        "action": "shabad-select",
+        "position": {
+          "shabadId": "synthetic-b",
+          "groupId": "synthetic-b",
+          "verseId": "synthetic-b-0",
+          "lineIndex": 0
+        },
+        "source": "operator"
+      }
+    },
+    {
+      "id": "e26",
+      "t": 39000,
+      "type": "navigation",
+      "data": {
+        "action": "committed",
+        "source": "operator",
+        "position": {
+          "shabadId": "synthetic-b",
+          "groupId": "synthetic-b",
+          "verseId": "synthetic-b-0",
+          "lineIndex": 0
+        },
+        "reason": "route-loaded"
+      }
+    },
+    {
+      "id": "e27",
+      "t": 39000,
+      "type": "page",
+      "data": {
+        "position": {
+          "shabadId": "synthetic-b",
+          "groupId": "synthetic-b",
+          "verseId": "synthetic-b-0",
+          "lineIndex": 0
+        },
+        "mode": "kirtan",
+        "held": false,
+        "tracked": true,
+        "manual": false
+      }
+    },
+    {
+      "id": "e28",
+      "t": 60000,
+      "type": "session",
+      "data": {
+        "action": "stop"
+      }
+    }
+  ]
+}

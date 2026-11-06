@@ -6,6 +6,7 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import { api } from '../services/api';
+import { recordEvent } from '../utils/sessionRecorder';
 
 const STICKY_TTL_MS = 6000;     // keep a missing suggestion visible this long
 const DECAY_PER_CYCLE = 6;      // confidence drop per round it stays missing
@@ -69,6 +70,7 @@ export default function useShabadMatching(transcript, filters, {
       lastQueryRef.current = queryKey;
 
       const myId = ++reqIdRef.current;
+      const requestId = recordEvent('discovery', () => ({ action: 'request', reason: 'search-page', tail: text.slice(-300) }))?.id || null;
       inFlightRef.current = true;
       setLoading(true);
 
@@ -77,6 +79,8 @@ export default function useShabadMatching(transcript, filters, {
         if (stopped || myId !== reqIdRef.current) return;
 
         const fresh = Array.isArray(res.suggestions) ? res.suggestions : [];
+        recordEvent('discovery', () => ({ action: 'results', reason: 'search-page', requestId,
+          competitors: fresh.filter((item) => item?.shabadId != null).map((item) => ({ position: { shabadId: String(item.shabadId) }, confidence: item.confidence })) }));
         const now = Date.now();
         const sticky = stickyRef.current;
 
@@ -116,6 +120,7 @@ export default function useShabadMatching(transcript, filters, {
         errorBackoffUntilRef.current = 0;
       } catch (err) {
         if (stopped || myId !== reqIdRef.current) return;
+        recordEvent('discovery', { action: 'rejected', reason: 'search-page-error', requestId });
         // Do not permanently mark this transcript as handled. A single slow
         // BaniDB round should not make the mic appear dead until the user
         // sings more words.
@@ -133,6 +138,7 @@ export default function useShabadMatching(transcript, filters, {
 
     return () => {
       stopped = true;
+      recordEvent('discovery', { action: 'invalidate', reason: 'search-page-stopped' });
       clearInterval(interval);
     };
   }, [active, intervalMs]);

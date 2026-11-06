@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { recordEvent } from '../utils/sessionRecorder';
 
 /**
  * useFollowHold — the "Lock / Follow" trust layer for live line tracking.
@@ -32,6 +33,7 @@ export default function useFollowHold({ active, tracked, confidence, observation
   const [locked, setLocked] = useState(false);
   const [autoHeld, setAutoHeld] = useState(false);
   const lastTrackedAtRef = useRef(Date.now());
+  const previousLockRef = useRef(locked);
 
   // When the mic turns on, start from a clean "following" state so a stale
   // timestamp from a previous session doesn't trip an instant hold.
@@ -75,6 +77,14 @@ export default function useFollowHold({ active, tracked, confidence, observation
       : autoHeld
         ? 'held'
         : 'following';
+
+  useEffect(() => {
+    recordEvent('hold', () => ({ state, freshnessMs: Math.max(0, Date.now() - lastTrackedAtRef.current) }));
+  }, [state]);
+  useEffect(() => {
+    if (previousLockRef.current !== locked) recordEvent('manual', { action: locked ? 'lock' : 'unlock', source: 'operator' });
+    previousLockRef.current = locked;
+  }, [locked]);
 
   return {
     state,

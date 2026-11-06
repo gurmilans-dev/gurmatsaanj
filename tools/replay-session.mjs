@@ -22,6 +22,7 @@
 import fs from 'fs';
 import path from 'path';
 import url from 'url';
+import { matcherCalls } from '../frontend/src/utils/recognitionTrace.js';
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
@@ -39,15 +40,16 @@ const matchLineUrl = url.pathToFileURL(
 const { matchLine } = await import(matchLineUrl);
 
 let trace;
+let events;
 try {
   trace = JSON.parse(fs.readFileSync(file, 'utf8'));
+  events = matcherCalls(trace);
 } catch (err) {
   console.error(`Could not read trace: ${err.message}`);
   process.exit(1);
 }
 
 const shabads = trace.shabads || {};
-const events = trace.events || [];
 
 let mismatches = 0;
 let trackedCount = 0;
@@ -90,7 +92,8 @@ console.log(`tracked:       ${trackedCount} (${pct(trackedCount)}%)`);
 console.log(`line moves:    ${lineChanges}`);
 console.log(`avg conf:      ${events.length ? (confSum / events.length).toFixed(1) : '0.0'}`);
 console.log(
-  `replay parity: ${mismatches === 0
+  `replay parity: ${events.length === 0 ? 'UNAVAILABLE (no Kirtan matcher calls)'
+    : mismatches === 0
     ? 'EXACT ✓ (deterministic — matcher unchanged)'
     : `${mismatches} mismatch(es) — frontend matchLine has drifted from this recording`}`,
 );

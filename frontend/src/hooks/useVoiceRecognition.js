@@ -16,17 +16,25 @@
  *   - reset()     : clear transcript
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { isRecording, recordEvent, subscribeRecordingStart } from '../utils/sessionRecorder';
+
+let streamSequence = 0;
 
 const getRecognitionCtor = () =>
   typeof window !== 'undefined'
     ? window.SpeechRecognition || window.webkitSpeechRecognition
     : null;
 
-export default function useVoiceRecognition({ lang = 'pa-IN', wordLimit = 7 } = {}) {
+export default function useVoiceRecognition({ lang = 'pa-IN', wordLimit = 7, source = 'voice' } = {}) {
   const Ctor = getRecognitionCtor();
   const isSupported = !!Ctor;
 
   const recognitionRef = useRef(null);
+  const [streamId] = useState(() => `voice-${++streamSequence}`);
+  const traceMetadataRef = useRef(null);
+  traceMetadataRef.current = { streamId, language: lang, source };
+  const epochRef = useRef(0);
+  const inputEventIdRef = useRef(null);
   const finalRef = useRef('');
   const interimRef = useRef('');
   const wantsListeningRef = useRef(false);
@@ -46,6 +54,14 @@ export default function useVoiceRecognition({ lang = 'pa-IN', wordLimit = 7 } = 
   const updateTranscript = useCallback(() => {
     setTranscript((finalRef.current + ' ' + interimRef.current).trim());
   }, []);
+
+  useEffect(() => subscribeRecordingStart(() => {
+    inputEventIdRef.current = recordEvent('recognition', {
+      action: 'baseline', ...traceMetadataRef.current, epoch: epochRef.current,
+      append: finalRef.current.slice(-2048), interim: interimRef.current,
+      baselineTruncated: finalRef.current.length > 2048,
+    })?.id || null;
+  }), [streamId, lang, source]);
 
   // Build the recognition instance once.
   useEffect(() => {
@@ -70,10 +86,12 @@ export default function useVoiceRecognition({ lang = 'pa-IN', wordLimit = 7 } = 
 
       let interim = '';
       let gotFinal = false;
+      const fragments = isRecording() ? [] : null;
       for (let i = ev.resultIndex; i < ev.results.length; i++) {
         const res = ev.results[i];
         const txt = res[0]?.transcript || '';
         if (res.isFinal) {
+          fragments?.push(txt);
           finalRef.current = (finalRef.current + ' ' + txt).trim();
           setLastFinal(txt.trim());
           gotFinal = true;
@@ -82,6 +100,10 @@ export default function useVoiceRecognition({ lang = 'pa-IN', wordLimit = 7 } = 
         }
       }
       interimRef.current = interim;
+      if (fragments) inputEventIdRef.current = recordEvent('recognition', {
+        action: 'result', ...traceMetadataRef.current, epoch: epochRef.current,
+        append: fragments.join(' '), interim, final: gotFinal, resultIndex: ev.resultIndex,
+      })?.id || null;
       updateTranscript();
 
       // Auto-stop strategy (only when wordLimitRef.current > 0):
@@ -101,12 +123,14 @@ export default function useVoiceRecognition({ lang = 'pa-IN', wordLimit = 7 } = 
         if (finalWordCount >= limit) {
           wantsListeningRef.current = false;
           autoStoppedRef.current = true;
+          recordEvent('recognition', { action: 'auto-stop', ...traceMetadataRef.current, epoch: epochRef.current });
           try { rec.stop(); } catch { /* noop */ }
         }
       }
     };
 
     rec.onerror = (ev) => {
+      recordEvent('recognition', { action: 'error', ...traceMetadataRef.current, epoch: epochRef.current, error: ev.error || 'unknown' });
       // Recoverable errors — let the auto-restart kick in silently.
       // 'network' is included because Chrome's pa-IN engine briefly
       // disconnects from Google's STT server several times a minute; the
@@ -122,9 +146,14 @@ export default function useVoiceRecognition({ lang = 'pa-IN', wordLimit = 7 } = 
     };
 
     rec.onend = () => {
+      recordEvent('recognition', { action: 'end', ...traceMetadataRef.current, epoch: epochRef.current });
       if (wantsListeningRef.current) {
         // Chrome stops every ~60s; if the user still wants to listen, restart.
-        try { rec.start(); } catch { /* already started */ }
+        try {
+          rec.start();
+          epochRef.current += 1;
+          recordEvent('recognition', { action: 'restart', ...traceMetadataRef.current, epoch: epochRef.current });
+        } catch { /* already started */ }
       } else {
         setIsListening(false);
         if (autoStoppedRef.current) {
@@ -137,6 +166,7 @@ export default function useVoiceRecognition({ lang = 'pa-IN', wordLimit = 7 } = 
     recognitionRef.current = rec;
 
     return () => {
+      recordEvent('recognition', { action: 'unmount', ...traceMetadataRef.current, epoch: epochRef.current });
       wantsListeningRef.current = false;
       try { rec.stop(); } catch { /* noop */ }
       recognitionRef.current = null;
@@ -153,8 +183,11 @@ export default function useVoiceRecognition({ lang = 'pa-IN', wordLimit = 7 } = 
     ignoreResultsBeforeRef.current = typeof performance !== 'undefined' ? performance.now() : 0;
     try {
       recognitionRef.current.start();
+      epochRef.current += 1;
+      recordEvent('recognition', { action: 'start', ...traceMetadataRef.current, epoch: epochRef.current });
       setIsListening(true);
     } catch (err) {
+      recordEvent('recognition', { action: 'start-error', ...traceMetadataRef.current, epoch: epochRef.current, error: err?.name || 'unknown' });
       if (err?.name === 'InvalidStateError') {
         setIsListening(true);
         return;
@@ -166,6 +199,7 @@ export default function useVoiceRecognition({ lang = 'pa-IN', wordLimit = 7 } = 
   }, []);
 
   const stop = useCallback(() => {
+    recordEvent('recognition', { action: 'stop', ...traceMetadataRef.current, epoch: epochRef.current });
     wantsListeningRef.current = false;
     autoStoppedRef.current = false;
     ignoreResultsBeforeRef.current = typeof performance !== 'undefined' ? performance.now() : 0;
@@ -175,6 +209,7 @@ export default function useVoiceRecognition({ lang = 'pa-IN', wordLimit = 7 } = 
   }, []);
 
   const reset = useCallback(() => {
+    recordEvent('recognition', { action: 'reset', ...traceMetadataRef.current, epoch: epochRef.current });
     ignoreResultsBeforeRef.current = typeof performance !== 'undefined' ? performance.now() : 0;
     finalRef.current = '';
     interimRef.current = '';
@@ -194,6 +229,7 @@ export default function useVoiceRecognition({ lang = 'pa-IN', wordLimit = 7 } = 
 
   return {
     isSupported, isListening, transcript, lastFinal, error, autoStopped,
+    inputEventId: inputEventIdRef.current,
     start, stop, reset, clearAutoStopped, setWordLimit,
   };
 }

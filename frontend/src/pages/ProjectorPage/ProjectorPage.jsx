@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { projectorPost, projectorSubscribe, projectorReadLatest } from '../../services/projector';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { projectorPost, projectorSubscribe, projectorReadLatest, projectorAcknowledge } from '../../services/projector';
 import useWakeLock from '../../hooks/useWakeLock';
 import renderGurmukhiLine from '../../utils/renderGurmukhiLine';
 import { createQrMatrix, qrPath, QR_SIZE } from '../../utils/qrCode';
@@ -47,18 +47,29 @@ function ProjectorEscapeButton() {
 
 export default function ProjectorPage() {
   const [state, setState] = useState(() => projectorReadLatest() || { mode: 'idle' });
+  const pendingPublicationRef = useRef(null);
 
   // The projector is a live display for the whole diwan — never let it sleep.
   useWakeLock(true);
 
   useEffect(() => {
     const off = projectorSubscribe((msg) => {
-      if (msg?.type === 'state') setState(msg.payload || { mode: 'idle' });
+      if (msg?.type === 'state') {
+        pendingPublicationRef.current = msg;
+        projectorAcknowledge(msg, 'received', msg.payload);
+        setState(msg.payload || { mode: 'idle' });
+      }
     });
     // Ask the main window to push the freshest state on open
     projectorPost({ type: 'request-state' });
     return off;
   }, []);
+
+  useEffect(() => {
+    if (!pendingPublicationRef.current) return;
+    projectorAcknowledge(pendingPublicationRef.current, 'committed', state);
+    pendingPublicationRef.current = null;
+  }, [state]);
 
   // Apply the projector theme to the document
   useEffect(() => {
