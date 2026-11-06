@@ -1,6 +1,14 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import basicSsl from '@vitejs/plugin-basic-ssl';
+import { execFileSync } from 'node:child_process';
+
+function buildInfo() {
+  try {
+    return { revision: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
+      dirty: Boolean(execFileSync('git', ['status', '--porcelain'], { encoding: 'utf8' }).trim()) };
+  } catch { return { revision: null, dirty: null }; }
+}
 
 function semanticCacheHeaders() {
   const applyHeaders = (middlewares) => {
@@ -46,6 +54,7 @@ function semanticCacheHeaders() {
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  define: { __BUILD_INFO__: JSON.stringify(buildInfo()) },
   // basicSsl serves the dev AND preview servers over HTTPS with a self-signed
   // cert. Needed so phones reaching the app over the LAN IP (Sangat View QR,
   // remote mic) get a "secure context" — Web Speech, wake lock, and the

@@ -158,6 +158,7 @@ export function recordDecision(entry) {
 }
 
 export function recordingIdentity() { return active ? sessionId : null; }
+export function currentRecordingSessionId() { return sessionId; }
 export function recordNavigation(action, source, target, cause) {
   if (!active) return;
   const key = target?.shabadId;

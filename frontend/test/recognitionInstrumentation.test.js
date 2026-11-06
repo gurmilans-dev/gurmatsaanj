@@ -50,6 +50,28 @@ describe('recognition instrumentation and deterministic hook state', () => {
     expect(validateTrace(trace)).toBe(trace);
   });
 
+  it('uses the opt-in captured track for starts/restarts and keeps ordinary mic starts unchanged', () => {
+    let recognizer;
+    class Recognition { constructor() { recognizer = this; } start = vi.fn(); stop = vi.fn(); }
+    vi.stubGlobal('window', { SpeechRecognition: Recognition });
+    hook = renderHook(useVoiceRecognition, { wordLimit: 0, source: 'viewer' });
+    startRecording({ synthetic: true }); const track = { kind: 'audio', readyState: 'live' };
+    act(() => hook.result.start(track)); expect(recognizer.start).toHaveBeenLastCalledWith(track);
+    act(() => recognizer.onend()); expect(recognizer.start).toHaveBeenLastCalledWith(track);
+    expect(getTrace().events.find((e) => e.type === 'recognition' && e.data.action === 'start').data.source).toBe('viewer/capture-track');
+    act(() => { hook.result.stop(); hook.result.start(); }); expect(recognizer.start).toHaveBeenLastCalledWith();
+  });
+
+  it('never falls back to a live microphone when an opted-in track ends', () => {
+    let recognizer;
+    class Recognition { constructor() { recognizer = this; } start = vi.fn(); stop = vi.fn(); }
+    vi.stubGlobal('window', { SpeechRecognition: Recognition });
+    hook = renderHook(useVoiceRecognition, { wordLimit: 0 }); const track = { kind: 'audio', readyState: 'live' };
+    act(() => hook.result.start(track)); track.readyState = 'ended'; act(() => recognizer.onend());
+    expect(recognizer.start).toHaveBeenCalledOnce(); expect(hook.result.isListening).toBe(false);
+    act(() => hook.result.start(track)); expect(recognizer.start).toHaveBeenCalledOnce(); expect(hook.result.error).toBe('test-audio-track-ended');
+  });
+
   it('replays fresh observations through actual tracker state, separating proposals, commits, and page output', async () => {
     const verses = ['ਕ ਖ ਗ ਘ ਚ', 'ਰਾਮ ਨਾਮੁ ਜਪਹੁ ਜੀਅ ਸਦਾ', 'ਮਨ ਤੂੰ ਜੋਤਿ ਸਰੂਪੁ ਹੈ'].map((gurmukhi, i) => ({ gurmukhi, verseId: String(i) }));
     const run = async (enabled) => {

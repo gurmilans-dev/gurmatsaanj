@@ -83,7 +83,16 @@
       "url": "https://huggingface.co/datasets/surindersinghssj/gurbani-kirtan-dataset-v2",
       "license": "Provider card claims CC-BY-4.0; upstream audio rights not independently established",
       "annotationMethod": "Slide OCR and canonical fuzzy matching; not independently verified performance timing",
-      "access": "HTTP 401 during this run; no authentication bypass attempted"
+      "access": "HTTP 401 in Phases 4 and 5; no authentication bypass attempted"
+    },
+    {
+      "id": "sgpc-clean-dataset-candidate",
+      "kind": "provisional-dataset",
+      "url": "https://huggingface.co/datasets/surindersinghssj/gurbani-kirtan-v4-sgpc-clean",
+      "revision": "b8006e03912240176a318cc607c4af29ca568648",
+      "access": "Public metadata API HTTP 200 on 2026-11-06; no audio downloaded",
+      "license": "No license declared in inspected dataset card or repository file list; audio/cloud-processing permission not established",
+      "annotationMethod": "Provider text and quality fields; independent human timing review not established"
     }
   ]
 }

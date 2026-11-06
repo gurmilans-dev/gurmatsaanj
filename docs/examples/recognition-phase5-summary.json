@@ -1,0 +1,498 @@
+{
+  "version": 1,
+  "date": "2026-11-06",
+  "baseRevision": "252c80cb0f28bb3c390efe68f8522fd761e745eb",
+  "status": "capture-and-native-routing-validated-accuracy-unavailable",
+  "accuracy": {
+    "status": "unavailable",
+    "authenticRecordingsScored": 0,
+    "scoredTargetMs": 0,
+    "confidenceIntervals": "unavailable-no-independent-scored-performances"
+  },
+  "localTraces": [
+    {
+      "sha256": "43357e7cfdd3e4ed2a42ce97f053db87c88a3bad4683aadd61143801355ba44f",
+      "durationMs": 191716.10000002384,
+      "events": 1008,
+      "matcherParity": {
+        "comparedCalls": 209,
+        "mismatches": 0,
+        "status": "exact"
+      }
+    }
+  ],
+  "references": [
+    {
+      "sourceId": "reviewed-IZOsmkdmmcg",
+      "url": "https://raw.githubusercontent.com/karanbirsingh/live-gurbani-captioning-benchmark-v1/5cfa23d583c8157e09beb07c911bc1009ae41b10/test/IZOsmkdmmcg.json",
+      "sha256": "c7e01888c3582bb45502c027d9747a024b34570107e5c1dc64d63e7619e7fe55",
+      "occurrences": 15,
+      "canonicalFailures": 0,
+      "referencedTargetMs": 405800,
+      "decodedMedia": {
+        "status": "duration-mismatch-sync-required",
+        "encoding": 1,
+        "channels": 1,
+        "sampleRate": 16000,
+        "byteRate": 32000,
+        "blockAlign": 2,
+        "bitsPerSample": 16,
+        "dataBytes": 14656808,
+        "durationMs": 458025.25,
+        "sha256": "f713de866c0f5010b6ad9f312adc1462a853ac49f293e8bf1815ad671a053a75",
+        "durationDeltaMs": -2874.75
+      },
+      "readiness": "reference-ready-no-associated-application-capture"
+    },
+    {
+      "sourceId": "reviewed-kZhIA8P6xWI",
+      "url": "https://raw.githubusercontent.com/karanbirsingh/live-gurbani-captioning-benchmark-v1/5cfa23d583c8157e09beb07c911bc1009ae41b10/test/kZhIA8P6xWI.json",
+      "sha256": "55faba86ce9fae3aa58a2692271f66f488e16127c7b7acee3a12e9a613a6f9fb",
+      "occurrences": 17,
+      "canonicalFailures": 0,
+      "referencedTargetMs": 233200,
+      "decodedMedia": {
+        "status": "duration-mismatch-sync-required",
+        "encoding": 1,
+        "channels": 1,
+        "sampleRate": 16000,
+        "byteRate": 32000,
+        "blockAlign": 2,
+        "bitsPerSample": 16,
+        "dataBytes": 9792876,
+        "durationMs": 306027.375,
+        "sha256": "0cc9685d5aaceb352e20873f8c17678bb55c8301da9543d851193cb1a9f6616d",
+        "durationDeltaMs": -2272.625
+      },
+      "readiness": "reference-ready-no-associated-application-capture"
+    },
+    {
+      "sourceId": "reviewed-kchMJPK9Axs",
+      "url": "https://raw.githubusercontent.com/karanbirsingh/live-gurbani-captioning-benchmark-v1/5cfa23d583c8157e09beb07c911bc1009ae41b10/test/kchMJPK9Axs.json",
+      "sha256": "59106e0e8c720330f0b2135b73a6b4ed98881d3005253a42eb788ecf5768e62d",
+      "occurrences": 18,
+      "canonicalFailures": 0,
+      "referencedTargetMs": 532900,
+      "decodedMedia": {
+        "status": "duration-mismatch-sync-required",
+        "encoding": 1,
+        "channels": 1,
+        "sampleRate": 16000,
+        "byteRate": 32000,
+        "blockAlign": 2,
+        "bitsPerSample": 16,
+        "dataBytes": 20801364,
+        "durationMs": 650042.625,
+        "sha256": "71fc93c2040af8fc7ee5c698b033bf5d7f12ae24f972dbd2e050e02520dfbfac",
+        "durationDeltaMs": -4557.375
+      },
+      "readiness": "reference-ready-no-associated-application-capture"
+    },
+    {
+      "sourceId": "reviewed-zOtIpxMT9hU",
+      "url": "https://raw.githubusercontent.com/karanbirsingh/live-gurbani-captioning-benchmark-v1/5cfa23d583c8157e09beb07c911bc1009ae41b10/test/zOtIpxMT9hU.json",
+      "sha256": "ef5d3286118da3508d49ce0131a25e144c4f9d46cbc6ef71083d1f76fa5bb920",
+      "occurrences": 11,
+      "canonicalFailures": 0,
+      "referencedTargetMs": 235600,
+      "decodedMedia": {
+        "status": "duration-mismatch-sync-required",
+        "encoding": 1,
+        "channels": 1,
+        "sampleRate": 16000,
+        "byteRate": 32000,
+        "blockAlign": 2,
+        "bitsPerSample": 16,
+        "dataBytes": 9247858,
+        "durationMs": 288995.5625,
+        "sha256": "9e425a53f1db72015ff11d5d6b4c5abd0eeea20aad6ed1ebc861faef33f4b1bb",
+        "durationDeltaMs": -3904.4375
+      },
+      "readiness": "reference-ready-no-associated-application-capture"
+    }
+  ],
+  "sourceManifest": "../recognition-sources.json",
+  "routing": {
+    "waveform": {
+      "kind": "isolated-audio-routing-probe",
+      "synthetic": true,
+      "browser": "156.0.8078.80",
+      "source": {
+        "sha256": "66d1f63a31859e95988389c0f18d35d8fdacc2a7b444b958a4fcd46ef5b21e63",
+        "encoding": 1,
+        "channels": 1,
+        "sampleRate": 16000,
+        "byteRate": 32000,
+        "blockAlign": 2,
+        "bitsPerSample": 16,
+        "dataBytes": 384000,
+        "durationMs": 12000,
+        "provenance": "Local calibration waveform; no third-party performance"
+      },
+      "onlineTransferAuthorized": false,
+      "mode": "mic",
+      "withRecorder": false,
+      "sampleRate": 48000,
+      "done": true,
+      "capturedFrames": 240640,
+      "sourceEnvelopeCorrelation": 0.9909277585161443,
+      "bestOffsetMs": 98,
+      "captureInputVerified": true,
+      "speechProcessingVerified": false,
+      "interpretation": "Envelope agreement verifies supplied audio in getUserMedia only. A recognizer result is separately required; this control is never Kirtan accuracy.",
+      "eventCounts": {},
+      "errors": []
+    },
+    "authenticOfflineOnly": {
+      "kind": "isolated-audio-routing-probe",
+      "synthetic": false,
+      "browser": "156.0.8078.80",
+      "source": {
+        "sha256": "9e425a53f1db72015ff11d5d6b4c5abd0eeea20aad6ed1ebc861faef33f4b1bb",
+        "encoding": 1,
+        "channels": 1,
+        "sampleRate": 16000,
+        "byteRate": 32000,
+        "blockAlign": 2,
+        "bitsPerSample": 16,
+        "dataBytes": 9247858,
+        "durationMs": 288995.5625,
+        "provenance": "Publisher-linked benchmark mirror at pinned commit f11a12584fd24a49b2d6391b014394d7e413f569, local capture routing only; audio redistribution and cloud processing rights not established"
+      },
+      "onlineTransferAuthorized": false,
+      "mode": "mic",
+      "withRecorder": false,
+      "sampleRate": 48000,
+      "done": true,
+      "capturedFrames": 240640,
+      "sourceEnvelopeCorrelation": 0.962429565378923,
+      "bestOffsetMs": 60,
+      "captureInputVerified": true,
+      "speechProcessingVerified": false,
+      "interpretation": "Envelope agreement verifies supplied audio in getUserMedia only. A recognizer result is separately required; this control is never Kirtan accuracy.",
+      "eventCounts": {},
+      "errors": []
+    },
+    "syntheticSpeechMic": {
+      "kind": "isolated-audio-routing-probe",
+      "synthetic": true,
+      "browser": "156.0.8078.80",
+      "source": {
+        "sha256": "a08b23c639575b634c7013f52d4e27c51a1aba815acecf43f523665c642440d5",
+        "encoding": 1,
+        "channels": 1,
+        "sampleRate": 22050,
+        "byteRate": 44100,
+        "blockAlign": 2,
+        "bitsPerSample": 16,
+        "dataBytes": 634264,
+        "durationMs": 14382.403628117914,
+        "provenance": "Local operating-system synthesis of an original calibration phrase; authorized online diagnostic only; not Kirtan or ground truth"
+      },
+      "onlineTransferAuthorized": true,
+      "mode": "mic",
+      "withRecorder": false,
+      "sampleRate": 48000,
+      "startAccepted": true,
+      "done": true,
+      "capturedFrames": 240640,
+      "sourceEnvelopeCorrelation": 0.8737001600879775,
+      "bestOffsetMs": 80,
+      "captureInputVerified": false,
+      "speechProcessingVerified": false,
+      "interpretation": "Envelope agreement verifies supplied audio in getUserMedia only. A recognizer result is separately required; this control is never Kirtan accuracy.",
+      "eventCounts": {
+        "start": 1,
+        "audiostart": 1,
+        "audioend": 1,
+        "error": 1,
+        "end": 1
+      },
+      "errors": [
+        "no-speech"
+      ]
+    },
+    "syntheticSpeechMicWithRecorder": {
+      "kind": "isolated-audio-routing-probe",
+      "synthetic": true,
+      "browser": "156.0.8078.80",
+      "source": {
+        "sha256": "a08b23c639575b634c7013f52d4e27c51a1aba815acecf43f523665c642440d5",
+        "encoding": 1,
+        "channels": 1,
+        "sampleRate": 22050,
+        "byteRate": 44100,
+        "blockAlign": 2,
+        "bitsPerSample": 16,
+        "dataBytes": 634264,
+        "durationMs": 14382.403628117914,
+        "provenance": "Local operating-system synthesis of an original calibration phrase; authorized online diagnostic only; not Kirtan or ground truth"
+      },
+      "onlineTransferAuthorized": true,
+      "mode": "mic",
+      "withRecorder": true,
+      "sampleRate": 48000,
+      "startAccepted": true,
+      "recordedBytes": 194937,
+      "done": true,
+      "capturedFrames": 240640,
+      "sourceEnvelopeCorrelation": 0.9188442155990681,
+      "bestOffsetMs": 92,
+      "captureInputVerified": false,
+      "speechProcessingVerified": false,
+      "interpretation": "Envelope agreement verifies supplied audio in getUserMedia only. A recognizer result is separately required; this control is never Kirtan accuracy.",
+      "eventCounts": {
+        "start": 1,
+        "audiostart": 1,
+        "audioend": 1,
+        "error": 1,
+        "end": 1
+      },
+      "errors": [
+        "no-speech"
+      ]
+    },
+    "syntheticSpeechTrackWithRecorder": {
+      "kind": "isolated-audio-routing-probe",
+      "synthetic": true,
+      "browser": "156.0.8078.80",
+      "source": {
+        "sha256": "a08b23c639575b634c7013f52d4e27c51a1aba815acecf43f523665c642440d5",
+        "encoding": 1,
+        "channels": 1,
+        "sampleRate": 22050,
+        "byteRate": 44100,
+        "blockAlign": 2,
+        "bitsPerSample": 16,
+        "dataBytes": 634264,
+        "durationMs": 14382.403628117914,
+        "provenance": "Local operating-system synthesis of an original calibration phrase; authorized online diagnostic only; not Kirtan or ground truth"
+      },
+      "onlineTransferAuthorized": true,
+      "mode": "track",
+      "withRecorder": true,
+      "sampleRate": 48000,
+      "startAccepted": true,
+      "recordedBytes": 194294,
+      "done": true,
+      "capturedFrames": 240640,
+      "sourceEnvelopeCorrelation": 0.8670100806856517,
+      "bestOffsetMs": 68,
+      "captureInputVerified": false,
+      "speechProcessingVerified": true,
+      "interpretation": "Envelope agreement verifies supplied audio in getUserMedia only. A recognizer result is separately required; this control is never Kirtan accuracy.",
+      "eventCounts": {
+        "start": 1,
+        "audiostart": 1,
+        "soundstart": 1,
+        "speechstart": 1,
+        "result": 50,
+        "audioend": 1,
+        "error": 1,
+        "end": 1
+      },
+      "errors": [
+        "aborted"
+      ]
+    }
+  },
+  "nativeApplicationControl": {
+    "synthetic": true,
+    "checks": [
+      "native-speech-through-application-hook-and-capture"
+    ],
+    "errors": [],
+    "nativeAudioProbe": null,
+    "nativeApplication": {
+      "synthetic": true,
+      "sourceSha256": "a08b23c639575b634c7013f52d4e27c51a1aba815acecf43f523665c642440d5",
+      "captureRequests": 1,
+      "recognizerUsedRecordedTrack": true,
+      "actualRecognitionEvents": 7,
+      "matcherEvents": 5,
+      "pageEvents": 2,
+      "projectorAcknowledgements": 2,
+      "interpretation": "Native audio-track injection into the real application hook; synthetic speech and fixture APIs, never authentic Kirtan accuracy."
+    },
+    "capture": {
+      "version": 1,
+      "synthetic": true,
+      "complete": true,
+      "reason": null,
+      "sessionId": "c4ea0a0f-790e-49c2-8d80-79173febc7b8",
+      "audioBytes": 44434,
+      "traceEvents": 43,
+      "durationMs": 6083.5,
+      "build": {
+        "revision": "252c80cb0f28bb3c390efe68f8522fd761e745eb",
+        "dirty": true
+      },
+      "synchronization": "provisional-lifecycle-only",
+      "groundTruth": {
+        "status": "unavailable",
+        "reason": "Capture identity does not establish independent performance annotations or sample synchronization"
+      },
+      "accuracy": {
+        "status": "unavailable"
+      },
+      "recognitionInput": "Capture audio track requested via native start(track); browser support and actual recognition processing must be verified separately."
+    },
+    "status": "passed"
+  },
+  "nativeBundleSha256": "b966539ad8c451e379e7dc3109f9e6de71266d33881b14dcc712f834553086ff",
+  "captureBrowser": {
+    "synthetic": true,
+    "checks": [
+      "disabled-state-envelope-unchanged",
+      "manual-correction-and-cross-tab-projector-sync",
+      "trace-export-schema-and-projector-acknowledgements",
+      "blank-projector-state",
+      "katha-viewer-mic-fixture",
+      "consent-gated-real-media-recorder-and-binary-export",
+      "standalone-trace-export-retained-after-audio-capture"
+    ],
+    "errors": [],
+    "nativeAudioProbe": null,
+    "traceEvents": 45,
+    "step": "capture-export",
+    "capture": {
+      "version": 1,
+      "synthetic": true,
+      "complete": true,
+      "reason": null,
+      "sessionId": "7b6e2f06-005d-43a2-91d1-4c5ab7432f36",
+      "audioBytes": 40563,
+      "traceEvents": 14,
+      "durationMs": 5149.799999952316,
+      "build": {
+        "revision": "252c80cb0f28bb3c390efe68f8522fd761e745eb",
+        "dirty": true
+      },
+      "synchronization": "provisional-lifecycle-only",
+      "groundTruth": {
+        "status": "unavailable",
+        "reason": "Capture identity does not establish independent performance annotations or sample synchronization"
+      },
+      "accuracy": {
+        "status": "unavailable"
+      },
+      "recognitionInput": "Recognition was not started by this capture."
+    },
+    "status": "passed"
+  },
+  "permissionDenialBrowser": {
+    "synthetic": true,
+    "checks": [
+      "disabled-state-envelope-unchanged",
+      "manual-correction-and-cross-tab-projector-sync",
+      "trace-export-schema-and-projector-acknowledgements",
+      "blank-projector-state",
+      "katha-viewer-mic-fixture",
+      "permission-denial-and-partial-export",
+      "standalone-trace-export-retained-after-audio-capture"
+    ],
+    "errors": [],
+    "nativeAudioProbe": null,
+    "traceEvents": 45,
+    "step": "capture-start",
+    "capture": {
+      "version": 1,
+      "synthetic": true,
+      "complete": false,
+      "reason": "permission-denied",
+      "sessionId": "ccc7017c-55a6-43fb-b218-f33b98781ce9",
+      "audioBytes": 0,
+      "traceEvents": 7,
+      "durationMs": 2.600000023841858,
+      "build": {
+        "revision": "252c80cb0f28bb3c390efe68f8522fd761e745eb",
+        "dirty": true
+      },
+      "synchronization": "provisional-lifecycle-only",
+      "groundTruth": {
+        "status": "unavailable",
+        "reason": "Capture identity does not establish independent performance annotations or sample synchronization"
+      },
+      "accuracy": {
+        "status": "unavailable"
+      },
+      "recognitionInput": "Recognition was not started by this capture."
+    },
+    "status": "passed"
+  },
+  "reviewBrowser": {
+    "synthetic": true,
+    "checks": [
+      "local-audio-decodes",
+      "empty-and-unverified-labels-blocked",
+      "provisional-draft-export"
+    ],
+    "errors": [],
+    "nativeAudioProbe": null,
+    "status": "passed"
+  },
+  "review": {
+    "version": 1,
+    "synthetic": true,
+    "complete": true,
+    "reason": null,
+    "sessionId": "c2db1467-b668-48e6-b52b-3cfdbc204f3e",
+    "audioBytes": 44427,
+    "traceEvents": 49,
+    "durationMs": 6087.399999976158,
+    "build": {
+      "revision": "252c80cb0f28bb3c390efe68f8522fd761e745eb",
+      "dirty": true
+    },
+    "synchronization": "provisional-lifecycle-only",
+    "groundTruth": {
+      "status": "unavailable",
+      "reason": "Capture identity does not establish independent performance annotations or sample synchronization"
+    },
+    "accuracy": {
+      "status": "unavailable"
+    },
+    "recognitionInput": "Capture audio track requested via native start(track); browser support and actual recognition processing must be verified separately.",
+    "bundleSha256": "b3b19d9cef81b2a17eb3c6a3a726519aa02bbdae0189090a071a8b128a91e03d",
+    "canonicalSource": "https://api.banidb.com/v2/shabads/3712",
+    "canonicalSha256": "9efffd8cf3ab2f7702d7c74d162263e7a1d7826168ece22e3b08e6f99e99b954",
+    "referenceEvidence": {
+      "sourceUrl": "https://raw.githubusercontent.com/karanbirsingh/live-gurbani-captioning-benchmark-v1/5cfa23d583c8157e09beb07c911bc1009ae41b10/test/zOtIpxMT9hU.json",
+      "sha256": "ef5d3286118da3508d49ce0131a25e144c4f9d46cbc6ef71083d1f76fa5bb920",
+      "license": "CC-BY-4.0",
+      "attribution": "Live Captioning for Gurbani Kirtan benchmark v1 — Karanbir Singh"
+    },
+    "candidates": 11,
+    "candidateStatus": "provisional",
+    "labelsVerified": 0
+  },
+  "tests": {
+    "frontendOff": 177,
+    "frontendOn": 177,
+    "files": 14,
+    "added": 45,
+    "backend": 64,
+    "failed": 0,
+    "build": "passed-existing-chunk-warning",
+    "modules": 224
+  },
+  "resourceProbe": {
+    "runtime": "v24.17.0",
+    "disabledMicrosecondsPerCall": 0.021,
+    "enabledMicrosecondsPerCall": 3.91763,
+    "callsPerMode": 10000,
+    "attemptedEvents": 130000,
+    "retainedEvents": 120000,
+    "stopReason": "event-limit",
+    "exportBytes": 10421237,
+    "heapDeltaBytes": 53251096,
+    "inactiveGrowth": 0,
+    "captureCapacityTestBytes": 16777216,
+    "caveat": "Synthetic Node allocation/serialization and bounded-prefix tests; not a browser heap ceiling or real accuracy."
+  },
+  "limitations": [
+    "No authentic speech-provider run with independent synchronized labels.",
+    "Recorder lifecycle timing and clicked markers require independent cue verification.",
+    "Desktop Chrome short synthetic compatibility only; physical microphone, mobile and long-service performance not established."
+  ]
+}

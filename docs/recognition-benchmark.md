@@ -1,5 +1,8 @@
 # Recognition benchmark and recording guide
 
+For opt-in audio/trace capture, native audio routing evidence and Phase 5 results,
+see [Capture and accuracy readiness](recognition-capture-and-accuracy.md).
+
 For the automated external-reference workflow and measured Phase 4 results,
 see [Recognition real-world validation](recognition-real-world-validation.md).
 The manual annotation instructions below remain an optional low-level workflow.
