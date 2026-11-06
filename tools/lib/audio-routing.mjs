@@ -24,3 +24,8 @@ export function compareEnvelopes(observed, reference) {
   }
   return { correlation: best, offsetMs };
 }
+// A result event shows speech processing only when it carries non-blank text;
+// some engines emit results whose transcripts are whitespace.
+export function speechObserved(events) {
+  return events.some((e) => e.type === 'result' && typeof e.text === 'string' && e.text.trim() !== '');
+}

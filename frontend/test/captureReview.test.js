@@ -5,7 +5,7 @@ import { spawnSync } from 'node:child_process';
 import { afterAll, describe, expect, it } from 'vitest';
 import { createBundle, digest } from '../src/utils/captureBundle';
 import { canonicalChoices, inspectCapture } from '../../tools/lib/capture-review.mjs';
-import { envelope, compareEnvelopes } from '../../tools/lib/audio-routing.mjs';
+import { envelope, compareEnvelopes, speechObserved } from '../../tools/lib/audio-routing.mjs';
 const cache = fileURLToPath(new URL('../.cache/', import.meta.url)); fs.mkdirSync(cache, { recursive: true });
 const scratch = fs.mkdtempSync(path.join(cache, 'capture-review-test-'));
 afterAll(() => { for (const file of fs.readdirSync(scratch)) fs.unlinkSync(path.join(scratch, file)); fs.rmdirSync(scratch); });
@@ -51,5 +51,10 @@ describe('sample-derived routing evidence', () => {
   it('does not verify silence or empty input as file identity', () => {
     expect(compareEnvelopes(Array(100).fill(0), Array(300).fill(0)).correlation).toBe(-1);
     expect(envelope([], 0)).toEqual([]);
+  });
+  it('does not count blank recognizer results as processed speech', () => {
+    expect(speechObserved([{ type: 'result', text: '   ' }, { type: 'result', text: ' ' }, { type: 'result', text: null }])).toBe(false);
+    expect(speechObserved([{ type: 'audiostart', text: 'x' }])).toBe(false);
+    expect(speechObserved([{ type: 'result', text: ' ' }, { type: 'result', text: 'one two three' }])).toBe(true);
   });
 });

@@ -4,7 +4,7 @@ import path from 'node:path';
 import http from 'node:http';
 import { pathToFileURL, fileURLToPath } from 'node:url';
 import { sha256, readJson, wavMetadata } from './lib/recognition-validation.mjs';
-import { envelope, compareEnvelopes } from './lib/audio-routing.mjs';
+import { envelope, compareEnvelopes, speechObserved } from './lib/audio-routing.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const args = process.argv.slice(2); const options = {};
@@ -64,7 +64,7 @@ try {
     onlineTransferAuthorized: Boolean(options.online), mode: options.mode || 'mic', withRecorder: Boolean(options['with-recorder']),
     ...details, capturedFrames: pcm.length, sourceEnvelopeCorrelation: best, bestOffsetMs: offset,
     captureInputVerified: best >= 0.95 && pcm.length >= raw.sampleRate * 4,
-    speechProcessingVerified: raw.events.some((e) => e.type === 'result' && e.text),
+    speechProcessingVerified: speechObserved(raw.events),
     interpretation: 'Envelope agreement verifies supplied audio in getUserMedia only. A recognizer result is separately required; this control is never Kirtan accuracy.' };
   fs.writeFileSync(path.join(output, 'report.json'), JSON.stringify(report, null, 2) + '\n'); console.log(JSON.stringify(report, null, 2));
   if (!report.captureInputVerified || options.online && !report.speechProcessingVerified) process.exitCode = 2;
