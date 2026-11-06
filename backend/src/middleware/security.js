@@ -13,6 +13,9 @@ const config = require('../config');
 
 function applySecurity(app) {
   app.disable('x-powered-by');
+  // req.ip honours X-Forwarded-For only from configured proxies (default:
+  // loopback). Used by the rate limiter and the typed-code pairing budget.
+  app.set('trust proxy', config.trustProxy);
 
   app.use(
     helmet({

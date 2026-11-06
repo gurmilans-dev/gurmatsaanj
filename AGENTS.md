@@ -93,6 +93,7 @@ Backend defaults in `backend/src/config/index.js`:
 - `RATE_LIMIT_WINDOW_MS=60000`
 - `RATE_LIMIT_MAX=600`
 - `MIN_LINE_CONFIDENCE=50`
+- `TRUST_PROXY=loopback` (only a local proxy may set `X-Forwarded-For`; `true`/hop counts are refused)
 
 Frontend env usage:
 
@@ -107,7 +108,8 @@ Vite dev and preview use HTTPS with a self-signed cert and proxy `/api` to `http
 - `banidb.service.js` owns BaniDB retries, 12-hour in-memory cache, Unicode Gurmukhi selection, search-type detection, Ang lookup, Bani lookup, daily Hukam, and fallback shaping.
 - `matching.service.js` owns live Shabad suggestions and backend line tracking fallback with fuzzy scoring.
 - `remote.controller.js` is process-local memory only. Remote sessions, pair codes, follow codes, clients, queues, and latest state are lost on backend restart.
-- Phone remotes authenticate with `clientId` + a server-minted `clientToken` from `/remote/join`; a `clientId` alone is never a credential. See `docs/security/remote-control.md`.
+- Phone remotes authenticate with `clientId` + a server-minted `clientToken` from `/remote/join`; a `clientId` alone is never a credential, and the token (not a pair code) selects the session. See `docs/security/remote-control.md`.
+- Enrollment: the QR carries a short-lived pairing link token in the URL fragment (`/remote#pair=...`) and enrolls a trusted device; the typed 4-digit code is crypto-random, expiring, throttled per source and enrolls a view-only device until the host (or current controller) allows control. Keep these capabilities separate from each other and from device, host, stream-ticket and follow credentials; never let a typed code grant control by itself.
 - The main app (host) reads its commands with `hostId` + `hostToken`: `X-Remote-Host-Id` / `X-Remote-Host-Token` headers for `/remote/commands` polling, and a single-use 30 s ticket from `POST /remote/stream-ticket` for the `/remote/stream` EventSource. Never put `hostToken` in a URL.
 - Sangat View links are revocable: `/remote/reset` and session expiry close open `/remote/follow/stream` connections with an `event: revoked`, and `FollowPage.jsx` stops reconnecting on it.
 - Do not add BaniDB search type `5` to generic text fallback chains; type `5` is Ang/page search.
@@ -223,7 +225,7 @@ For live features, manually verify in a browser:
 - `/follow/:code` if remote/follow state changed
 - `/setup` if audio code changed
 
-Backend tests live in `backend/tests/` (dependency floor, body parsing, remote-control client auth, host command auth and stream tickets, Sangat View revocation). Frontend `npm test` runs Vitest over `frontend/test/` (recognition hooks, voice controller, session replay); it does not cover the remote/Sangat View pages, so check those in a browser.
+Backend tests live in `backend/tests/` (dependency floor, body parsing, remote-control client auth, host command auth and stream tickets, Sangat View revocation, device pairing/enrollment). Frontend `npm test` runs Vitest over `frontend/test/` (recognition hooks, voice controller, session replay); it does not cover the remote/Sangat View pages, so check those in a browser.
 
 ## Current Gotchas
 

@@ -86,11 +86,19 @@ const GurmatSaanjLogo = ({ className = 'header-logo-mark' }) => (
   </span>
 );
 
-function remotePairUrl(code) {
-  if (!code || typeof window === 'undefined') return '';
+/**
+ * QR / "Open remote" link. It carries the short-lived pairing link token in
+ * the URL fragment, which is never sent to a server or in a Referer; the
+ * remote page removes it from the address bar after reading it. A scan pairs
+ * with full remote rights; the typed code pairs view only until allowed.
+ * (Falls back to the typed code only if the backend predates pairing links.)
+ */
+function remotePairUrl(pairToken, code) {
+  if ((!pairToken && !code) || typeof window === 'undefined') return '';
   const configuredBase = import.meta.env.VITE_PUBLIC_APP_URL || import.meta.env.VITE_PUBLIC_REMOTE_URL || window.location.origin;
   const url = new URL('/remote', configuredBase);
-  url.searchParams.set('code', code);
+  if (pairToken) url.hash = `pair=${encodeURIComponent(pairToken)}`;
+  else url.searchParams.set('code', code);
   return url.toString();
 }
 
@@ -173,7 +181,8 @@ export default function Header() {
   const remoteClientSummary = remoteClientCount > 0
     ? `${remoteClientCount} paired${remoteClientNames ? `: ${remoteClientNames}${remoteClientCount > 3 ? '...' : ''}` : ''}`
     : '';
-  const remoteUrl = useMemo(() => remotePairUrl(remoteCode), [remoteCode]);
+  const remotePairToken = remotePairing?.pairToken || '';
+  const remoteUrl = useMemo(() => remotePairUrl(remotePairToken, remoteCode), [remotePairToken, remoteCode]);
   const remoteUrlUsesLocalhost = /^https?:\/\/(localhost|127\.0\.0\.1)(:|\/)/i.test(remoteUrl);
   useEffect(() => {
     if (!remoteQrOpen) return undefined;
@@ -314,7 +323,7 @@ export default function Header() {
                     <strong>{remoteCode}</strong>
                   </div>
                   <p className="header-remote-popover-copy">
-                    Phone camera opens the remote and fills the code automatically.
+                    Scan with the phone camera to pair with full control. A typed code pairs view only until you allow control here.
                   </p>
                   {remoteClientSummary && (
                     <section className="header-remote-device-section" aria-label="Paired remote devices">
@@ -328,7 +337,11 @@ export default function Header() {
                             <div>
                               <strong>{client.name || 'Remote device'}</strong>
                               <small>
-                                {client.isController ? 'Controller' : client.pendingControl ? 'Requested control' : 'Viewer'}
+                                {client.isController
+                                  ? 'Controller'
+                                  : client.pendingControl
+                                    ? 'Requested control'
+                                    : client.trusted === false ? 'Viewer (typed code)' : 'Viewer'}
                               </small>
                             </div>
                             <button
