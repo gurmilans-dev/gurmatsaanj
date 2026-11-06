@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  startRecording, stopRecording, isRecording, eventCount, downloadTrace,
+  startRecording, stopRecording, isRecording, eventCount, downloadTrace, recordingStatus, recordSyncMarker,
 } from '../../utils/sessionRecorder';
 import './VoiceDebugPanel.css';
 
@@ -110,6 +110,7 @@ export default function VoiceDebugPanel({
   const [copied, setCopied] = useState(false);
   const [recording, setRecording] = useState(isRecording());
   const [recCount, setRecCount] = useState(eventCount());
+  const [recReason, setRecReason] = useState(recordingStatus().reason);
   const copyTimerRef = useRef(null);
   useEffect(() => () => { if (copyTimerRef.current) clearTimeout(copyTimerRef.current); }, []);
 
@@ -117,7 +118,11 @@ export default function VoiceDebugPanel({
   // button shows progress without re-rendering on every poll.
   useEffect(() => {
     if (!recording) return undefined;
-    const id = setInterval(() => setRecCount(eventCount()), 1000);
+    const id = setInterval(() => {
+      const status = recordingStatus();
+      setRecCount(status.eventCount);
+      if (!status.active) { setRecording(false); setRecReason(status.reason); }
+    }, 1000);
     return () => clearInterval(id);
   }, [recording]);
 
@@ -126,8 +131,10 @@ export default function VoiceDebugPanel({
       stopRecording();
       setRecording(false);
       setRecCount(eventCount());
+      setRecReason(recordingStatus().reason);
     } else {
-      startRecording();
+      startRecording({ mode });
+      setRecReason(null);
       setRecording(true);
       setRecCount(0);
     }
@@ -241,7 +248,17 @@ export default function VoiceDebugPanel({
             Download ({recCount})
           </button>
         )}
+        {recording && (
+          <button type="button" className="btn-ghost voice-debug-copy" onClick={recordSyncMarker} title="Mark a synchronization point for a separate audio/video recording">
+            Sync marker
+          </button>
+        )}
       </div>
+
+      <p className="voice-debug-empty">
+        Recording is local and opt-in: transcript text and display decisions, without audio.
+        Export before starting another recording. {recReason ? `Capture stopped: ${recReason}. Export this segment before continuing.` : ''}
+      </p>
 
       <div className="voice-debug-grid">
         <span>Mic</span>

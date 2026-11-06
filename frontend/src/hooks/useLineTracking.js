@@ -11,7 +11,8 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import { matchLine } from '../utils/matchLine';
-import { recordDecision } from '../utils/sessionRecorder';
+import { recordDecision, recordEvent } from '../utils/sessionRecorder';
+import { positionFor } from '../utils/recognitionTrace';
 
 export default function useLineTracking({
   shabadId,
@@ -21,6 +22,7 @@ export default function useLineTracking({
   anchorLineIndex = null,
   anchorVersion = 0,
   intervalMs = 190,
+  inputEventId = null,
 }) {
   const [lineIndex, setLineIndex] = useState(-1);
   const [confidence, setConfidence] = useState(0);
@@ -62,6 +64,7 @@ export default function useLineTracking({
 
   useEffect(() => {
     lineIndexRef.current = lineIndex;
+    if (shabadId) recordEvent('tracker', () => ({ engine: 'kirtan', position: positionFor(shabadId, verses, lineIndex), accepted: true, reason: 'state-committed' }));
   }, [lineIndex]);
 
   useEffect(() => {
@@ -156,8 +159,8 @@ export default function useLineTracking({
       recordDecision({
         shabadId,
         verses,
-        transcript: latest,
         tail,
+        inputEventId,
         currentLine: lineIndexRef.current,
         lineIndex: res.lineIndex,
         confidence: nextConfidence,
@@ -190,6 +193,7 @@ export default function useLineTracking({
             }
           } else {
             pendingFarRef.current = { line: next, count: 1 };
+            recordEvent('tracker', () => ({ engine: 'kirtan', position: positionFor(shabadId, verses, cur), accepted: false, reason: 'far-line-needs-confirmation', pendingLine: next, pendingCount: 1 }));
             // Hold the cursor on the current line this poll.
           }
         }

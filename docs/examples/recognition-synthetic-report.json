@@ -1,0 +1,266 @@
+{
+  "version": 1,
+  "sessionId": "synthetic-mixed-60s",
+  "synthetic": true,
+  "traceVersion": 2,
+  "durationMs": 60000,
+  "capture": {
+    "complete": true,
+    "reason": null
+  },
+  "annotation": {
+    "method": "Hand-specified synthetic timeline; not a recording or runtime simulation",
+    "occurrences": 7,
+    "timingUncertaintyMs": 0,
+    "annotatedMs": 60000,
+    "evaluableTargetMs": 50000
+  },
+  "page": {
+    "totals": {
+      "labeledMs": 50000,
+      "knownMs": 50000,
+      "lineKnownMs": 50000,
+      "correctLineMs": 30000,
+      "correctShabadMs": 46000,
+      "heldMs": 2000,
+      "followingMs": 47000,
+      "manualMs": 1000,
+      "uncertainMs": 0,
+      "flagsKnownMs": 50000
+    },
+    "displayAccuracy": {
+      "status": "available",
+      "percent": 60,
+      "correctMs": 30000,
+      "denominatorMs": 50000
+    },
+    "shabadAccuracy": {
+      "status": "available",
+      "percent": 92,
+      "correctMs": 46000,
+      "denominatorMs": 50000
+    },
+    "coverage": {
+      "status": "available",
+      "followingPercent": 94,
+      "heldPercent": 4,
+      "manualPercent": 2,
+      "uncertainPercent": 0
+    },
+    "transitionLatency": {
+      "status": "available",
+      "n": 3,
+      "medianMs": 2000,
+      "p90Ms": null,
+      "p95Ms": null,
+      "percentileRule": "Median for n>=1; nearest-rank p90 for n>=10, p95 for n>=20.",
+      "stableMs": 1000,
+      "samples": [
+        {
+          "occurrenceId": "a-next",
+          "activity": "kirtan",
+          "kind": "line-or-return",
+          "status": "detected",
+          "latencyMs": 2000,
+          "confirmedAtMs": 13000
+        },
+        {
+          "occurrenceId": "a-rahao-return",
+          "activity": "kirtan",
+          "kind": "line-or-return",
+          "status": "detected",
+          "latencyMs": 2000,
+          "confirmedAtMs": 28000
+        },
+        {
+          "occurrenceId": "b-transition",
+          "activity": "kirtan",
+          "kind": "shabad",
+          "status": "detected",
+          "latencyMs": 4000,
+          "confirmedAtMs": 40000
+        },
+        {
+          "occurrenceId": "b-skipped-line",
+          "activity": "kirtan",
+          "kind": "line-or-return",
+          "status": "undetected",
+          "latencyMs": null,
+          "confirmedAtMs": null
+        }
+      ],
+      "undetected": 1,
+      "unavailable": 0,
+      "insufficientWindow": 0
+    },
+    "recovery": {
+      "status": "available",
+      "n": 1,
+      "medianMs": 2000,
+      "p90Ms": null,
+      "p95Ms": null,
+      "percentileRule": "Median for n>=1; nearest-rank p90 for n>=10, p95 for n>=20.",
+      "episodes": [
+        {
+          "occurrenceId": "a-opening",
+          "lossAtMs": 4000,
+          "status": "recovered",
+          "recoveryMs": 2000
+        }
+      ],
+      "censored": 0
+    }
+  },
+  "projector": {
+    "totals": {
+      "labeledMs": 50000,
+      "knownMs": 0,
+      "lineKnownMs": 0,
+      "correctLineMs": 0,
+      "correctShabadMs": 0,
+      "heldMs": 0,
+      "followingMs": 0,
+      "manualMs": 0,
+      "uncertainMs": 0,
+      "flagsKnownMs": 0
+    },
+    "displayAccuracy": {
+      "status": "unavailable",
+      "reason": "Output evidence does not cover all labeled target time",
+      "knownMs": 0,
+      "unknownMs": 50000,
+      "correctMs": 0
+    },
+    "shabadAccuracy": {
+      "status": "unavailable",
+      "reason": "Output evidence does not cover all labeled target time",
+      "knownMs": 0,
+      "unknownMs": 50000,
+      "correctMs": 0
+    },
+    "coverage": {
+      "status": "unavailable",
+      "reason": "Explicit following/hold/manual flags do not cover labeled time"
+    },
+    "transitionLatency": {
+      "status": "unavailable",
+      "reason": "No detected samples",
+      "n": 0,
+      "medianMs": null,
+      "p90Ms": null,
+      "p95Ms": null,
+      "stableMs": 1000,
+      "samples": [
+        {
+          "occurrenceId": "a-next",
+          "activity": "kirtan",
+          "kind": "line-or-return",
+          "status": "unavailable",
+          "latencyMs": null,
+          "confirmedAtMs": null
+        },
+        {
+          "occurrenceId": "a-rahao-return",
+          "activity": "kirtan",
+          "kind": "line-or-return",
+          "status": "unavailable",
+          "latencyMs": null,
+          "confirmedAtMs": null
+        },
+        {
+          "occurrenceId": "b-transition",
+          "activity": "kirtan",
+          "kind": "shabad",
+          "status": "unavailable",
+          "latencyMs": null,
+          "confirmedAtMs": null
+        },
+        {
+          "occurrenceId": "b-skipped-line",
+          "activity": "kirtan",
+          "kind": "line-or-return",
+          "status": "unavailable",
+          "latencyMs": null,
+          "confirmedAtMs": null
+        }
+      ],
+      "undetected": 0,
+      "unavailable": 4,
+      "insufficientWindow": 0
+    },
+    "recovery": {
+      "status": "unavailable",
+      "reason": "No detected samples",
+      "n": 0,
+      "medianMs": null,
+      "p90Ms": null,
+      "p95Ms": null,
+      "episodes": [],
+      "censored": 0
+    }
+  },
+  "falseLineJumps": {
+    "status": "available",
+    "count": 1,
+    "perLabeledHour": 72,
+    "denominatorMs": 50000
+  },
+  "falseShabadSwitches": {
+    "status": "available",
+    "count": 1,
+    "perLabeledHour": 72,
+    "denominatorMs": 50000
+  },
+  "automaticSwitches": 1,
+  "unscoredChanges": 0,
+  "manualInterventions": {
+    "status": "available",
+    "observedCount": 2,
+    "byType": {
+      "line-correction": 1,
+      "shabad-select": 1
+    },
+    "perRecordedHour": 120,
+    "scope": "Explicit operator events only; other routes/devices may not be instrumented."
+  },
+  "stageDiagnostics": {
+    "matcher": {
+      "labeled": 1,
+      "correct": 0
+    },
+    "retrieval": {
+      "labeled": 1,
+      "correctTop1": 0,
+      "correctInCapturedCandidates": 1
+    },
+    "speechRecognition": {
+      "status": "unavailable",
+      "reason": "Independent verbatim speech transcription/audio alignment is not supplied"
+    },
+    "interpretation": "Proposal/retrieval counts are diagnostic evidence, not calibrated probabilities or causal error attribution."
+  },
+  "projectorAcknowledgements": {
+    "received": 0,
+    "committed": 0,
+    "commitRoundTripUpperBounds": {
+      "status": "unavailable",
+      "reason": "No detected samples",
+      "n": 0,
+      "medianMs": null,
+      "p90Ms": null,
+      "p95Ms": null
+    },
+    "interpretation": "Sender-clock acknowledgement times bound delivery/React commit from above; they are not exact projector render/paint times."
+  },
+  "replay": {
+    "mode": "observed-state",
+    "limitation": "Observed-state replay only: pending/hold/cooldown events are reconstructed, not recomputed. It does not simulate a changed policy or network."
+  },
+  "limitations": [
+    "No real-world accuracy claim follows from synthetic fixtures.",
+    "Matcher confidence is not a calibrated probability.",
+    "Display accuracy includes operator assistance; compare interventions and control operator actions across runs.",
+    "Legacy matcher calls cannot establish tracker/page/projector output.",
+    "Projector acknowledgements alone cannot establish exact time-weighted render accuracy."
+  ]
+}

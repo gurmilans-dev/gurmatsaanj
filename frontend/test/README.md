@@ -1,5 +1,10 @@
 # Recognition regressions
 
+The recording/evaluation guide and Windows workflow are in
+[`docs/recognition-benchmark.md`](../../docs/recognition-benchmark.md).
+Run the suite with `TEST_RECORDING=1` to repeat it with recording enabled
+and validate each emitted trace. Benchmark fixtures are explicitly synthetic.
+
 From `frontend/` in PowerShell:
 
 ```powershell

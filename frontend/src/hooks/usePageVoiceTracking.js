@@ -28,7 +28,7 @@ export default function usePageVoiceTracking({
   setRemoteMicTargetGetter,
   observeProjectorTranscript,
 } = {}) {
-  const pageVoice = useVoiceRecognition({ lang: 'pa-IN', wordLimit: 0 });
+  const pageVoice = useVoiceRecognition({ lang: 'pa-IN', wordLimit: 0, source: 'viewer' });
 
   // The voice object identity changes every render; mirror it through a ref
   // so we can register a stable getter with the remote system and read the

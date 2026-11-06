@@ -10,6 +10,9 @@ import { api } from '../../services/api';
 import { useApp } from '../../context/AppContext';
 import usePageVoiceTracking from '../../hooks/usePageVoiceTracking';
 import useKathaLineTracking from '../../hooks/useKathaLineTracking';
+import useTraceOutput from '../../hooks/useTraceOutput';
+import { recordEvent, recordNavigation } from '../../utils/sessionRecorder';
+import { positionFor } from '../../utils/recognitionTrace';
 import useWakeLock from '../../hooks/useWakeLock';
 import useAnandSahibWatch, { ANAND_SAHIB_BUNDLE_ID } from '../../hooks/useAnandSahibWatch';
 import { trimToWords } from '../../utils/gurmukhi';
@@ -228,6 +231,7 @@ export default function AngPage() {
 
   const handleNearbyNavigate = useCallback((group, lineIndex = 0) => {
     if (!group?.ang) return;
+    recordNavigation('requested', 'automatic', positionFor(group.id, group.verses, lineIndex), 'katha-nearby-ang');
     pushToast({
       kind: 'info',
       title: 'Nearby Ang detected',
@@ -249,12 +253,16 @@ export default function AngPage() {
     stayInCurrentGroup: kathaStayInCurrent,
     anchorLineIndex: manualLine,
     anchorVersion: manualAnchorVersion,
+    inputEventId: pageVoice.inputEventId,
   });
 
   const activeIndex = manualLine !== null
     ? manualLine
     : (kathaTracking.lineIndex >= 0 ? kathaTracking.lineIndex : lineHint);
   const isManual = manualLine !== null;
+  useTraceOutput({ groupId: `ang-${angNo}`, verses, lineIndex: activeIndex,
+    mode: isKatha ? 'katha' : 'reader', ready: !loading && !error && Boolean(page),
+    tracked: kathaTracking.tracked, manual: isManual });
 
   useEffect(() => {
     if (kathaTracking.tracked && kathaTracking.lineIndex >= 0) {
@@ -307,6 +315,7 @@ export default function AngPage() {
   const correctToLine = useCallback((index) => {
     if (!verseCount) return;
     const next = Math.min(verseCount - 1, Math.max(0, Number(index) || 0));
+    recordEvent('manual', () => ({ action: 'line-correction', source: 'operator', position: positionFor(`ang-${angNo}`, verses, next) }));
     setManualLine(next);
     setLineHint(next);
     bumpManualAnchor();

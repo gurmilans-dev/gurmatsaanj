@@ -1,0 +1,87 @@
+{
+  "version": 1,
+  "sessionId": "synthetic-mixed-60s",
+  "synthetic": true,
+  "timebase": "trace-relative-ms",
+  "timingUncertaintyMs": 0,
+  "provenance": {
+    "independent": true,
+    "method": "Hand-specified synthetic timeline; not a recording or runtime simulation"
+  },
+  "segments": [
+    {
+      "id": "a-opening",
+      "startMs": 0,
+      "endMs": 10000,
+      "activity": "kirtan",
+      "target": {
+        "shabadId": "synthetic-a",
+        "groupId": "synthetic-a",
+        "verseId": "synthetic-a-0",
+        "lineIndex": 0
+      }
+    },
+    {
+      "id": "a-next",
+      "startMs": 10000,
+      "endMs": 20000,
+      "activity": "kirtan",
+      "target": {
+        "shabadId": "synthetic-a",
+        "groupId": "synthetic-a",
+        "verseId": "synthetic-a-1",
+        "lineIndex": 1
+      }
+    },
+    {
+      "id": "instrumental",
+      "startMs": 20000,
+      "endMs": 25000,
+      "activity": "instrumental",
+      "target": null
+    },
+    {
+      "id": "a-rahao-return",
+      "startMs": 25000,
+      "endMs": 35000,
+      "activity": "kirtan",
+      "target": {
+        "shabadId": "synthetic-a",
+        "groupId": "synthetic-a",
+        "verseId": "synthetic-a-0",
+        "lineIndex": 0
+      }
+    },
+    {
+      "id": "b-transition",
+      "startMs": 35000,
+      "endMs": 45000,
+      "activity": "kirtan",
+      "target": {
+        "shabadId": "synthetic-b",
+        "groupId": "synthetic-b",
+        "verseId": "synthetic-b-0",
+        "lineIndex": 0
+      }
+    },
+    {
+      "id": "ambiguous",
+      "startMs": 45000,
+      "endMs": 50000,
+      "activity": "ambiguous",
+      "target": null
+    },
+    {
+      "id": "b-skipped-line",
+      "startMs": 50000,
+      "endMs": 60000,
+      "activity": "kirtan",
+      "target": {
+        "shabadId": "synthetic-b",
+        "groupId": "synthetic-b",
+        "verseId": "synthetic-b-1",
+        "lineIndex": 1
+      }
+    }
+  ]
+}

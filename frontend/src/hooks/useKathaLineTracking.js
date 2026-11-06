@@ -5,6 +5,8 @@
  * line or just across a Shabad/Ang boundary.
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { isRecording, recordDecision, recordEvent, recordVerses } from '../utils/sessionRecorder';
+import { positionFor } from '../utils/recognitionTrace';
 
 const NAV_COOLDOWN_MS = 80;
 const NO_MATCH_DISPLAY_MS = 2200;
@@ -399,6 +401,7 @@ function analyzeLocalMatch(queryText, matchContext, flat, currentGroupId, evalua
   );
   return {
     match,
+    input: queryText,
     best,
     second,
     queryMeta,
@@ -594,6 +597,7 @@ export default function useKathaLineTracking({
   stayInCurrentGroup = false,
   anchorLineIndex = null,
   anchorVersion = 0,
+  inputEventId = null,
   // Speech recognition updates only a few times a second, so polling the
   // matcher every 25ms was mostly redundant work. ~55ms stays well below
   // perceptible lag while roughly halving the matching CPU. The unchanged-tail
@@ -678,6 +682,7 @@ export default function useKathaLineTracking({
         score: Math.max(Number(previous.score || 0), score),
         ts: now,
       };
+      recordEvent('tracker', () => ({ engine: 'katha', position: positionFor(meta.groupId, meta.group?.verses, Number(meta.localIndex)), accepted: true, reason: 'same-target-refreshed', requestId: String(requestId) }));
       return true;
     }
 
@@ -688,6 +693,7 @@ export default function useKathaLineTracking({
       score,
       ts: now,
     };
+    recordEvent('tracker', () => ({ engine: 'katha', position: positionFor(meta.groupId, meta.group?.verses, Number(meta.localIndex)), accepted: true, reason: 'internal-commit', requestId: String(requestId) }));
 
     debugKatha('commit', {
       score,
@@ -891,6 +897,7 @@ export default function useKathaLineTracking({
   const scheduleCommit = (meta, score, requestId, candidate) => {
     if (!meta || requestId !== reqIdRef.current) return false;
     if (shouldRejectReverse(meta, score, candidate)) {
+      recordEvent('tracker', () => ({ engine: 'katha', position: positionFor(meta.groupId, meta.group?.verses, Number(meta.localIndex)), accepted: false, reason: 'reverse-cooldown', requestId: String(requestId) }));
       debugKatha('reject-reverse', {
         score,
         target: { groupId: meta.groupId, localIndex: meta.localIndex },
@@ -900,6 +907,7 @@ export default function useKathaLineTracking({
       return false;
     }
     if (shouldRejectRecentJump(meta, candidate, score)) {
+      recordEvent('tracker', () => ({ engine: 'katha', position: positionFor(meta.groupId, meta.group?.verses, Number(meta.localIndex)), accepted: false, reason: 'recent-navigation-cooldown', requestId: String(requestId) }));
       debugKatha('reject', {
         reason: 'recent-navigation-cooldown',
         score,
@@ -918,6 +926,7 @@ export default function useKathaLineTracking({
     }
 
     pendingCommitRef.current = { key, meta, score, requestId };
+    recordEvent('tracker', () => ({ engine: 'katha', position: positionFor(meta.groupId, meta.group?.verses, Number(meta.localIndex)), accepted: false, reason: 'commit-debounced', pendingLine: Number(meta.localIndex), requestId: String(requestId) }));
     if (commitTimerRef.current) clearTimeout(commitTimerRef.current);
     commitTimerRef.current = setTimeout(() => {
       const pending = pendingCommitRef.current;
@@ -1110,6 +1119,20 @@ export default function useKathaLineTracking({
         if (myId !== reqIdRef.current) return;
 
         const { best, quality, nextTracked, target } = result;
+        if (isRecording()) {
+          for (const group of groups || []) recordVerses(group.id, group.verses);
+          const meta = best?.candidate?.meta;
+          recordDecision({ engine: 'katha', shabadId: String(currentGroupId),
+            inputEventId,
+            verses: (groups || []).find((group) => String(group.id) === String(currentGroupId))?.verses || [],
+            tail: result.input, currentLine: Number(currentLineIndex ?? -1), lineIndex: Number(meta?.localIndex ?? -1),
+            confidence: Number(best?.score || 0), tracked: nextTracked, reason: quality.reason,
+            position: meta ? positionFor(meta.groupId, meta.group?.verses, Number(meta.localIndex)) : null,
+            competitors: [best, result.second].filter((candidate) => candidate?.candidate?.meta).map((candidate) => ({
+              position: positionFor(candidate.candidate.meta.groupId, candidate.candidate.meta.group?.verses, Number(candidate.candidate.meta.localIndex)), confidence: candidate.score,
+            })),
+          });
+        }
 
         setConfidence(best?.score || 0);
 

@@ -15,6 +15,9 @@ import useLineTracking from '../../hooks/useLineTracking';
 import useKathaLineTracking from '../../hooks/useKathaLineTracking';
 import useAutoShabadAdvance from '../../hooks/useAutoShabadAdvance';
 import useFollowHold from '../../hooks/useFollowHold';
+import useTraceOutput from '../../hooks/useTraceOutput';
+import { recordEvent, recordNavigation } from '../../utils/sessionRecorder';
+import { positionFor } from '../../utils/recognitionTrace';
 import useAnandSahibWatch from '../../hooks/useAnandSahibWatch';
 import useWakeLock from '../../hooks/useWakeLock';
 import { displayLineForEntry, getMainVerse, getMainVerseIndex, trimToWords } from '../../utils/gurmukhi';
@@ -369,6 +372,7 @@ export default function ShabadPage() {
     active: !isKatha && pageVoice.isListening,
     anchorLineIndex: manualLine,
     anchorVersion: manualAnchorVersion,
+    inputEventId: pageVoice.inputEventId,
   });
 
   // Lock / Follow auto-hold (kirtan mode). Freezes the display during vyakhya
@@ -383,6 +387,7 @@ export default function ShabadPage() {
 
   const handleNearbyNavigate = useCallback((group, lineIndex = 0) => {
     if (!group?.shabadId) return;
+    recordNavigation('requested', 'automatic', positionFor(group.shabadId, group.verses, lineIndex), 'katha-nearby');
     pushToast({
       kind: 'info',
       title: 'Nearby Shabad detected',
@@ -402,6 +407,7 @@ export default function ShabadPage() {
     stayInCurrentGroup: kathaStayInCurrent,
     anchorLineIndex: manualLine,
     anchorVersion: manualAnchorVersion,
+    inputEventId: pageVoice.inputEventId,
   });
 
   useEffect(() => {
@@ -427,6 +433,10 @@ export default function ShabadPage() {
   const tracked = isKatha ? kathaTracking.tracked : kirtanTracking.tracked;
   const activeIndex = manualLine !== null ? manualLine : trackedIndex;
   const isManual = manualLine !== null;
+  useTraceOutput({ groupId: currentShabadId, verses, lineIndex: activeIndex,
+    mode: isKatha ? 'katha' : 'kirtan', ready: !loading && !error && Boolean(shabad),
+    held: !isKatha && follow.held, tracked, manual: isManual,
+    observationAt: isKatha ? null : kirtanTracking.observation?.at });
   const rahaoAnchor = useMemo(
     () => pickRahaoAnchor(verses, activeIndex),
     [verses, activeIndex],
@@ -434,6 +444,7 @@ export default function ShabadPage() {
 
   const handleAutoAdvance = useCallback((candidate) => {
     if (!candidate?.shabadId) return;
+    recordNavigation('requested', 'automatic', { shabadId: String(candidate.shabadId) }, 'kirtan-transition');
     const fromQueue = Boolean(candidate.queued || candidate.queueMatch);
     pushToast({
       kind: fromQueue ? 'success' : 'info',
@@ -490,6 +501,7 @@ export default function ShabadPage() {
     transcript: pageVoice.transcript,
     currentShabadId,
     onDetect: () => {
+      recordNavigation('requested', 'automatic', { shabadId: ANAND_SAHIB_FIRST_ID }, 'anand-sahib');
       pushToast({
         kind: 'info',
         title: 'Anand Sahib detected',
@@ -589,6 +601,7 @@ export default function ShabadPage() {
   const correctToLine = useCallback((index) => {
     if (!verseCount) return;
     const next = Math.min(verseCount - 1, Math.max(0, Number(index) || 0));
+    recordEvent('manual', () => ({ action: 'line-correction', source: 'operator', position: positionFor(currentShabadId, verses, next) }));
     setManualLine(next);
     setLineHint(next);
     bumpManualAnchor();
@@ -635,8 +648,11 @@ export default function ShabadPage() {
   const nextQueueTitle = nextQueueItem
     ? trimToWords(displayLineForEntry(nextQueueItem) || nextQueueItem.shabadId, 10)
     : '';
-  const openNextQueueItem = useCallback(() => {
+  const openNextQueueItem = useCallback((event) => {
     if (!nextQueueItem?.shabadId) return;
+    const source = event?.type === 'click' ? 'operator' : 'automatic';
+    if (source === 'operator') recordEvent('manual', { action: 'next-queued', source, position: { shabadId: String(nextQueueItem.shabadId) } });
+    recordNavigation('requested', source, { shabadId: String(nextQueueItem.shabadId) }, 'next-queued');
     setQueueAdvanceCountdown(0);
     const qs = isKatha ? '?katha=1' : '';
     navigate(`/shabad/${encodeURIComponent(nextQueueItem.shabadId)}${qs}`);
@@ -692,6 +708,8 @@ export default function ShabadPage() {
 
   const goPrevShabad = () => {
     if (shabad?.navigation?.previous) {
+      recordEvent('manual', { action: 'previous-shabad', source: 'operator', position: { shabadId: String(shabad.navigation.previous) } });
+      recordNavigation('requested', 'operator', { shabadId: String(shabad.navigation.previous) }, 'previous-shabad');
       navigate(`/shabad/${encodeURIComponent(shabad.navigation.previous)}${isKatha ? '?katha=1' : ''}`);
     } else {
       pushToast({ kind: 'info', title: 'No previous Shabad', message: 'You are at the start of this section.' });
@@ -700,6 +718,8 @@ export default function ShabadPage() {
 
   const goNextShabad = () => {
     if (shabad?.navigation?.next) {
+      recordEvent('manual', { action: 'next-shabad', source: 'operator', position: { shabadId: String(shabad.navigation.next) } });
+      recordNavigation('requested', 'operator', { shabadId: String(shabad.navigation.next) }, 'next-shabad');
       navigate(`/shabad/${encodeURIComponent(shabad.navigation.next)}${isKatha ? '?katha=1' : ''}`);
     } else {
       pushToast({ kind: 'info', title: 'No next Shabad', message: 'You are at the end of this section.' });
