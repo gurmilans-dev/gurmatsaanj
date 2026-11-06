@@ -5,6 +5,7 @@ import http from 'node:http';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { validateTrace } from '../frontend/src/utils/recognitionTrace.js';
 import { sha256, wavMetadata } from './lib/recognition-validation.mjs';
+import { inspectCapture } from './lib/capture-review.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const args = process.argv.slice(2);
@@ -43,6 +44,14 @@ let context;
 const result = { synthetic: true, checks: [], errors: [], nativeAudioProbe: null };
 try {
   const audio = value('--audio');
+  const captureAudio = value('--capture-audio');
+  const nativeAppAudio = value('--native-app-audio');
+  const fileInput = audio || captureAudio || nativeAppAudio;
+  let nativePolicy;
+  if (nativeAppAudio) {
+    nativePolicy = JSON.parse(fs.readFileSync(value('--policy'), 'utf8'));
+    if (!nativePolicy.synthetic || nativePolicy.onlineRecognitionAuthorized !== true || !nativePolicy.provenance || nativePolicy.sha256 !== sha256(fs.readFileSync(nativeAppAudio))) throw new Error('Native app diagnostic requires an authorized synthetic calibration file and matching policy');
+  }
   context = await chromium.launchPersistentContext(path.join(output, 'profile'), {
     channel: 'chrome', headless: true, chromiumSandbox: true, acceptDownloads: true,
     viewport: { width: 1280, height: 900 },
@@ -51,13 +60,28 @@ try {
     // renders it), so the result depended on install timing. The worker is
     // not what this smoke checks; block it so runs are deterministic.
     serviceWorkers: 'block',
-    args: audio ? ['--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream', `--use-file-for-fake-audio-capture=${path.resolve(audio)}%noloop`] : [],
+    args: fileInput ? ['--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream', `--use-file-for-fake-audio-capture=${path.resolve(fileInput)}%noloop`] : [],
   });
   const observePage = (page) => page.on('pageerror', (error) => result.errors.push(error.message));
   context.on('page', observePage);
   for (const page of context.pages()) observePage(page);
   const page = context.pages()[0] || await context.newPage();
-  if (audio) {
+  if (value('--review')) {
+    await page.goto(pathToFileURL(path.resolve(value('--review'))).href);
+    await page.waitForFunction(() => document.querySelector('audio')?.readyState >= 1);
+    await page.getByRole('button', { name: 'Export independently reviewed labels', exact: true }).click();
+    if (!await page.locator('#message').textContent().then((s) => s.includes('Review at least one interval'))) throw new Error('Review accepted an empty ground truth');
+    await page.locator('#start').fill('0'); await page.locator('#end').fill('1000');
+    await page.getByRole('button', { name: 'Add interval', exact: true }).click();
+    await page.getByRole('button', { name: 'Export independently reviewed labels', exact: true }).click();
+    if (!await page.locator('#message').textContent().then((s) => s.includes('synchronization'))) throw new Error('Review accepted unverified synchronization');
+    const event = page.waitForEvent('download'); await page.getByRole('button', { name: 'Export provisional draft', exact: true }).click();
+    await (await event).saveAs(path.join(output, 'provisional.labels.json'));
+    const labels = JSON.parse(fs.readFileSync(path.join(output, 'provisional.labels.json')));
+    if (labels.provenance.independent || labels.segments.some((s) => s.target)) throw new Error('Provisional review promoted ground truth');
+    result.checks.push('local-audio-decodes', 'empty-and-unverified-labels-blocked', 'provisional-draft-export');
+    await page.screenshot({ path: path.join(output, 'review.png'), fullPage: true });
+  } else if (audio) {
     const bytes = fs.readFileSync(path.resolve(audio));
     result.audioEvidence = { sha256: sha256(bytes), ...wavMetadata(bytes) };
     await page.goto(origin + '/speech-probe');
@@ -68,7 +92,53 @@ try {
     result.synthetic = false;
     result.nativeCaptureStatus = result.nativeAudioProbe.some((e) => e.type === 'result') ? 'transcript-observed-unscored' : 'blocked-no-transcript';
     result.interpretation = 'Native browser speech-service availability probe on a public file; not an accuracy evaluation or a synchronized performance trace.';
+  } else if (nativeAppAudio) {
+    await context.addInitScript(() => {
+      const Native = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const NativeRecorder = window.MediaRecorder;
+      if (!navigator.mediaDevices || !Native || !NativeRecorder) return;
+      const acquire = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+      window.captureRequests = 0;
+      navigator.mediaDevices.getUserMedia = (...args) => { window.captureRequests++; return acquire(...args); };
+      window.MediaRecorder = class extends NativeRecorder {
+        constructor(stream, options) { super(stream, options); window.recordedTestTrack = stream.getAudioTracks()[0]; }
+      };
+      window.nativeAppResults = [];
+      window.SpeechRecognition = window.webkitSpeechRecognition = class extends Native {
+        constructor() { super(); this.addEventListener('result', () => window.nativeAppResults.push(performance.now())); }
+        start(track) { if (!track || track.kind !== 'audio') throw new Error('Application did not supply the captured track'); window.sharedTrackVerified = track === window.recordedTestTrack; return super.start(track); }
+      };
+    });
+    await context.route('**/*', (route) => new URL(route.request().url()).origin === origin ? route.continue() : route.abort());
+    await page.goto(origin + '/shabad/fixture');
+    await page.getByRole('button', { name: 'Start mic', exact: true }).first().waitFor();
+    const projector = await context.newPage(); await projector.goto(origin + '/projector');
+    await page.locator('.voice-debug-panel > summary').click(); await page.locator('.capture-panel > summary').click();
+    await page.getByLabel('I have permission to record this audio and everyone audible.').check();
+    await page.getByLabel('Calibration audio (exclude from real accuracy reports).').check();
+    await page.getByLabel('Also start browser recognition for this test. I permit its online provider to process the audio.').check();
+    await page.getByRole('button', { name: 'Record test session', exact: true }).click();
+    await page.waitForFunction(() => window.nativeAppResults.length >= 5, null, { timeout: 20000 });
+    await page.getByRole('button', { name: 'Capture sync marker', exact: true }).click();
+    await page.getByRole('button', { name: 'Stop test capture', exact: true }).click();
+    const event = page.waitForEvent('download'); await page.getByRole('button', { name: 'Export capture bundle', exact: true }).click();
+    const file = path.join(output, 'capture.zip'); await (await event).saveAs(file);
+    const captured = inspectCapture(fs.readFileSync(file));
+    result.nativeApplication = { synthetic: true, sourceSha256: nativePolicy.sha256,
+      ...await page.evaluate(() => ({ captureRequests: window.captureRequests, recognizerUsedRecordedTrack: window.sharedTrackVerified })),
+      actualRecognitionEvents: captured.trace.events.filter((e) => e.type === 'recognition' && e.data.action === 'result').length,
+      matcherEvents: captured.trace.events.filter((e) => e.type === 'matcher').length,
+      pageEvents: captured.trace.events.filter((e) => e.type === 'page').length,
+      projectorAcknowledgements: captured.trace.events.filter((e) => e.type === 'projector.ack').length,
+      interpretation: 'Native audio-track injection into the real application hook; synthetic speech and fixture APIs, never authentic Kirtan accuracy.' };
+    if (!result.nativeApplication.actualRecognitionEvents || !result.nativeApplication.matcherEvents || !captured.manifest.synthetic ||
+        result.nativeApplication.captureRequests !== 1 || !result.nativeApplication.recognizerUsedRecordedTrack) throw new Error('Actual application pipeline lacks native recognition/shared-track evidence');
+    result.capture = captured.report; result.checks.push('native-speech-through-application-hook-and-capture');
+    await page.screenshot({ path: path.join(output, 'native-application.png'), fullPage: true });
   } else {
+    if (args.includes('--deny-capture')) await context.addInitScript(() => {
+      if (navigator.mediaDevices) navigator.mediaDevices.getUserMedia = async () => { throw new DOMException('Permission denied for fixture', 'NotAllowedError'); };
+    });
     await context.addInitScript(() => {
       const Channel = window.BroadcastChannel;
       window.validationSignals = [];
@@ -113,11 +183,44 @@ try {
     await page.getByRole('button', { name: 'Start mic', exact: true }).first().click();
     await page.waitForFunction(() => document.querySelector('.voice-debug-panel')?.textContent.includes('ਮਨ ਤੂੰ ਜੋਤਿ ਸਰੂਪੁ ਹੈ'));
     result.checks.push('katha-viewer-mic-fixture');
+    if (captureAudio) {
+      result.step = 'capture-start';
+      await page.getByRole('button', { name: 'Stop mic', exact: true }).first().click();
+      await page.locator('.voice-debug-panel > summary').click();
+      await page.locator('.capture-panel > summary').click();
+      if (await page.getByRole('button', { name: 'Record test session', exact: true }).isEnabled()) throw new Error('Capture lacks explicit consent gate');
+      await page.getByLabel('I have permission to record this audio and everyone audible.').check();
+      await page.getByLabel('Calibration audio (exclude from real accuracy reports).').check();
+      await page.getByRole('button', { name: 'Record test session', exact: true }).click();
+      const denied = args.includes('--deny-capture');
+      if (denied) await page.waitForFunction(() => document.querySelector('.capture-panel [role="status"]').textContent.includes('permission-denied'));
+      else {
+      await page.waitForFunction(() => document.querySelector('.capture-panel [role="status"]').textContent.includes('recording'), null, { timeout: 7000 });
+      result.step = 'capture-chunk';
+      await page.getByRole('button', { name: 'Capture sync marker', exact: true }).click();
+      await page.waitForFunction(() => !document.querySelector('.capture-panel [role="status"]').textContent.includes('0 KiB'), null, { timeout: 7000 });
+      result.step = 'capture-export';
+      await page.getByRole('button', { name: 'Stop test capture', exact: true }).click();
+      }
+      const event = page.waitForEvent('download');
+      await page.getByRole('button', { name: 'Export capture bundle', exact: true }).click();
+      const file = path.join(output, 'capture.zip'); await (await event).saveAs(file);
+      const capture = inspectCapture(fs.readFileSync(file));
+      if (!capture.manifest.synthetic || capture.manifest.consent.onlineRecognition || (!denied && (!capture.report.audioBytes || !capture.manifest.synchronization.markers.length)) ||
+          (denied && (capture.manifest.complete || capture.report.audioBytes || capture.manifest.reason !== 'permission-denied'))) throw new Error('Incomplete or incorrectly classified capture');
+      result.capture = capture.report;
+      result.checks.push(denied ? 'permission-denial-and-partial-export' : 'consent-gated-real-media-recorder-and-binary-export');
+      if (!await page.getByRole('button', { name: /^Download \(/ }).isVisible()) throw new Error('Standalone trace export lost after capture');
+      result.checks.push('standalone-trace-export-retained-after-audio-capture');
+    }
     await page.screenshot({ path: path.join(output, 'shabad.png'), fullPage: true });
   }
   result.status = result.errors.length ? 'failed' : result.nativeCaptureStatus === 'blocked-no-transcript' ? 'blocked' : 'passed';
   if (result.status !== 'passed') process.exitCode = result.status === 'blocked' ? 2 : 1;
-} catch (error) { result.status = 'failed'; result.errors.push(error.message); process.exitCode = 1; }
+} catch (error) {
+  result.status = 'failed'; result.errors.push(error.message); process.exitCode = 1;
+  try { const page = context.pages()[0]; result.captureDiagnostic = await page.locator('.capture-panel').textContent(); await page.screenshot({ path: path.join(output, 'failure.png') }); } catch { /* Preserve original failure. */ }
+}
 finally {
   await context?.close();
   await new Promise((resolve) => server.close(resolve));

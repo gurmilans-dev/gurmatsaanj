@@ -2,8 +2,8 @@
  * useVoiceRecognition — a thin React hook around the Web Speech API.
  *
  * Browsers expose `webkitSpeechRecognition` (Chrome/Edge/Safari iOS 14.5+)
- * or the standardized `SpeechRecognition`. We never receive raw audio —
- * the OS-level engine returns a transcript directly.
+ * or the standardized `SpeechRecognition`. Normal microphone operation receives
+ * transcripts; an isolated, opt-in test capture may supply an audio track.
  *
  * The hook returns:
  *   - isSupported : boolean
@@ -30,9 +30,10 @@ export default function useVoiceRecognition({ lang = 'pa-IN', wordLimit = 7, sou
   const isSupported = !!Ctor;
 
   const recognitionRef = useRef(null);
+  const testAudioTrackRef = useRef(null);
   const [streamId] = useState(() => `voice-${++streamSequence}`);
   const traceMetadataRef = useRef(null);
-  traceMetadataRef.current = { streamId, language: lang, source };
+  traceMetadataRef.current = { streamId, language: lang, source: testAudioTrackRef.current ? `${source}/capture-track` : source };
   const epochRef = useRef(0);
   const inputEventIdRef = useRef(null);
   const finalRef = useRef('');
@@ -148,9 +149,11 @@ export default function useVoiceRecognition({ lang = 'pa-IN', wordLimit = 7, sou
     rec.onend = () => {
       recordEvent('recognition', { action: 'end', ...traceMetadataRef.current, epoch: epochRef.current });
       if (wantsListeningRef.current) {
+        if (testAudioTrackRef.current?.readyState === 'ended') { wantsListeningRef.current = false; setIsListening(false); return; }
         // Chrome stops every ~60s; if the user still wants to listen, restart.
         try {
-          rec.start();
+          if (testAudioTrackRef.current) rec.start(testAudioTrackRef.current);
+          else rec.start();
           epochRef.current += 1;
           recordEvent('recognition', { action: 'restart', ...traceMetadataRef.current, epoch: epochRef.current });
         } catch { /* already started */ }
@@ -173,16 +176,20 @@ export default function useVoiceRecognition({ lang = 'pa-IN', wordLimit = 7, sou
     };
   }, [Ctor, isSupported, lang, updateTranscript]);
 
-  const start = useCallback(() => {
+  const start = useCallback((testAudioTrack = null) => {
     if (!recognitionRef.current) return;
+    if (testAudioTrack?.kind === 'audio' && testAudioTrack.readyState !== 'live') { setError('test-audio-track-ended'); return; }
     setError(null);
     setAutoStopped(false);
     autoStoppedRef.current = false;
     wantsListeningRef.current = true;
     startedAtRef.current = Date.now();
     ignoreResultsBeforeRef.current = typeof performance !== 'undefined' ? performance.now() : 0;
+    testAudioTrackRef.current = testAudioTrack?.kind === 'audio' && testAudioTrack.readyState === 'live' ? testAudioTrack : null;
+    traceMetadataRef.current.source = testAudioTrackRef.current ? `${source}/capture-track` : source;
     try {
-      recognitionRef.current.start();
+      if (testAudioTrackRef.current) recognitionRef.current.start(testAudioTrackRef.current);
+      else recognitionRef.current.start();
       epochRef.current += 1;
       recordEvent('recognition', { action: 'start', ...traceMetadataRef.current, epoch: epochRef.current });
       setIsListening(true);
@@ -196,12 +203,13 @@ export default function useVoiceRecognition({ lang = 'pa-IN', wordLimit = 7, sou
       setIsListening(false);
       setError(err?.message || 'speech-recognition-start-failed');
     }
-  }, []);
+  }, [source]);
 
   const stop = useCallback(() => {
     recordEvent('recognition', { action: 'stop', ...traceMetadataRef.current, epoch: epochRef.current });
     wantsListeningRef.current = false;
     autoStoppedRef.current = false;
+    testAudioTrackRef.current = null;
     ignoreResultsBeforeRef.current = typeof performance !== 'undefined' ? performance.now() : 0;
     try { recognitionRef.current?.stop(); } catch { /* noop */ }
     setIsListening(false);

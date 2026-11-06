@@ -3,6 +3,7 @@ import {
   startRecording, stopRecording, isRecording, eventCount, downloadTrace, recordingStatus, recordSyncMarker,
 } from '../../utils/sessionRecorder';
 import './VoiceDebugPanel.css';
+import CapturePanel from './CapturePanel';
 
 function valueOrDash(value) {
   if (value === null || value === undefined || value === '') return '-';
@@ -111,6 +112,8 @@ export default function VoiceDebugPanel({
   const [recording, setRecording] = useState(isRecording());
   const [recCount, setRecCount] = useState(eventCount());
   const [recReason, setRecReason] = useState(recordingStatus().reason);
+  const [captureBusy, setCaptureBusy] = useState(false);
+  useEffect(() => { setRecording(isRecording()); setRecCount(eventCount()); }, [captureBusy]);
   const copyTimerRef = useRef(null);
   useEffect(() => () => { if (copyTimerRef.current) clearTimeout(copyTimerRef.current); }, []);
 
@@ -234,6 +237,7 @@ export default function VoiceDebugPanel({
           type="button"
           className="btn-ghost voice-debug-copy"
           onClick={toggleRecording}
+          disabled={captureBusy}
           title="Record the live tracking stream for offline replay"
         >
           {recording ? `■ Stop (${recCount})` : '● Record'}
@@ -256,9 +260,11 @@ export default function VoiceDebugPanel({
       </div>
 
       <p className="voice-debug-empty">
-        Recording is local and opt-in: transcript text and display decisions, without audio.
+        Trace-only recording is local and opt-in: transcript text and display decisions, without audio.
         Export before starting another recording. {recReason ? `Capture stopped: ${recReason}. Export this segment before continuing.` : ''}
       </p>
+
+      <CapturePanel mode={mode} voice={voice} standaloneRecording={recording} onBusyChange={setCaptureBusy} />
 
       <div className="voice-debug-grid">
         <span>Mic</span>

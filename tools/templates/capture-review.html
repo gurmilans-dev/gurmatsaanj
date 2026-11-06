@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; media-src 'self' blob:; connect-src 'none'">
+<title>Independent audio review</title>
+<style>
+body{font:16px system-ui;max-width:1000px;margin:2rem auto;padding:0 1rem;background:#fbf8f0;color:#26231e}section{background:white;border:1px solid #dbcbb1;border-radius:10px;padding:1rem;margin:1rem 0}label{display:block;margin:.6rem 0}button,input,select{font:inherit;padding:.4rem;max-width:100%}button{margin:.3rem}audio{width:100%}pre{white-space:pre-wrap}table{border-collapse:collapse;width:100%}td,th{padding:.5rem;border-bottom:1px solid #ddd;text-align:left}.notice{color:#714e0a}#message{min-height:2rem}
+</style>
+<h1>Independent audio review</h1>
+<p>Local review only. No uploads or network requests. Application predictions are excluded from this view.</p>
+<p class="notice">Capture timing and imported candidates are provisional. Listen to the recording and confirm independent cues and targets before exporting verified annotations.</p>
+<section><audio id="audio" controls></audio><p id="capture"></p><p id="source"></p></section>
+<section><h2>Synchronization</h2>
+<p>Use two independently identifiable cues. Recorder lifecycle times and a clicked marker alone do not prove when a sample was captured.</p>
+<details><summary>Capture timing diagnostics</summary><pre id="markers"></pre></details>
+<label>First cue in audio (ms) <input id="media1" type="number" min="0"> paired trace time (ms) <input id="trace1" type="number" min="0"></label>
+<label>Last cue in audio (ms) <input id="media2" type="number" min="0"> paired trace time (ms) <input id="trace2" type="number" min="0"></label>
+<label>Timing uncertainty (ms) <input id="uncertainty" type="number" min="1" value="250"></label>
+<label><input id="syncReviewed" type="checkbox"> I independently checked these audio/trace cues and their uncertainty.</label>
+</section>
+<section><h2>Reviewed intervals</h2>
+<p>Imported intervals below are suggestions only. Blank gaps remain unscored. Repeats need separate intervals.</p>
+<label>Start in audio (ms) <input id="start" type="number" min="0"><button id="markStart">Use current audio time</button></label>
+<label>End in audio (ms) <input id="end" type="number" min="0"><button id="markEnd">Use current audio time</button></label>
+<label>Canonical target <select id="target"><option value="">Ambiguous / no reliable target</option></select></label>
+<label><input id="heard" type="checkbox"> I independently heard and verified this target in this interval.</label>
+<button id="add">Add interval</button><button id="undo">Remove last interval</button>
+<table><thead><tr><th>Audio interval (ms)</th><th>Target</th><th>Review</th></tr></thead><tbody id="rows"></tbody></table>
+<button id="draft">Export provisional draft</button><button id="verified">Export independently reviewed labels</button>
+<p id="message" role="status"></p></section>
+<section><h2>External reference candidates</h2><p>These timestamps may refer to a different edit of the recording. They are never promoted automatically.</p><p id="reference"></p><div id="candidates"></div></section>
+<script>
+const data=__CAPTURE_DATA__;
+const $=(id)=>document.getElementById(id); const intervals=[];
+$('capture').textContent=`Session ${data.sessionId}; trace ${(data.durationMs/1000).toFixed(2)} seconds; ${data.synthetic?'synthetic control':'capture, accuracy unavailable'}.`;
+$('source').textContent=data.canonicalSource?`Independent canonical source: ${data.canonicalSource}; SHA-256 ${data.canonicalSha256}`:'No independent canonical source supplied. Targets remain ambiguous.';
+if(data.audio)$('audio').src=data.audio;else $('audio').replaceWith(document.createTextNode('No audio retained; partial trace only.'));
+$('markers').textContent=JSON.stringify(data.synchronization,null,2);
+$('reference').textContent=data.referenceEvidence?`${data.referenceEvidence.attribution}; ${data.referenceEvidence.license}; ${data.referenceEvidence.sourceUrl}; SHA-256 ${data.referenceEvidence.sha256}`:'No external reference imported.';
+for(const [i,c] of data.choices.entries()){const o=document.createElement('option');o.value=i;o.textContent=`${c.target.shabadId}/${c.target.verseId} · ${c.text}`;$('target').append(o);}
+const message=(text)=>$('message').textContent=text;
+function render(){ $('rows').replaceChildren();for(const s of intervals){const row=document.createElement('tr');for(const value of [`${s.startMs}–${s.endMs}`,s.target?`${s.target.shabadId}/${s.target.verseId}`:'ambiguous',s.verified?'independently reviewed':'provisional']){const cell=document.createElement('td');cell.textContent=value;row.append(cell);}$('rows').append(row);}}
+$('markStart').onclick=()=>{$('start').value=Math.round($('audio').currentTime*1000);};
+$('markEnd').onclick=()=>{$('end').value=Math.round($('audio').currentTime*1000);};
+$('add').onclick=()=>{const startMs=Number($('start').value),endMs=Number($('end').value);if(!$('start').value||!$('end').value||!Number.isFinite(startMs)||!Number.isFinite(endMs)||startMs<0||endMs<=startMs||startMs<(intervals.at(-1)?.endMs||0)){message('Enter ordered, non-overlapping audio intervals.');return;}const c=$('target').value===''?null:data.choices[Number($('target').value)];intervals.push({startMs,endMs,target:c?.target||null,verified:Boolean(c&&$('heard').checked)});$('heard').checked=false;render();message('Interval added.');};
+$('undo').onclick=()=>{intervals.pop();render();};
+for(const c of data.referenceCandidates){const button=document.createElement('button');button.textContent=`Provisional ${c.startMs}–${c.endMs} ms · ${c.target.shabadId}/${c.target.verseId}`;button.onclick=()=>{$('start').value=c.startMs;$('end').value=c.endMs;const i=data.choices.findIndex((v)=>v.target.verseId===c.target.verseId&&v.target.shabadId===c.target.shabadId);$('target').value=i<0?'':String(i);$('heard').checked=false;if(data.audio)$('audio').currentTime=c.startMs/1000;};$('candidates').append(button);}
+function exportLabels(verified){try{
+  if(!intervals.length)throw Error('Review at least one interval.');
+  const anchors=[{mediaMs:Number($('media1').value),traceMs:Number($('trace1').value)},{mediaMs:Number($('media2').value),traceMs:Number($('trace2').value)}];
+  const uncertainty=Number($('uncertainty').value);
+  if(verified&&(!$('syncReviewed').checked||!['media1','trace1','media2','trace2'].every(id=>$(id).value!=='')||!data.audio||!Number.isFinite(uncertainty)||uncertainty<=0||anchors.some(a=>!Number.isFinite(a.mediaMs)||!Number.isFinite(a.traceMs)||a.mediaMs<0||a.traceMs<0)||anchors[1].mediaMs<=anchors[0].mediaMs||anchors[1].traceMs<=anchors[0].traceMs||anchors[1].traceMs>data.durationMs))throw Error('Independent, ordered synchronization cues and uncertainty are required.');
+  const map=(t)=>{if(t<anchors[0].mediaMs||t>anchors[1].mediaMs)throw Error('Interval lies outside reviewed synchronization cues.');return anchors[0].traceMs+(t-anchors[0].mediaMs)*(anchors[1].traceMs-anchors[0].traceMs)/(anchors[1].mediaMs-anchors[0].mediaMs);};
+  if(verified&&intervals.some(s=>s.target&&!s.verified))throw Error('Unreviewed targets must remain provisional or ambiguous.');
+  const labels={version:1,sessionId:data.sessionId,synthetic:data.synthetic,timebase:verified?'trace-relative-ms':'media-ms',timingUncertaintyMs:uncertainty,provenance:{independent:verified,method:verified?`Independent audio review; canonical source ${data.canonicalSource}; SHA-256 ${data.canonicalSha256}`:'Provisional local audio review draft; not ground truth'},alignment:{anchors},segments:intervals.map((s,i)=>({id:`review-${i+1}`,startMs:verified?map(s.startMs):s.startMs,endMs:verified?map(s.endMs):s.endMs,activity:s.target&&s.verified?'kirtan':'ambiguous',target:s.verified?s.target:null,reviewStatus:s.verified?'reviewed':'provisional'}))};
+  const url=URL.createObjectURL(new Blob([JSON.stringify(labels,null,2)],{type:'application/json'}));const link=document.createElement('a');link.href=url;link.download=verified?'reviewed.labels.json':'provisional.labels.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),10000);message(verified?'Reviewed labels exported; evaluate with the original trace.':'Provisional draft exported; evaluator will refuse it as independent ground truth.');
+}catch(error){message(error.message);}}
+$('draft').onclick=()=>exportLabels(false);$('verified').onclick=()=>exportLabels(true);
+</script></html>
