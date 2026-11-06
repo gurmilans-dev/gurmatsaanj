@@ -185,6 +185,7 @@ export default function useVoiceRecognition({ lang = 'pa-IN', wordLimit = 7, sou
     wantsListeningRef.current = true;
     startedAtRef.current = Date.now();
     ignoreResultsBeforeRef.current = typeof performance !== 'undefined' ? performance.now() : 0;
+    const runningTrack = testAudioTrackRef.current;
     testAudioTrackRef.current = testAudioTrack?.kind === 'audio' && testAudioTrack.readyState === 'live' ? testAudioTrack : null;
     traceMetadataRef.current.source = testAudioTrackRef.current ? `${source}/capture-track` : source;
     try {
@@ -196,6 +197,9 @@ export default function useVoiceRecognition({ lang = 'pa-IN', wordLimit = 7, sou
     } catch (err) {
       recordEvent('recognition', { action: 'start-error', ...traceMetadataRef.current, epoch: epochRef.current, error: err?.name || 'unknown' });
       if (err?.name === 'InvalidStateError') {
+        // The running session keeps its input; restarts must not switch it.
+        testAudioTrackRef.current = runningTrack;
+        traceMetadataRef.current.source = runningTrack ? `${source}/capture-track` : source;
         setIsListening(true);
         return;
       }
@@ -235,9 +239,12 @@ export default function useVoiceRecognition({ lang = 'pa-IN', wordLimit = 7, sou
     wordLimitRef.current = Math.max(0, Number(n) || 0);
   }, []);
 
+  // True only while the current session reads an opt-in test-capture track.
+  const isUsingTestTrack = useCallback(() => Boolean(testAudioTrackRef.current), []);
+
   return {
     isSupported, isListening, transcript, lastFinal, error, autoStopped,
     inputEventId: inputEventIdRef.current,
-    start, stop, reset, clearAutoStopped, setWordLimit,
+    start, stop, reset, clearAutoStopped, setWordLimit, isUsingTestTrack,
   };
 }

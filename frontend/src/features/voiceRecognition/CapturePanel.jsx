@@ -14,7 +14,12 @@ export default function CapturePanel({ mode, voice, standaloneRecording, onBusyC
   useEffect(() => () => { if (capture.status().active) capture.stop('capture-view-unmounted'); }, []);
   useEffect(() => { onBusyChange(status.active || status.ready); }, [status.active, status.ready, onBusyChange]);
   useEffect(() => {
-    if (!status.active && ownedVoice.current) { ownedVoice.current.stop?.(); ownedVoice.current = null; }
+    // Stop only recognition still reading this capture's track; an operator or
+    // remote restart on the ordinary mic is left running.
+    if (!status.active && ownedVoice.current) {
+      if (ownedVoice.current.isUsingTestTrack?.()) ownedVoice.current.stop?.();
+      ownedVoice.current = null;
+    }
   }, [status.active]);
   useEffect(() => {
     if (!status.active) return undefined;
